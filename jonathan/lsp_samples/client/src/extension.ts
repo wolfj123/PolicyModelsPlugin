@@ -6,6 +6,7 @@
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
+import * as child_process from "child_process";
 //import * as cmd from 'node-cmd';
 
 import {
@@ -79,10 +80,8 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 	// item is selected
 	const myCommandId = 'policymodel.runModel';
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
-		let cwd = process.cwd();
-		//vscode.window.showInformationMessage(cwd);
-		//cmd.run(`java -jar ${cwd}\\cli\\DataTagsLib.jar`);
-		
+		let cwd = __dirname + "\\..\\..\\";
+		child_process.execSync(`start cmd.exe /K java -jar "${cwd}\\cli\\DataTagsLib.jar"`);
 	}));
 
 	// create a new status bar item that we can now manage
