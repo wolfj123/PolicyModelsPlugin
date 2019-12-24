@@ -3,10 +3,10 @@
 	"name": "PolicySpace",
 	"patterns": [
 		{
-			"include": "#strings"
+			"include": "#keywords"
 		},
 		{
-			"include": "#brackets"
+			"include": "#strings"
 		}
 	],
 	"repository": {
@@ -20,17 +20,6 @@
 			"name": "string.quoted.double.policyspace",
 			"begin": "\"",
 			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.policyspace",
-					"match": "\\\\."
-				}
-			]
-		},
-		"brackets": {
-			"name": "string.quoted.double.policyspace",
-			"begin": "\\[",
-			"end": "\\]",
 			"patterns": [
 				{
 					"name": "constant.character.escape.policyspace",
