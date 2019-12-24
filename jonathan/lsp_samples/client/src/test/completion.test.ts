@@ -10,11 +10,12 @@ import { getDocUri, activate } from './helper';
 describe('Should do completion', () => {
 	const docUri = getDocUri('completion.txt');
 
-	it('Completes JS/TS in txt file', async () => {
+	it('Completes code in txt file', async () => {
 		await testCompletion(docUri, new vscode.Position(0, 0), {
 			items: [
-				{ label: 'JavaScript', kind: vscode.CompletionItemKind.Text },
-				{ label: 'TypeScript', kind: vscode.CompletionItemKind.Text }
+				{ label: 'DecisionGraph', kind: vscode.CompletionItemKind.Text },
+				{ label: 'PolicyModels', kind: vscode.CompletionItemKind.Text },
+				{ label: 'PolicySpace', kind: vscode.CompletionItemKind.Text }
 			]
 		});
 	});

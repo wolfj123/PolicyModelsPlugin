@@ -3,6 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+/*
+
 import * as vscode from 'vscode'
 import * as assert from 'assert'
 import { getDocUri, activate } from './helper'
@@ -39,3 +41,5 @@ async function testDiagnostics(docUri: vscode.Uri, expectedDiagnostics: vscode.D
     assert.equal(actualDiagnostic.severity, expectedDiagnostic.severity)
   })
 }
+
+*/

@@ -120,7 +120,7 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	validateTextDocument(change.document);
+	//validateTextDocument(change.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
@@ -183,14 +183,19 @@ connection.onCompletion(
 		// info and always provide the same completion items.
 		return [
 			{
-				label: 'TypeScript',
+				label: 'PolicyModels',
 				kind: CompletionItemKind.Text,
 				data: 1
 			},
 			{
-				label: 'JavaScript',
+				label: 'DecisionGraph',
 				kind: CompletionItemKind.Text,
 				data: 2
+			},
+			{
+				label: 'PolicySpace',
+				kind: CompletionItemKind.Text,
+				data: 3
 			}
 		];
 	}
@@ -201,15 +206,25 @@ connection.onCompletion(
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
 		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
+			item.detail = 'PolicyModels details';
+			item.documentation = 'PolicyModels documentation';
 		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
+			item.detail = 'DecisionGraph details';
+			item.documentation = 'DecisionGraph documentation';
+		} else if (item.data === 3) {
+			item.detail = 'PolicySpace details';
+			item.documentation = 'PolicySpace documentation';
 		}
 		return item;
 	}
 );
+
+
+
+
+
+
+
 
 /*
 connection.onDidOpenTextDocument((params) => {
