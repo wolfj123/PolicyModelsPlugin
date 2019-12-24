@@ -70,18 +70,23 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 
-
-
 let myStatusBarItem: vscode.StatusBarItem;
 
 export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 
 	// register a command that is invoked when the status bar
 	// item is selected
-	const myCommandId = 'sample.showSelectionCount';
+	const myCommandId = 'policymodel.runModel';
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
-		let n = getNumberOfSelectedLines(vscode.window.activeTextEditor);
-		vscode.window.showInformationMessage(`Yeah, ${n} line(s) selected... Keep going!`);
+		let cwd = process.cwd();
+		//vscode.window.showInformationMessage(cwd);
+		
+		var spawn = require('child_process').spawn;
+		var ls  = spawn('ls', ['-l']);
+		ls.stdout.on('data', function (data) {
+		   console.log(data);
+		});
+		
 	}));
 
 	// create a new status bar item that we can now manage
@@ -99,19 +104,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 }
 
 function updateStatusBarItem(): void {
-	let n = getNumberOfSelectedLines(vscode.window.activeTextEditor);
-	if (n > 0) {
-		myStatusBarItem.text = `$(megaphone) ${n} line(s) selected`;
-		myStatusBarItem.show();
-	} else {
-		myStatusBarItem.hide();
-	}
+	myStatusBarItem.text = '$(play) run model';
+	myStatusBarItem.show();
 }
 
-function getNumberOfSelectedLines(editor: vscode.TextEditor | undefined): number {
-	let lines = 0;
-	if (editor) {
-		lines = editor.selections.reduce((prev, curr) => prev + (curr.end.line - curr.start.line), 0);
-	}
-	return lines;
-}
