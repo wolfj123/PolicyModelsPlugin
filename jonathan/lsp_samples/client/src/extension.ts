@@ -6,6 +6,7 @@
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
+//import * as cmd from 'node-cmd';
 
 import {
 	LanguageClient,
@@ -80,12 +81,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
 		let cwd = process.cwd();
 		//vscode.window.showInformationMessage(cwd);
-		
-		var spawn = require('child_process').spawn;
-		var ls  = spawn('ls', ['-l']);
-		ls.stdout.on('data', function (data) {
-		   console.log(data);
-		});
+		//cmd.run(`java -jar ${cwd}\\cli\\DataTagsLib.jar`);
 		
 	}));
 
@@ -104,7 +100,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 }
 
 function updateStatusBarItem(): void {
-	myStatusBarItem.text = '$(play) run model';
+	myStatusBarItem.text = '$(play) Run Model';
 	myStatusBarItem.show();
 }
 
