@@ -44,18 +44,26 @@
 				}
 			}
 		},
-		"languages": [{
-			"id": "policyspace",
-			"aliases": ["PolicySpace", "policyspace"],
-			"extensions": [".pspace"],
-			"configuration": "./pspace-language-configuration.json"
-		}],
-		"grammars": [{
-			"language": "policyspace",
-			"scopeName": "source.pspace",
-			"path": "./syntaxes/policyspace.tmLanguage.json"
-		}]
-
+		"languages": [
+			{
+				"id": "policyspace",
+				"aliases": [
+					"PolicySpace",
+					"policyspace"
+				],
+				"extensions": [
+					".pspace"
+				],
+				"configuration": "./pspace-language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "policyspace",
+				"scopeName": "source.pspace",
+				"path": "./syntaxes/policyspace.tmLanguage.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
