@@ -3,12 +3,16 @@ node_js:
   - "stable"
 cache:
   directories:
-    - "node_modules"
-    - "client/node_modules"
-    - "server/node_modules"
+    - "plugin/node_modules"
+    - "plugin/client/node_modules"
+    - "plugin/server/node_modules"
 
+before_script: 
+  - cd plugin
+    
 script:  
   - npm install
+  - npm run compile
   - npm run test
 
 notifications:
