@@ -6,6 +6,7 @@ before_script:
   - cd plugin
     
 script:  
+  - npm run clean
   - npm install
   - npm audit fix
   - npm run compile
