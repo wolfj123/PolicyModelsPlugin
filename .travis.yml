@@ -12,6 +12,7 @@ before_script:
   - cd ../
     
 script:  
+  - npm cache clean --force
   - npm install
   - npm audit fix
   - npm run compile
