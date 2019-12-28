@@ -1,0 +1,19 @@
+language: node_js
+node_js: 
+  - "stable"
+cache:
+  directories:
+    - "node_modules"
+    - "client/node_modules"
+    - "server/node_modules"
+
+script:  
+  - cd plugin
+  - npm install
+  - npm run test
+
+notifications:
+  email:
+    recipients:
+      - wolfj@post.bgu.ac.il
+    on_failure: always
