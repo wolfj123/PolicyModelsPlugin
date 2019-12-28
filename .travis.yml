@@ -8,7 +8,7 @@ cache:
     - "plugin/server/node_modules"
 
 script:  
-  - travis_build.bat
+  - travis_build.sh
 
 notifications:
   email:
