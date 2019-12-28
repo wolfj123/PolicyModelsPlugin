@@ -1,0 +1,48 @@
+
+	usecase uc3_0 as "Write graph code"
+	usecase uc4_0 as "Write space code"
+
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+actor user
+actor IDE <<Application>>
+
+
+rectangle System {
+
+	usecase uc1 as "Create a new policy model"
+	usecase uc2 as "Load a project into the IDE"
+	usecase writecode as "write Policy Models code"
+	usecase uc3 as "Graph code colorizing by syntax"
+	usecase uc4 as "Space code colorizing by syntax"
+	usecase uc5 as "Code is auto-completed"
+	usecase uc6 as "Running the model locally"
+	usecase uc7 as "Create localization files"
+	usecase uc8 as "Request jump to definition of tag"
+	usecase uc9 as "Request renaming of nodes"
+	usecase uc10 as "Request folding of scope in code"
+
+	user--> uc1	
+	user--> uc2
+	user--> writecode 
+	uc3 --> IDE
+	uc4 --> IDE
+	uc1 .> uc2  : <<includes>>
+	writecode .down.> uc3 : <<extends>>
+	writecode .down.>  uc4 : <<extends>>
+	writecode .right.> uc5 : <<extends>>
+	uc5 --> IDE
+	user--> uc6
+	user--> uc7
+	user--> uc8
+	uc8 --> IDE
+	user--> uc9 
+	uc9  --> IDE
+	user--> uc10
+	uc10 --> IDE
+	uc2--> IDE
+}
+
+@enduml
+
