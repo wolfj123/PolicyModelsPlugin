@@ -15,6 +15,12 @@ script:
   - npm run compile
   - npm run test
 
+  
+after_failure:     
+  - for v in/home/travis/.npm/_logs/*.log ; do
+    echo $v logtail ======================== ; tail -100 $v ;
+    done
+  
 notifications:
   email:
     recipients:
