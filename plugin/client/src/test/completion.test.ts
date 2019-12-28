@@ -34,7 +34,7 @@ async function testCompletion(
 		docUri,
 		position
 	)) as vscode.CompletionList;
-	assert.equal(true, false);
+	//assert.equal(true, false);
 	assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
 	expectedCompletionList.items.forEach((expectedItem, i) => {
 		const actualItem = actualCompletionList.items[i];
