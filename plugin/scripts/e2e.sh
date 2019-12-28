@@ -6,6 +6,7 @@ export CODE_TESTS_WORKSPACE="$(pwd)/client/testFixture"
 node "$(pwd)/client/node_modules/vscode/bin/test"
 #$cmd
 ## get status ##
+echo $?
 return $?
 
 #read -rsp $'Press enter to continue...\n'
