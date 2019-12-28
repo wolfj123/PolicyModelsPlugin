@@ -2,17 +2,17 @@ language: node_js
 node_js: 
   - "stable"
 
-cache:
-  directories:
-    - "plugin/node_modules"
-    - "plugin/client/node_modules"
-    - "plugin/server/node_modules"
-  
-  
 before_script: 
   - cd plugin
-
+  - rm -rf node_modules
+  - cd client 
+  - rm -rf node_modules
+  - cd ../server 
+  - rm -rf node_modules
+  - cd ../
+    
 script:  
+  - npm cache clean --force
   - npm install
   - npm audit fix
   - npm run compile
