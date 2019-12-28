@@ -3,14 +3,12 @@ node_js:
   - "stable"
 cache:
   directories:
-    - "node_modules"
-    - "client/node_modules"
-    - "server/node_modules"
+    - "plugin/node_modules"
+    - "plugin/client/node_modules"
+    - "plugin/server/node_modules"
 
 script:  
-  - cd plugin
-  - npm install
-  - npm run test
+  - travis_build.bat
 
 notifications:
   email:
