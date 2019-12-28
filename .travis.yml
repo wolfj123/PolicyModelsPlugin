@@ -4,9 +4,14 @@ node_js:
 
 before_script: 
   - cd plugin
+  - rm -rf node_modules
+  - cd client 
+  - rm -rf node_modules
+  - cd ../server 
+  - rm -rf node_modules
+  - cd ../
     
 script:  
-  - npm run clean
   - npm install
   - npm audit fix
   - npm run compile
