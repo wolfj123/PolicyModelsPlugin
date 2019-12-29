@@ -26,10 +26,6 @@ script:
     cd sample
     echo ">>> Run sample integration test"
     yarn && yarn compile && yarn test
-    npm install
-    npm audit fix
-    npm run compile
-    npm run test
 
   
 after_failure:     
