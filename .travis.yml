@@ -2,21 +2,30 @@ language: node_js
 node_js: 
   - "stable"
 
+os:
+  - linux
+
 cache:
-  directories:
-    - "plugin/node_modules"
-    - "plugin/client/node_modules"
-    - "plugin/server/node_modules"
-  
+  - yarn
+
+install:
+  - |
+    if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export DISPLAY=':99.0'
+      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+    fi
   
 before_script: 
   - cd plugin
 
 script:  
-  - npm install
-  - npm audit fix
-  - npm run compile
-  - npm run test
+    |  
+    echo ">>> Compile vscode-test"
+    yarn && yarn compile
+    echo ">>> Compiled vscode-test"
+    cd sample
+    echo ">>> Run sample integration test"
+    yarn && yarn compile && yarn test
 
   
 after_failure:     
