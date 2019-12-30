@@ -1,0 +1,51 @@
+@startuml
+
+package vscode-languageclient #DDDDDD {
+	class LanguageClient
+}
+
+package vscode-languageserver #DDDDDD {
+	class Connection
+}
+
+Client -up-|> LanguageClient
+
+
+class Client {
+  void activate(context: ExtensionContext)
+  deactivate(): Thenable<void> | undefined
+  addRunCommand(context: ExtensionContext)
+  updateStatusBarItem(): void
+}
+
+Server -up-|> Connection
+class Server {
+	documents: TextDocuments
+	hasConfigurationCapability: boolean
+	hasWorkspaceFolderCapability: boolean
+	hasDiagnosticRelatedInformationCapability: boolean
+   
+   onInitialize(params: InitializeParams)
+   onInitialized() : void
+   onDidClose() : void
+   onDidChangeConfiguration() : void
+   onCompletion(textDocumentPosition: TextDocumentPositionParams): CompletionItem[]
+   onCompletionResolve(item: CompletionItem): CompletionItem
+   getDocumentSettings(resource: string): Thenable<ExampleSettings>
+   onDidChangeWatchedFiles(?) : void
+}
+
+Client -right-> Server : uses
+
+note "Client is resposible for communicating with the server.\nclient is also responsible for any \nnon-LSP features such as running the model using the CLI" as n_client
+note "Server is resposible for implementing the \nLSP features of the PolicyModel languages" as n_server
+n_client .right. Client
+n_server .left. Server
+
+
+note "External Library" as n_ext
+n_ext .. Connection
+n_ext .. LanguageClient
+
+
+@enduml
