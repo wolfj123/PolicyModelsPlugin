@@ -1,6 +1,3 @@
-!plugins/cli/*
-!utils/*
-
 
 # Compiled class file
 *.class
@@ -103,3 +100,5 @@ fabric.properties
 
 
 jonathan/lsp_samples/cli/lib/desktop.ini
+!plugins/cli/*
+!utils/*
