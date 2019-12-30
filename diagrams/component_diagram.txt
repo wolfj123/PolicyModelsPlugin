@@ -1,0 +1,14 @@
+@startuml
+
+package "visual Studio Code" {
+	component [VSCode IDE] as ide
+	[LSP Client ] as client
+	ide -> client : use
+}
+() "Language\nServer\nProtocol" as lsp_interface
+[LSP Server] as server
+server -- lsp_interface
+
+client -right-> lsp_interface : "JSON\nRPC"
+
+@enduml
