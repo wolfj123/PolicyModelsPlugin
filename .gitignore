@@ -1,4 +1,5 @@
-!jonathan\lsp_samples\cli/*
+!plugins/cli/*
+!utils/*
 
 
 # Compiled class file
