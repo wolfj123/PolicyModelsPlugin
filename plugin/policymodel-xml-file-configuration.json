@@ -1,0 +1,60 @@
+{
+    // symbols used as brackets
+    "brackets": [
+		["<title>","</title>"],
+		["<subtitle>","</subtitle>"],
+		["<version>","</version>"],
+		["<date>","</date>"],
+		["<keywords>","</keywords>"],
+		["<authors>","</authors>"],
+		["<name>","</name>"],
+		["<affiliation>","</affiliation>"],
+		["<contact>","</contact>"],
+		["<person>","</person>"],
+		["<group>","</group>"],
+		["<model>","</model>"],
+		["<space>","</space>"],
+		["<graph>","</graph>"],
+		["<reference>","</reference>"],
+		["<references>","</references>"]
+
+    ],
+    // symbols that are auto closed when typing
+    "autoClosingPairs": [
+        ["<title>","</title>"],
+		["<subtitle>","</subtitle>"],
+		["<version>","</version>"],
+		["<date>","</date>"],
+		["<keywords>","</keywords>"],
+		["<authors>","</authors>"],
+		["<name>","</name>"],
+		["<affiliation>","</affiliation>"],
+		["<contact>","</contact>"],
+		["<person>","</person>"],
+		["<group>","</group>"],
+		["<model>","</model>"],
+		["<space>","</space>"],
+		["<graph>","</graph>"],
+		["<reference>","</reference>"],
+		["<references>","</references>"]
+    ],
+    // symbols that that can be used to surround a selection
+    "surroundingPairs": [
+        ["<title>","</title>"],
+		["<subtitle>","</subtitle>"],
+		["<version>","</version>"],
+		["<date>","</date>"],
+		["<keywords>","</keywords>"],
+		["<authors>","</authors>"],
+		["<name>","</name>"],
+		["<affiliation>","</affiliation>"],
+		["<contact>","</contact>"],
+		["<person>","</person>"],
+		["<group>","</group>"],
+		["<model>","</model>"],
+		["<space>","</space>"],
+		["<graph>","</graph>"],
+		["<reference>","</reference>"],
+		["<references>","</references>"]
+    ]
+}

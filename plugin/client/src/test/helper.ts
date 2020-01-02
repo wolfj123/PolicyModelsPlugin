@@ -16,6 +16,7 @@ export let platformEol: string;
  */
 export async function activate(docUri: vscode.Uri) {
 	// The extensionId is `publisher.name` from package.json
+	console.log("1");
 	const ext = vscode.extensions.getExtension('vscode-samples.lsp-sample')!;
 	await ext.activate();
 	try {
@@ -39,6 +40,7 @@ export const getDocUri = (p: string) => {
 };
 
 export async function setTestContent(content: string): Promise<boolean> {
+	console.log("2");
 	const all = new vscode.Range(
 		doc.positionAt(0),
 		doc.positionAt(doc.getText().length)
