@@ -117,12 +117,6 @@ documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
 });
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	//validateTextDocument(change.document);
-});
-
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
 	let settings = await getDocumentSettings(textDocument.uri);
@@ -220,8 +214,74 @@ connection.onCompletionResolve(
 );
 
 
+// The content of a text document has changed. This event is emitted
+// when the text document first opened or when its content has changed.
+documents.onDidChangeContent(change => {
+	//validateTextDocument(change.document);
+	validateBrackets(change.document);
+});
 
 
+
+
+//import * as vsctm from "vscode-textmate";
+const vsctm = require('vscode-textmate');
+const fs = require('fs');
+
+
+/**
+ * Utility to read a file as a promise
+ */
+function readFile(path : any) : Promise<any> {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, (error : any, data : any) => error ? reject(error) : resolve(data));
+    })
+}
+
+// Create a registry that can create a grammar from a scope name.
+const registry = new vsctm.Registry({
+    loadGrammar: (scopeName : string) => {
+        // if (scopeName === 'string.quoted.double.policyspace') {
+		// 	let cwd = __dirname;
+		// 	return readFile(cwd + '\\..\\..\\syntaxes\\policyspace.tmLanguage.json').then(data => vsctm.parseRawGrammar(data.toString()))
+			
+		// }
+		if (scopeName === 'source.ts') {
+			let cwd = __dirname;
+			return readFile(cwd + '\\..\\..\\syntaxes\\typescript.tmLanguage').then(data => vsctm.parseRawGrammar(data.toString()))
+			
+		}
+        console.log(`Unknown scope name: ${scopeName}`);
+        return null;
+    }
+});
+
+
+async function validateBrackets(textDocument: TextDocument) : Promise<void> {
+	// Load the JavaScript grammar and any other grammars included by it async.
+	registry.loadGrammar('source.ts').then( (grammar : any) => {	
+		const text = [
+			`[idk]`
+		];
+		let ruleStack = vsctm.INITIAL;
+		for (let i = 0; i < text.length; i++) {
+			const line = text[i];
+			if(grammar == null) {break;};
+			const lineTokens = grammar.tokenizeLine(line, ruleStack);
+			console.log(`\nTokenizing line: ${line}`);
+			for (let j = 0; j < lineTokens.tokens.length; j++) {
+				const token = lineTokens.tokens[j];
+				console.log(` - token from ${token.startIndex} to ${token.endIndex} ` +
+				`(${line.substring(token.startIndex, token.endIndex)}) ` +
+				`with scopes ${token.scopes.join(', ')}`
+				);
+			}
+			ruleStack = lineTokens.ruleStack;
+		}
+	});
+
+	validateTextDocument(textDocument);
+}
 
 
 
