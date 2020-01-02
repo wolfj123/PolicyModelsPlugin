@@ -6,7 +6,6 @@
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
-import * as child_process from "child_process";
 //import * as cmd from 'node-cmd';
 
 import {
@@ -80,8 +79,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 	// item is selected
 	const myCommandId = 'policymodel.runModel';
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
-
-		client.sendRequest("Run_Model", "Params for execute").then(data => console.log(data));
+		client.sendRequest("Run_Model", ["Params for execute"]).then(data => console.log(data));
 	}));
 
 	// create a new status bar item that we can now manage

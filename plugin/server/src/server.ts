@@ -61,7 +61,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
-	connection.onRequest("Run_Model", param => runModel());
+	connection.onRequest("Run_Model", param => runModel(param));
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -258,8 +258,9 @@ documents.listen(connection);
 connection.listen();
 
 
-function runModel() : void{
+function runModel(param : string[]) : string{
+	console.log("server is running the model")
 	let cwd = __dirname + "\\..\\..\\";
 	child_process.execSync(`start cmd.exe /K java -jar "${cwd}\\cli\\DataTagsLib.jar"`);
-	console.log("server is running the model")
+	return "execute ends";
 }
