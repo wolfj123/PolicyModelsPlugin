@@ -1,45 +1,36 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { getDocUri, activate } from './helper';
+import * as mocha from 'mocha';
+import { getDocUri, activate, openFileForEditing, sleep, appendTextToEndOfFile  } from './helper';
 
-describe('Should do completion', () => {
-	const docUri = getDocUri('completion.pspace');
+mocha.suite('Extension Test Suite', () => {
 
-	it('Completes code in txt file', async () => {
-		await testCompletion(docUri, new vscode.Position(0, 0), {
-			items: [
-				{ label: 'DecisionGraph', kind: vscode.CompletionItemKind.Text },
-				{ label: 'PolicyModels', kind: vscode.CompletionItemKind.Text },
-				{ label: 'PolicySpace', kind: vscode.CompletionItemKind.Text }
-			]
+	mocha.before(()=>{
+		console.log("1");
+	});
+
+	mocha.beforeEach(()=>{
+		console.log("2");
+	});
+
+	mocha.after(()=>{
+		console.log("3");
+	});
+
+	mocha.afterEach(()=>{
+		console.log("4");
+	});
+
+	describe('Should do completion', () => {
+		const docUri = getDocUri('completion.pspace');
+
+		it('Completes code in txt file', async () => {
+			vscode.window.showInformationMessage('3');
+			var editor = await openFileForEditing('diagnostics.pspace');
+			await appendTextToEndOfFile(editor,'<*');
+			sleep(1000);
+			
+			assert.equal(1,0);
 		});
 	});
 });
-
-async function testCompletion(
-	docUri: vscode.Uri,
-	position: vscode.Position,
-	expectedCompletionList: vscode.CompletionList
-) {
-	await activate(docUri);
-
-	// Executing the command `vscode.executeCompletionItemProvider` to simulate triggering completion
-	const actualCompletionList = (await vscode.commands.executeCommand(
-		'vscode.executeCompletionItemProvider',
-		docUri,
-		position
-	)) as vscode.CompletionList;
-	//assert.equal(true, false);
-	console.log("3");
-	assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
-	expectedCompletionList.items.forEach((expectedItem, i) => {
-		const actualItem = actualCompletionList.items[i];
-		assert.equal(actualItem.label, expectedItem.label);
-		assert.equal(actualItem.kind, expectedItem.kind);
-	});
-}

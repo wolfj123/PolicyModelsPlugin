@@ -16,8 +16,7 @@ export let platformEol: string;
  */
 export async function activate(docUri: vscode.Uri) {
 	// The extensionId is `publisher.name` from package.json
-	console.log("1");
-	const ext = vscode.extensions.getExtension('vscode-samples.lsp-sample')!;
+	const ext = vscode.extensions.getExtension('policymodels-lsp.policymodels-lsp')!;
 	await ext.activate();
 	try {
 		doc = await vscode.workspace.openTextDocument(docUri);
@@ -28,7 +27,26 @@ export async function activate(docUri: vscode.Uri) {
 	}
 }
 
-async function sleep(ms: number) {
+export async function openFileForEditing(docPath : string) : Promise<vscode.TextEditor>{
+	try {
+		const docUri = getDocUri(docPath);
+		doc = await vscode.workspace.openTextDocument(docUri);
+		editor = await vscode.window.showTextDocument(doc);
+		await sleep(2000); // Wait for server activation
+		return editor;
+	} catch (e) {
+		console.error(e);
+	}
+}
+
+export async function appendTextToEndOfFile (editor : vscode.TextEditor, txt: string){
+	let lineCount:number = editor.document.lineCount;
+	await editor.edit(e=>{
+		e.insert(new vscode.Position((lineCount),0),"\n"+txt);
+	});
+}
+
+export async function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -40,7 +58,6 @@ export const getDocUri = (p: string) => {
 };
 
 export async function setTestContent(content: string): Promise<boolean> {
-	console.log("2");
 	const all = new vscode.Range(
 		doc.positionAt(0),
 		doc.positionAt(doc.getText().length)
