@@ -17,7 +17,12 @@
 		"vscode": "^1.41.0"
 	},
 	"activationEvents": [
-		"onLanguage:policyspace"
+		"onLanguage:policyspace",
+		"onLanguage:decisionGraph",
+		"onLanguage:policyModelDescription",
+		"onLanguage:localizedModel",
+		"onLanguage:localiztion"
+
 	],
 	"main": "./client/out/extension",
 	"contributes": {
@@ -77,13 +82,13 @@
 				],
 				"firstLine": "<policy-model>",
 				"filenamePatterns": ["policy-model.xml"],
-				"configuration": "./policy-model-xml-file-configuration.json"
+				"configuration": "./policymodel-xml-file-configuration.json"
 			},
 			{
 				"id": "localizedModel",
 				"firstLine": "<localized-model>",
 				"filenamePatterns": ["localized-model.xml"],
-				"configuration": "./policy-model-xml-file-configuration.json"
+				"configuration": "./policymodel-xml-file-configuration.json"
 			},
 			{
 				"id": "localiztion",
