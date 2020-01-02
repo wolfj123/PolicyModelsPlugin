@@ -36,13 +36,14 @@ export async function openFileForEditing(docPath : string) : Promise<vscode.Text
 		return editor;
 	} catch (e) {
 		console.error(e);
+		return undefined;
 	}
 }
 
 export async function appendTextToEndOfFile (editor : vscode.TextEditor, txt: string){
 	let lineCount:number = editor.document.lineCount;
-	await editor.edit(e=>{
-		e.insert(new vscode.Position((lineCount),0),"\n"+txt);
+	return editor.edit(e=>{
+		e.insert(new vscode.Position(lineCount,0),txt);
 	});
 }
 
