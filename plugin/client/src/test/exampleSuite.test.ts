@@ -38,4 +38,15 @@ mocha.suite('Extension Test Suite', () => {
 			assert.equal(newTxt, "ANY browsers, ANY OS.<*");
 		});
 	});
+
+	// describe('open for file', () => {
+	// 	it('open plugin for file', async () => {
+	// 		console.log(
+	// 			(await vscode.commands.getCommands()).filter)
+	// 		vscode.commands.executeCommand('')
+	// 		//var editor = await openFileForEditing("dg-consider_when\\questionnaire.dg");
+	// 		sleep(1000);
+	// 	});
+	// });
+	
 });

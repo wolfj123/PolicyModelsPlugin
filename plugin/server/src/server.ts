@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-
+exports.ariel = "hello";
 import {
 	createConnection,
 	TextDocuments,
@@ -222,6 +222,13 @@ connection.onCompletionResolve(
 		return item;
 	}
 );
+
+
+// export let waste =() => {
+// 	return true;
+// }
+
+
 
 
 
