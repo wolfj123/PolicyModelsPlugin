@@ -96,6 +96,13 @@
 					".md"
 				],
 				"configuration": "./pspace-graph-language-configuration.json"
+			},
+			{
+				"id": "valueInference",
+				"extensions": [
+					".vi"
+				],
+				"configuration": "./pspace-graph-language-configuration.json"
 			}
 		],
 		"grammars": [

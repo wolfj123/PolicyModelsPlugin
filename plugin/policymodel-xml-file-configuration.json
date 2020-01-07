@@ -16,7 +16,8 @@
 		["<space>","</space>"],
 		["<graph>","</graph>"],
 		["<reference>","</reference>"],
-		["<references>","</references>"]
+		["<references>","</references>"],
+		["<valueInferrer>","</valueInferrer>"]
 
     ],
     // symbols that are auto closed when typing
@@ -36,7 +37,8 @@
 		["<space>","</space>"],
 		["<graph>","</graph>"],
 		["<reference>","</reference>"],
-		["<references>","</references>"]
+		["<references>","</references>"],
+		["<valueInferrer>","</valueInferrer>"]
     ],
     // symbols that that can be used to surround a selection
     "surroundingPairs": [
@@ -55,6 +57,7 @@
 		["<space>","</space>"],
 		["<graph>","</graph>"],
 		["<reference>","</reference>"],
-		["<references>","</references>"]
+		["<references>","</references>"],
+		["<valueInferrer>","</valueInferrer>"]
     ]
 }
