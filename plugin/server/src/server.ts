@@ -16,6 +16,7 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams
 } from 'vscode-languageserver';
+import * as child_process from "child_process";
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -46,6 +47,8 @@ connection.onInitialize((params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
 
+
+
 	return {
 		capabilities: {
 			textDocumentSync: documents.syncKind,
@@ -58,6 +61,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+	connection.onRequest("Run_Model", param => runModel(param));
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -252,3 +256,11 @@ documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
+
+
+function runModel(param : string[]) : string{
+	console.log("server is running the model")
+	let cwd = __dirname + "\\..\\..\\";
+	child_process.execSync(`start cmd.exe /K java -jar "${cwd}\\cli\\DataTagsLib.jar"`);
+	return "execute ends";
+}
