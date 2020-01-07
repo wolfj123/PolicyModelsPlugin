@@ -21,7 +21,8 @@
 		"onLanguage:decisionGraph",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
-		"onLanguage:localiztion"
+		"onLanguage:localiztion",
+		"onLanguage:valueInference"
 
 	],
 	"main": "./client/out/extension",
