@@ -1,0 +1,48 @@
+@startuml
+
+package vscode-languageclient #DDDDDD {
+	class LanguageClient
+}
+
+package vscode-languageserver #DDDDDD {
+	class Connection
+}
+
+LanguageClient -right-> Connection : uses
+	class Server
+
+
+	package Data #DDDDDD {
+		class Analyzer
+		class TextCache
+	}
+	
+	package Parser #DDDDDD {
+		class Parser
+		class Tokenizer
+		class TagParser
+		class AST
+	}
+
+
+note "External Library" as n_ext
+n_ext .. Connection
+n_ext .. LanguageClient
+
+
+class Client {}
+
+class Server {}
+
+Client -up-|> LanguageClient
+Server -up-|> Connection
+Parser -- Tokenizer
+Parser -- TagParser
+Parser -- AST : creates
+Server -- Analyzer : holds
+Analyzer -- AST : holds
+Analyzer -- Parser : uses
+Analyzer -- TextCache : creates
+
+
+@enduml
