@@ -1,6 +1,8 @@
-@echo off
+@echo on
 set txt_name=%1
-set name = %~n1
-set image_format = .png
-set image_name=%filename%%image_format%
+set name=%~n1
+set image_format=.png
+set image_name=%name%%image_format%
 java -jar ..\utils\plantuml.jar %txt_name%
+%image_name%
+pause
