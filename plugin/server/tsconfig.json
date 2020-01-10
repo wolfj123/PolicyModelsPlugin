@@ -6,6 +6,7 @@
 		"sourceMap": true,
 		"strict": true,
 		"outDir": "out",
+		"noImplicitAny": false,
 		"rootDir": "src"
 	},
 	"include": ["src"],
