@@ -16,6 +16,8 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams
 } from 'vscode-languageserver';
+import * as vscode from 'vscode';
+
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -225,7 +227,7 @@ documents.onDidChangeContent(change => {
 
 
 //import * as vsctm from "vscode-textmate";
-const vsctm = require('vscode-textmate');
+//const vsctm = require('vscode-textmate');
 const fs = require('fs');
 
 
@@ -238,18 +240,21 @@ function readFile(path : any) : Promise<any> {
     })
 }
 
+
+const vsctm = getCoreNodeModule('vscode-textmate');
+
 // Create a registry that can create a grammar from a scope name.
 const registry = new vsctm.Registry({
     loadGrammar: (scopeName : string) => {
         // if (scopeName === 'string.quoted.double.policyspace') {
 		// 	let cwd = __dirname;
 		// 	return readFile(cwd + '\\..\\..\\syntaxes\\policyspace.tmLanguage.json').then(data => vsctm.parseRawGrammar(data.toString()))
-			
+
 		// }
 		if (scopeName === 'source.ts') {
 			let cwd = __dirname;
-			return readFile(cwd + '\\..\\..\\syntaxes\\typescript.tmLanguage').then(data => vsctm.parseRawGrammar(data.toString()))
-			
+			return readFile(cwd + '/../../syntaxes/typescript.tmLanguage').then(data => vsctm.parseRawGrammar(data.toString()))
+
 		}
         console.log(`Unknown scope name: ${scopeName}`);
         return null;
@@ -257,9 +262,24 @@ const registry = new vsctm.Registry({
 });
 
 
+/**
+ * Returns a node module installed with VSCode, or null if it fails.
+ */
+function getCoreNodeModule(moduleName: string) {
+  // try {
+  //   return require(`${vscode.env.appRoot}/node_modules.asar/${moduleName}`);
+  // } catch (err) { }
+
+  // try {
+  //   return require(`${vscode.env.appRoot}/node_modules/${moduleName}`);
+  // } catch (err) { }
+
+  return null;
+}
+
 async function validateBrackets(textDocument: TextDocument) : Promise<void> {
 	// Load the JavaScript grammar and any other grammars included by it async.
-	registry.loadGrammar('source.ts').then( (grammar : any) => {	
+	registry.loadGrammar('source.ts').then( (grammar : any) => {
 		const text = [
 			`[idk]`
 		];
@@ -281,6 +301,8 @@ async function validateBrackets(textDocument: TextDocument) : Promise<void> {
 	});
 
 	validateTextDocument(textDocument);
+
+
 }
 
 
