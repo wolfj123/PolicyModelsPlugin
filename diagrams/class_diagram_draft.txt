@@ -5,22 +5,50 @@ package vscode-languageclient #DDDDDD {
 }
 
 package vscode-languageserver #DDDDDD {
-	class Connection
+	class Connection {
+
+	}
 }
 
-LanguageClient -right-> Connection : uses
-	class Server
 
+	class Server {
+		onInitialize(handler: RequestHandler<InitializeParams, InitializeResult, InitializeError>): void;
+		onInitialized(handler: NotificationHandler<InitializedParams>): void;
+		onDidOpenTextDocument(handler: NotificationHandler<DidOpenTextDocumentParams>): void;		
+		sendDiagnostics(params: PublishDiagnosticsParams): void;
+		onCompletion(handler: RequestHandler<CompletionParams, CompletionItem[] | CompletionList | undefined | null, void>): void;
+		onCompletionResolve(handler: RequestHandler<CompletionItem, CompletionItem, void>): void;
+		onReferences(handler: RequestHandler<ReferenceParams, Location[] | undefined | null, void>): void;
+		onRenameRequest(handler: RequestHandler<RenameParams, WorkspaceEdit | undefined | null, void>): void;
+		onPrepareRename(handler: RequestHandler<TextDocumentPositionParams, Range | {range: Range; placeholder: string;} | undefined | null, void>): void;
+		onFoldingRanges(handler: RequestHandler<FoldingRangeParams, FoldingRange[] | undefined | null, void>): void;
+		onExecuteCommand(handler: RequestHandler<ExecuteCommandParams, any | undefined | null, void>): void;
+	}
 
-	package Data #DDDDDD {
-		class Analyzer
+	package textAnalysis #DDDDDD {
+		class Analyzer  {
+			getCompletions(prefix : string) : string[]
+			getRange(word : string, type : type) : Range
+			getLocations(word : string, type : type) : Range[]
+			updateCache(TextDocumentContentChangeEvent[]) : void
+		}
+		
 		class TextCache
 	}
 	
-	package Parser #DDDDDD {
-		class Parser
-		class Tokenizer
-		class TagParser
+	package parser #DDDDDD {
+		class Parser {
+			parse(string) : AST
+		}
+
+		class Tokenizer {
+			tokenize(string) : string[]
+		}
+		
+		class Tagger {
+			tag(string[]) : AST
+		}
+		
 		class AST
 	}
 
@@ -30,19 +58,22 @@ n_ext .. Connection
 n_ext .. LanguageClient
 
 
-class Client {}
+class Client {
+	activate(context: ExtensionContext)
+	deactivate(): Thenable<void> | undefined
+}
 
-class Server {}
 
-Client -up-|> LanguageClient
-Server -up-|> Connection
+LanguageClient <-left-> Connection : communicates
+Client -up-|> LanguageClient : extends
+Server -up-|> Connection : extends
+Server -- Analyzer
+Parser -- AST
 Parser -- Tokenizer
-Parser -- TagParser
-Parser -- AST : creates
-Server -- Analyzer : holds
-Analyzer -- AST : holds
-Analyzer -- Parser : uses
-Analyzer -- TextCache : creates
+Parser -- Tagger
+Analyzer --> AST : holds
+Analyzer -left-> Parser : uses
+Analyzer --> TextCache : holds
 
 
 @enduml

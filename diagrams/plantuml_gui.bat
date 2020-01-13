@@ -1,0 +1,1 @@
+java -jar ..\utils\plantuml.jar -gui

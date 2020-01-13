@@ -6,7 +6,6 @@
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
-import * as child_process from "child_process";
 //import * as cmd from 'node-cmd';
 
 import {
@@ -51,15 +50,14 @@ export function activate(context: ExtensionContext) {
 
 	// Create the language client and start the client.
 	client = new LanguageClient(
-		'languageServerExample',
-		'Language Server Example',
+		'PolicyModelsServer',
+		'PolicyModels Server',
 		serverOptions,
 		clientOptions
 	);
 
 
 	addRunCommand(context);
-
 
 	// Start the client. This will also launch the server
 	client.start();
@@ -81,8 +79,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 	// item is selected
 	const myCommandId = 'policymodel.runModel';
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
-		let cwd = __dirname + "\\..\\..\\";
-		child_process.execSync(`start cmd.exe /K java -jar "${cwd}\\cli\\DataTagsLib.jar"`);
+		client.sendRequest("Run_Model", ["Params for execute"]).then(data => console.log(data));
 	}));
 
 	// create a new status bar item that we can now manage
@@ -90,7 +87,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 	myStatusBarItem.command = myCommandId;
 	subscriptions.push(myStatusBarItem);
 
-	// register some listener that make sure the status bar 
+	// register some listener that make sure the status bar
 	// item always up-to-date
 	subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
 	subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));

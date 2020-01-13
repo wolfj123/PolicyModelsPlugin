@@ -1,37 +1,43 @@
 {
-	"name": "lsp-sample",
+	"name": "policymodels-lsp",
 	"description": "A language server example",
-	"author": "Microsoft Corporation",
+	"author": "Jonathan Wolf, Shira Evron, Ofir Bedarshi, Ariel Amsel",
 	"license": "MIT",
 	"version": "1.0.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/wolfj123/PolicyModelsPlugin"
 	},
-	"publisher": "vscode-samples",
-	"categories": [],
+	"publisher": "policymodels-lsp",
+	"categories": ["Other"],
 	"keywords": [
 		"multi-root ready"
 	],
 	"engines": {
-		"vscode": "^1.33.0"
+		"vscode": "^1.41.0"
 	},
 	"activationEvents": [
-		"onLanguage:policyspace"
+		"onLanguage:policyspace",
+		"onLanguage:decisionGraph",
+		"onLanguage:policyModelDescription",
+		"onLanguage:localizedModel",
+		"onLanguage:localiztion",
+		"onLanguage:valueInference"
+
 	],
 	"main": "./client/out/extension",
 	"contributes": {
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "Server configuration",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
+				"PolicyModelsServer.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"languageServerExample.trace.server": {
+				"PolicyModelsServer.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
@@ -54,7 +60,50 @@
 				"extensions": [
 					".pspace"
 				],
-				"configuration": "./pspace-language-configuration.json"
+				"configuration": "./pspace-graph-language-configuration.json"
+			},
+			{
+				"id": "decisionGraph",
+				"aliases": [
+					"decisiongraph",
+					"DecisionGraph"
+				],
+				"extensions": [
+					".dg"
+				],
+				"configuration": "./pspace-graph-language-configuration.json"
+			},
+			{
+				"id":"policyModelDescription",
+				"aliases": [
+					"policymodelDescription",
+					"policyModeldescription",
+					"policyModel Description",
+					"policy model description"
+				],
+				"firstLine": "<policy-model>",
+				"filenamePatterns": ["policy-model.xml"],
+				"configuration": "./policymodel-xml-file-configuration.json"
+			},
+			{
+				"id": "localizedModel",
+				"firstLine": "<localized-model>",
+				"filenamePatterns": ["localized-model.xml"],
+				"configuration": "./policymodel-xml-file-configuration.json"
+			},
+			{
+				"id": "localiztion",
+				"extensions": [
+					".md"
+				],
+				"configuration": "./pspace-graph-language-configuration.json"
+			},
+			{
+				"id": "valueInference",
+				"extensions": [
+					".vi"
+				],
+				"configuration": "./pspace-graph-language-configuration.json"
 			}
 		],
 		"grammars": [
