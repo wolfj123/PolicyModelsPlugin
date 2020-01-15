@@ -14,5 +14,14 @@
 	"dependencies": {
 		"vscode-languageserver": "^5.2.1"
 	},
-	"scripts": {}
+	"scripts": {
+		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.2.7",
+		"@types/mocha": "^5.2.7",
+		"chai": "^4.2.0",
+		"mocha": "^7.0.0",
+		"ts-node": "^8.6.1"
+	}
 }

@@ -18,6 +18,8 @@ import {
 } from 'vscode-languageserver';
 import * as child_process from "child_process";
 
+import * as languagesService from './LanguageService';
+
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
@@ -185,23 +187,9 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
-			{
-				label: 'PolicyModels',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'DecisionGraph',
-				kind: CompletionItemKind.Text,
-				data: 2
-			},
-			{
-				label: 'PolicySpace',
-				kind: CompletionItemKind.Text,
-				data: 3
-			}
-		];
+
+		let initialCompleteItems = languagesService.getInitialCompleteItems();
+		return initialCompleteItems;
 	}
 );
 
