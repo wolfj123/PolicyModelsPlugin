@@ -9,7 +9,9 @@
 		"url": "https://github.com/wolfj123/PolicyModelsPlugin"
 	},
 	"publisher": "policymodels-lsp",
-	"categories": ["Other"],
+	"categories": [
+		"Other"
+	],
 	"keywords": [
 		"multi-root ready"
 	],
@@ -23,7 +25,6 @@
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
 		"onLanguage:valueInference"
-
 	],
 	"main": "./client/out/extension",
 	"contributes": {
@@ -74,7 +75,7 @@
 				"configuration": "./pspace-graph-language-configuration.json"
 			},
 			{
-				"id":"policyModelDescription",
+				"id": "policyModelDescription",
 				"aliases": [
 					"policymodelDescription",
 					"policyModeldescription",
@@ -82,13 +83,17 @@
 					"policy model description"
 				],
 				"firstLine": "<policy-model>",
-				"filenamePatterns": ["policy-model.xml"],
+				"filenamePatterns": [
+					"policy-model.xml"
+				],
 				"configuration": "./policymodel-xml-file-configuration.json"
 			},
 			{
 				"id": "localizedModel",
 				"firstLine": "<localized-model>",
-				"filenamePatterns": ["localized-model.xml"],
+				"filenamePatterns": [
+					"localized-model.xml"
+				],
 				"configuration": "./policymodel-xml-file-configuration.json"
 			},
 			{
