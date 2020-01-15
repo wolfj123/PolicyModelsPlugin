@@ -1,0 +1,25 @@
+Policy space language:
+
+<policy_space> 		::= <slot>+ 
+
+<slot> 						::= <identifier> [description] ":" 
+									(<atomic_values> | 
+									<aggregate_values> | 
+									<compound_values> | 
+									<todo_value>)
+									
+<description> 			::= "["  (<letter> | <digit> | <punctuation>)* "]"
+
+<identifier> 				::= <letter> (<letter> | <digit>)*
+	
+<punctuation> 			::=  "." | ","  | "\"" | "\'" | "(" | ")"
+
+<letter> 					::= "a" | "b" | ... | "z" | "A" | ... | "Z"
+
+<digit> 					::= "0" | "1" | "2" | ... | "9"
+
+<atomic_values> 		::= "one of" <identifier> [<description>] ("," <identifier> [<description>])*
+
+<aggregate_values> 	::= "some of" <identifier> [<description>] ("," <identifier> [<description>])*
+
+<compound_values> ::= "consists of" <identifier> ("," <identifier> [<description>])*
