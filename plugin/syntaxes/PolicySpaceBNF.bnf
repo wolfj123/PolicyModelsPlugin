@@ -1,6 +1,6 @@
 POLICY SPACE BNF
 
-<policy_space> 			::= <slot>
+<policy_space> 			::= <slot>*
 
 <slot> 					::= <identifier> [description] ":" 
 									(<atomic_values> | 
@@ -30,7 +30,7 @@ POLICY SPACE BNF
 
 
 
-COMMENTS
+#COMMENTS
 
 <line_comment>			::= "<--" 
 
