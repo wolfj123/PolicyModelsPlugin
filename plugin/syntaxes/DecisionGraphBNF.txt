@@ -1,0 +1,19 @@
+Policy space language:
+
+<decision_graph> 		::= <slot>+ 
+
+<node> 					::= "[" [<node_id>] <node_head> [":" <node_body>]  "]"
+
+<node_body> 			::= 
+
+<free_text>				::=  (<letter> <digit>  .,/~?!()@:#$%^&*_+-  )+
+
+<node_id> 				::= <letter> (<letter> <digit>  .,/~?!()@:#$%^&*_+-  )*	
+
+<letter> 					::= "a" | "b" | ... | "z" | "A" | ... | "Z"
+
+<digit> 					::= "0" | "1" | "2" | ... | "9"
+
+
+
+
