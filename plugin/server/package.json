@@ -12,7 +12,13 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"dependencies": {
-		"vscode-languageserver": "^5.2.1"
+		"vscode-languageserver": "^5.2.1",
+		"vscode-textmate": "^4.4.0"
 	},
-	"scripts": {}
+	"devDependencies": {
+		"electron-rebuild": "^1.8.8"
+	},
+	"scripts": {
+		"postinstall": "electron-rebuild --version 6"
+	}
 }

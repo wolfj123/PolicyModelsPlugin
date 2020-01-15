@@ -121,12 +121,6 @@ documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
 });
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	//validateTextDocument(change.document);
-});
-
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
 	let settings = await getDocumentSettings(textDocument.uri);
@@ -224,10 +218,14 @@ connection.onCompletionResolve(
 );
 
 
+ import {runme} from './textmate_playing_around';
 
-
-
-
+// The content of a text document has changed. This event is emitted
+// when the text document first opened or when its content has changed.
+documents.onDidChangeContent(change => {
+	//validateTextDocument(change.document);
+	//runme();  //jonathan: I added this just to play around with textmate and see the print
+});
 
 
 /*
@@ -260,7 +258,7 @@ connection.listen();
 
 function runModel(param : string[]) : string{
 	console.log("server is running the model")
-	let cwd = __dirname + "\\..\\..\\";
-	child_process.execSync(`start cmd.exe /K java -jar "${cwd}\\cli\\DataTagsLib.jar"`);
+	let cwd = __dirname + "/../../";
+	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
 	return "execute ends";
 }
