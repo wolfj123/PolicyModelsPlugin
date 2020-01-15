@@ -224,7 +224,7 @@ connection.onCompletionResolve(
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
 	//validateTextDocument(change.document);
-	runme();  //jonathan: I added this just to play around with textmate and see the print
+	//runme();  //jonathan: I added this just to play around with textmate and see the print
 });
 
 
