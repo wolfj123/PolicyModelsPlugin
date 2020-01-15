@@ -17,13 +17,17 @@ function readFile(path) {
 }
 
 export function runme() {
-    // Create a registry that can create a grammar from a scope name.
+	// Create a registry that can create a grammar from a scope name.
+	
     const registry = new vsctm.Registry({
         loadGrammar: (scopeName) => {
             if (scopeName === 'source.js') {
-				let cwd = __dirname + "/../../";
-				//let grammarPath = path.resolve(__dirname, '../../', 'syntaxes/Javascript.tmLanguage.json.txt');
-				let grammarPath = path.resolve(__dirname, '../../', 'syntaxes/Javascript.plist');
+				//let cwd = __dirname + "/../../";
+				let grammarPath = path.resolve(__dirname, '../../', 'syntaxes/Javascript.tmLanguage.json');
+				//let grammarPath = path.resolve(__dirname, '../../', 'syntaxes/Javascript.plist');
+				// if (grammarPath !== null && /\.json$/.test(grammarPath)) {
+				// 	console.log(`THIS IS A GODDMAN JSON`);
+				// }
 				return Promise.resolve(vsctm.parseRawGrammar(fs.readFileSync(grammarPath).toString(), grammarPath))
 				
             }
