@@ -1,12 +1,24 @@
 POLICY SPACE BNF
 
+# TODO
+# not sure what to do with the comments and whitespaces
+
+
 <policy_space> 			::= <slot>*
 
 <slot> 					::= <identifier> [description] ":" 
 									(<atomic_values> | 
 									<aggregate_values> | 
 									<compound_values> | 
-									<todo_value>)
+									<todo_value>) "."
+
+<atomic_values> 		::= "one of" <identifier> [<description>] ("," <identifier> [<description>])*
+
+<aggregate_values> 		::= "some of" <identifier> [<description>] ("," <identifier> [<description>])*
+
+<compound_values> 		::= "consists of" <identifier> ("," <identifier> [<description>])*
+
+<todo_value>			::= "TODO"
 									
 <description> 			::= "[" (<free_text> | <newline>)* "]"
 
@@ -20,14 +32,9 @@ POLICY SPACE BNF
 
 <newline> 				::= "\\n"
 
-<atomic_values> 		::= "one of" <identifier> [<description>] ("," <identifier> [<description>])*
+<whitespaces>					::= <whitespace>*
 
-<aggregate_values> 		::= "some of" <identifier> [<description>] ("," <identifier> [<description>])*
-
-<compound_values> 		::= "consists of" <identifier> ("," <identifier> [<description>])*
-
-<todo_value>			::= "TODO."
-
+<whitespace>					::= " " | "\\n"
 
 
 #COMMENTS
