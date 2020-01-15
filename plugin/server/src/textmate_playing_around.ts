@@ -24,7 +24,8 @@ export function runme() {
             if (scopeName === 'source.ts') {
                 let cwd = __dirname + "/../../";
                 // https://github.com/textmate/javascript.tmbundle/blob/master/Syntaxes/JavaScript.plist
-                return readFile(cwd + './syntaxes/Javascript.plist').then(data => vsctm.parseRawGrammar(data.toString()))
+				return readFile(cwd + './syntaxes/Javascript.plist').then(data => vsctm.parseRawGrammar(data.toString()))
+				//return readFile(cwd + './syntaxes/Javascript.tmLanguage.json').then(data => vsctm.parseRawGrammar(data.toString()))
             }
             console.log(`Unknown scope name: ${scopeName}`);
             return null;
