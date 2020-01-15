@@ -15,10 +15,16 @@
 		"vscode-languageserver": "^5.2.1",
 		"vscode-textmate": "^4.4.0"
 	},
-	"devDependencies": {
-		"electron-rebuild": "^1.8.8"
-	},
 	"scripts": {
+		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts",
 		"postinstall": "electron-rebuild --version 6"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.2.7",
+		"@types/mocha": "^5.2.7",
+		"chai": "^4.2.0",
+		"mocha": "^7.0.0",
+		"ts-node": "^8.6.1",
+		"electron-rebuild": "^1.8.8"
 	}
 }
