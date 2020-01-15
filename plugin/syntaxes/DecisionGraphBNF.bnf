@@ -1,8 +1,8 @@
 DECISION GRAPH BNF
 
-<decision_graph> 				::= <node>*
+<decision_graph> 				::= <top_level_node>*
 
-<node> 							::= "[" [<node_id>] TODO "]"
+<node> 							::= <top_level_node> | <sub_level_node>
 
 #https://github.com/IQSS/DataTaggingLibrary/blob/develop/src/main/java/edu/harvard/iq/policymodels/parser/decisiongraph/DecisionGraphRuleParser.java#L205
 <top_level_node>				::= <ask_node> 
@@ -15,7 +15,8 @@ DECISION GRAPH BNF
 									| <part_node>
 									| <consider_node>
 									| <when_node>
-									| <import_node>
+									| <import_node> 
+									
 
 #https://github.com/IQSS/DataTaggingLibrary/blob/develop/src/main/java/edu/harvard/iq/policymodels/parser/decisiongraph/DecisionGraphRuleParser.java#L44
 <sub_level_node>				::= <text_sub_node>
@@ -85,6 +86,9 @@ DECISION GRAPH BNF
 <aggregate_assignment_slot>
 
 
+#https://datatagginglibrary.readthedocs.io/en/latest/decision-graphs/import-node.html
+<import_node> 
+
 
 #https://datatagginglibrary.readthedocs.io/en/latest/decision-graphs/todo-node.html
 <todo_node>
@@ -97,8 +101,6 @@ DECISION GRAPH BNF
 <letter> 						::= "a" | "b" | ... | "z" | "A" | ... | "Z"
 
 <digit> 						::= "0" | "1" | "2" | ... | "9"
-
-
 
 
 
