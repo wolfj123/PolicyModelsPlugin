@@ -19,6 +19,6 @@
 		"electron-rebuild": "^1.8.8"
 	},
 	"scripts": {
-		"postinstall": "electron-rebuild --version 6 -w oniguruma"
+		"postinstall": "electron-rebuild --version 6"
 	}
 }
