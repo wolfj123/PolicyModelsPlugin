@@ -20,16 +20,11 @@ export function runme() {
     // Create a registry that can create a grammar from a scope name.
     const registry = new vsctm.Registry({
         loadGrammar: (scopeName) => {
-            if (scopeName === 'source.ts') {
+            if (scopeName === 'source.js') {
 				let cwd = __dirname + "/../../";
 				//let grammarPath = path.resolve(__dirname, '../../', 'syntaxes/Javascript.tmLanguage.json.txt');
 				let grammarPath = path.resolve(__dirname, '../../', 'syntaxes/Javascript.plist');
-				
-                // https://github.com/textmate/javascript.tmbundle/blob/master/Syntaxes/JavaScript.plist
-				//return readFile(cwd + './syntaxes/Javascript.plist').then(data => vsctm.parseRawGrammar(data.toString()))  //working
-				//return readFile(cwd + './syntaxes/Javascript.tmLanguage.json').then(data => vsctm.parseRawGrammar(data.toString()))  //not working
-				//return readFile(cwd + './syntaxes/Javascript.tmLanguage.json.txt').then(data => vsctm.parseRawGrammar(data.toString())) //not working
-				return Promise.resolve(vsctm.parseRawGrammar(fs.readFileSync(grammarPath).toString(), grammarPath)) //not working
+				return Promise.resolve(vsctm.parseRawGrammar(fs.readFileSync(grammarPath).toString(), grammarPath))
 				
             }
             console.log(`Unknown scope name: ${scopeName}`);
@@ -40,7 +35,7 @@ export function runme() {
 	//const onigurumaRegistry = new Registry({ loadGrammar, getOnigLib: () => onigLibs.getOniguruma()});
 
     // Load the JavaScript grammar and any other grammars included by it async.
-    registry.loadGrammar('source.ts').then(grammar => {
+    registry.loadGrammar('source.js').then(grammar => {
         const text = [
             `function sayHello(name) {`,
             `\treturn "Hello, " + name;`,
