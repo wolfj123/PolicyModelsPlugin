@@ -10,8 +10,7 @@ DECISION GRAPH BNF
 
 
 #https://github.com/IQSS/DataTaggingLibrary/blob/develop/src/main/java/edu/harvard/iq/policymodels/parser/decisiongraph/DecisionGraphRuleParser.java#L205
-<top_level_node>				::= [<node_id>] 
-									(<ask_node> 
+<top_level_node>				::= <ask_node> 
 									| <continue_node> 
 									| <todo_node> 
 									| <call_node> 
@@ -21,7 +20,7 @@ DECISION GRAPH BNF
 									| <part_node>
 									| <consider_node>
 									| <when_node>
-									| <import_node>) 
+									| <import_node>
 									
 								
 
