@@ -3,7 +3,7 @@ POLICY SPACE BNF
 # TODO
 # not sure what to do with the comments and whitespaces
 
-
+#https://datatagginglibrary.readthedocs.io/en/latest/tag-spaces/index.html
 <policy_space> 			::= <slot>*
 
 <slot> 					::= <identifier> [description] ":" 
@@ -12,12 +12,16 @@ POLICY SPACE BNF
 									<compound_values> | 
 									<todo_value>) "."
 
+#https://datatagginglibrary.readthedocs.io/en/latest/tag-spaces/atomic-slot.html
 <atomic_values> 		::= "one" "of" <identifier> ("," (<identifier>)*
 
+#https://datatagginglibrary.readthedocs.io/en/latest/tag-spaces/aggregate-slot.html
 <aggregate_values> 		::= "some" "of" <identifier> ("," (<identifier>)*
 
+#https://datatagginglibrary.readthedocs.io/en/latest/tag-spaces/compound-slot.html
 <compound_values> 		::= "consists" "of" <identifier_simple> ("," <identifier_simple>)*
 
+#https://datatagginglibrary.readthedocs.io/en/latest/tag-spaces/todo-slot.html
 <todo_value>			::= "TODO" | "todo"
 									
 <description> 			::= "[" (<free_text> | <newline>)* "]"

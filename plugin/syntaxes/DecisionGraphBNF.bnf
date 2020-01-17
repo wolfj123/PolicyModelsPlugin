@@ -5,7 +5,7 @@ DECISION GRAPH BNF
 # import node path formats are unclear right now
 # not sure if multi line free text in nodes is allowed. assuming yes
 
-
+#https://datatagginglibrary.readthedocs.io/en/latest/decision-graphs/index.html
 <decision_graph> 				::= <top_level_node>*
 
 
