@@ -12,17 +12,21 @@ POLICY SPACE BNF
 									<compound_values> | 
 									<todo_value>) "."
 
-<atomic_values> 		::= "one of" <identifier> [<description>] ("," <identifier> [<description>])*
+<atomic_values> 		::= "one" "of" <identifier> ("," (<identifier>)*
 
-<aggregate_values> 		::= "some of" <identifier> [<description>] ("," <identifier> [<description>])*
+<aggregate_values> 		::= "some" "of" <identifier> ("," (<identifier>)*
 
-<compound_values> 		::= "consists of" <identifier> ("," <identifier> [<description>])*
+<compound_values> 		::= "consists" "of" <identifier_simple> ("," <identifier_simple>)*
 
-<todo_value>			::= "TODO"
+<todo_value>			::= "TODO" | "todo"
 									
 <description> 			::= "[" (<free_text> | <newline>)* "]"
 
-<identifier> 			::= <letter> (<letter> | <digit>)*
+<identifier>			::= <identifier_simple> | <identifier_with_desc>
+
+<identifier_with_desc> 	::= <identifier_simple> <description>
+
+<identifier_simple> 	::= <letter> (<letter> | <digit>)*
 	
 <free_text>				::=  (<letter> | <digit> | ".,/~?!()@:#$%^&*_+-")+
 
