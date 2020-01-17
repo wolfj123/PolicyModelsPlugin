@@ -182,8 +182,7 @@ connection.onCompletion(
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
 
-		let initialCompleteItems = languagesService.getInitialCompleteItems();
-		return initialCompleteItems;
+		return  languagesService.getInitialCompleteItems();
 	}
 );
 
@@ -191,17 +190,7 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'PolicyModels details';
-			item.documentation = 'PolicyModels documentation';
-		} else if (item.data === 2) {
-			item.detail = 'DecisionGraph details';
-			item.documentation = 'DecisionGraph documentation';
-		} else if (item.data === 3) {
-			item.detail = 'PolicySpace details';
-			item.documentation = 'PolicySpace documentation';
-		}
-		return item;
+		return  languagesService.getCompleteItemsAdditionalInformation(item);
 	}
 );
 

@@ -1,6 +1,6 @@
-import {CompletionItemKind} from 'vscode-languageserver'
+import {CompletionItemKind , CompletionItem} from 'vscode-languageserver'
 
-export function getInitialCompleteItems(): {label: string, kind: CompletionItemKind, data: number}[] {
+export function getInitialCompleteItems(): CompletionItem[] {
    	return [
     {
       label: 'PolicyModels',
@@ -19,3 +19,17 @@ export function getInitialCompleteItems(): {label: string, kind: CompletionItemK
     }
   ];
 }
+
+export function getCompleteItemsAdditionalInformation(item: CompletionItem) :CompletionItem {
+  if (item.data === 1) {
+    item.detail = 'PolicyModels details';
+    item.documentation = 'PolicyModels documentation';
+  } else if (item.data === 2) {
+    item.detail = 'DecisionGraph details';
+    item.documentation = 'DecisionGraph documentation';
+  } else if (item.data === 3) {
+    item.detail = 'PolicySpace details';
+    item.documentation = 'PolicySpace documentation';
+  }
+  return item;
+ }

@@ -124,12 +124,15 @@
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
+		"test-server": "cd ./server && npm test && cd ../",
+		"test": "npm run test-server && sh ./scripts/e2e.sh "
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.11.7",
 		"tslint": "^5.16.0",
 		"typescript": "^3.6.4"
+	},
+	"dependencies": {
 	}
 }
