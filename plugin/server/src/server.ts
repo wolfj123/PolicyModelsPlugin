@@ -195,7 +195,7 @@ connection.onCompletionResolve(
 );
 
 
- import {runme} from './textmate_playing_around';
+ //import {runme} from './textmate_playing_around';
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
