@@ -1,13 +1,13 @@
 {
-	"name": "lsp-sample-client",
-	"description": "VSCode part of a language server",
-	"author": "Microsoft Corporation",
+	"name": "policymodels-lsp-client",
+	"description": "PolicyModels LSP Client",
+	"author": "wolfj123, ofirbed, arielAmselBGU, shiraev",
 	"license": "MIT",
 	"version": "0.0.1",
-	"publisher": "vscode",
+	"publisher": "wolfj123, ofirbed, arielAmselBGU, shiraev",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/wolfj123/PolicyModelsPlugin/tree/master/plugin/server"
 	},
 	"engines": {
 		"vscode": "*"
@@ -17,9 +17,18 @@
 		"postinstall": "vscode-install"
 	},
 	"dependencies": {
+		"jsonc-parser": "^2.2.1",
+		"tar": "^6.0.1",
+		"web-tree-sitter": "^0.16.2",
 		"vscode-languageclient": "^6.1.1"
 	},
 	"devDependencies": {
+		"@types/node": "^8.10.59",
+		"tree-sitter-decisiongraph": "0.0.5",
+		"tree-sitter-policyspace": "^0.0.3",
+		"tslint": "^6.1.0",
+		"typescript": "^3.8.3",
+		"vsce": "^1.74.0",
 		"vscode": "*"
 	}
 }
