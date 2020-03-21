@@ -13,16 +13,18 @@ import {
 		FoldingRange,
 		FoldingRangeKind,
 		WorkspaceEdit,
-		TextDocumentEdit
+		TextDocumentEdit,
+		CompletionList,
+		CompletionItemKind
 	} from 'vscode-languageserver';
 
 import { TextEdit } from 'vscode-languageserver-textdocument';
 
 declare type wordBasedParams = ReferenceParams | DeclarationParams | RenameParams;
-declare type allParamsTypes = wordBasedParams | TextDocumentPositionParams | FoldingRangeParams;
+declare type allParamsTypes = wordBasedParams | TextDocumentPositionParams | FoldingRangeParams | TextDocumentPositionParams| CompletionItem;
 
 declare type wordBasedSolutions = Location [] | LocationLink []| WorkspaceEdit;
-declare type allSolutionsTypes = wordBasedSolutions | CompletionItem [] | FoldingRange [];
+declare type allSolutionsTypes = wordBasedSolutions | CompletionList | FoldingRange [] | CompletionItem;
 
 declare type wordSpecificSolver = (word: string, params:wordBasedParams) => wordBasedSolutions;
 declare type wordGeneralSolverType = (params: allParamsTypes, funcName: string) => allSolutionsTypes;
@@ -135,6 +137,52 @@ function solveOnFoldingRange(_params: allParamsTypes) : FoldingRange[]{
 
 }
 
+function solveOnCompletion (_params: allParamsTypes): CompletionList {
+	let params: TextDocumentPositionParams = _params as TextDocumentPositionParams;
+
+	// TODO Implement shira
+	let compItmes:CompletionItem[] = [
+		{
+		  label: 'PolicyModels',
+		  kind: CompletionItemKind.Text,
+		  data: 1
+		},
+		{
+		  label: 'DecisionGraph',
+		  kind: CompletionItemKind.Text,
+		  data: 2
+		},
+		{
+		  label: 'PolicySpace',
+		  kind: CompletionItemKind.Text,
+		  data: 3
+		}
+	  ];
+
+	return {
+		isIncomplete: false,
+		items: compItmes
+	};
+}
+
+function onCompletionResolve (_params: allParamsTypes) : CompletionItem {
+	let params: CompletionItem = _params as CompletionItem;
+
+	// TODO Implement shira
+	let item = params;
+	if (item.data === 1) {
+		item.detail = 'PolicyModels details';
+		item.documentation = 'PolicyModels documentation';
+	  } else if (item.data === 2) {
+		item.detail = 'DecisionGraph details';
+		item.documentation = 'DecisionGraph documentation';
+	  } else if (item.data === 3) {
+		item.detail = 'PolicySpace details';
+		item.documentation = 'PolicySpace documentation';
+	  }
+	  return item;
+
+}
 
 export function updateDoc (change: TextDocumentChangeEvent<TextDocument>){
 	currDoc = new currnetFileState(change.document.uri, change.document.getText())
@@ -145,12 +193,15 @@ export function solve(params:allParamsTypes , funcName: string): allSolutionsTyp
 	let allSolvers: {[id: string]: generalSolverType} =
 	
 	{
-		"onReferences":wordBasedGeneralSolver,
-		"onDefinition": wordBasedGeneralSolver,
+		'onReferences':wordBasedGeneralSolver,
+		'onDefinition': wordBasedGeneralSolver,
 		'onRenameRequest': wordBasedGeneralSolver,
 		'onFoldingRanges': solveOnFoldingRange,
+		'onCompletion': solveOnCompletion,
+		'onCompletionResolve': onCompletionResolve,
 
 		default:
+			//TODO amsel add error
 			(a,b)=>{
 				console.error("aa");
 				return null;

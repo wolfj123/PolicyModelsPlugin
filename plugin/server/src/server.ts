@@ -28,7 +28,8 @@ import {
 	PrepareRenameParams,
 	WorkspaceEdit,
 	RenameParams,
-	TextDocumentEdit
+	TextDocumentEdit,
+	CompletionList
 } from 'vscode-languageserver';
 import * as child_process from "child_process";
 
@@ -198,12 +199,13 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+	(params: TextDocumentPositionParams): CompletionList => {
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-
-		return  languagesService.getInitialCompleteItems();
+		//return  languagesService.getInitialCompleteItems();
+		
+		return debugAnalyzer.solve(params,"onCompletion") as CompletionList;
 	}
 );
 
@@ -211,7 +213,9 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		return  languagesService.getCompleteItemsAdditionalInformation(item);
+		//return  languagesService.getCompleteItemsAdditionalInformation(item);
+
+		return debugAnalyzer.solve(item,"onCompletionResolve") as CompletionItem;
 	}
 );
 
