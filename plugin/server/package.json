@@ -12,7 +12,8 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"dependencies": {
-		"vscode-languageserver": "^5.2.1",
+		"vscode-languageserver": "^6.1.1",
+		"vscode-languageserver-textdocument": "*",
 		"vscode-textmate": "^4.4.0"
 	},
 	"scripts": {
@@ -20,11 +21,11 @@
 		"postinstall": "electron-rebuild --version 6"
 	},
 	"devDependencies": {
-		"@types/chai": "^4.2.7",
+		"@types/chai": "^4.2.11",
 		"@types/mocha": "^5.2.7",
 		"chai": "^4.2.0",
-		"mocha": "^7.0.0",
-		"ts-node": "^8.6.1",
-		"electron-rebuild": "^1.8.8"
+		"electron-rebuild": "^1.10.1",
+		"mocha": "^7.1.1",
+		"ts-node": "^8.6.1"
 	}
 }
