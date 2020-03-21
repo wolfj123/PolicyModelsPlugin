@@ -73,7 +73,8 @@ connection.onInitialize((params: InitializeParams) => {
 			},
 			definitionProvider: true,
 			foldingRangeProvider: true,
-			referencesProvider: true
+			referencesProvider: true,
+			RenameClientCapabilities: true,
 		}
 	};
 });
@@ -212,20 +213,7 @@ connection.onCompletionResolve(
 
 connection.onDefinition(
 	(params: DeclarationParams) : LocationLink[] => {
-		let uriAns:string = params.textDocument.uri;
-		let pos1: Position = Position.create(1,0);
-		let pos2: Position = Position.create(2,20);
-		let pos3: Position = Position.create(2,3);
-		let pos4: Position = Position.create(2,4);
-		
-		return [
-			{
-				originSelectionRange:  {start: params.position, end: params.position},
-				targetUri: uriAns,
-				targetRange: {start: pos1, end: pos2},
-				targetSelectionRange: {start: pos3, end: pos4}
-			}
-		];
+		return debugAnalyzer.solve(params,"onDefinition") as LocationLink[];
 	}
 );
 
