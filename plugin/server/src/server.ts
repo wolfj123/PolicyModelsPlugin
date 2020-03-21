@@ -15,11 +15,22 @@ import {
 	DidChangeConfigurationNotification,
 	CompletionItem,
 	CompletionItemKind,
-	TextDocumentPositionParams
+	TextDocumentPositionParams,
+	LocationLink,
+	DeclarationParams,
+	DefinitionLink,
+	Position,
+	FoldingRangeParams,
+	FoldingRange,
+	FoldingRangeKind,
+	ReferenceParams,
+	Location
 } from 'vscode-languageserver';
 import * as child_process from "child_process";
 
 import * as languagesService from './LanguageService';
+
+import * as debugAnalyzer from './DebugAnalyzer';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -54,12 +65,15 @@ connection.onInitialize((params: InitializeParams) => {
 
 	return {
 		capabilities: {
-			//TODO : fix this
+			//TODO : add all capabilites
 			//textDocumentSync: documents.syncKind,
 			// Tell the client that the server supports code completion
 			completionProvider: {
 				resolveProvider: true
-			}
+			},
+			definitionProvider: true,
+			foldingRangeProvider: true,
+			referencesProvider: true
 		}
 	};
 });
@@ -196,6 +210,38 @@ connection.onCompletionResolve(
 	}
 );
 
+connection.onDefinition(
+	(params: DeclarationParams) : LocationLink[] => {
+		let uriAns:string = params.textDocument.uri;
+		let pos1: Position = Position.create(1,0);
+		let pos2: Position = Position.create(2,20);
+		let pos3: Position = Position.create(2,3);
+		let pos4: Position = Position.create(2,4);
+		
+		return [
+			{
+				originSelectionRange:  {start: params.position, end: params.position},
+				targetUri: uriAns,
+				targetRange: {start: pos1, end: pos2},
+				targetSelectionRange: {start: pos3, end: pos4}
+			}
+		];
+	}
+);
+
+connection.onFoldingRanges(
+	(params: FoldingRangeParams) : FoldingRange[] => {
+		return debugAnalyzer.solve(params,"onFoldingRanges") as FoldingRange[];
+	}
+);
+
+connection.onReferences(
+	(params: ReferenceParams): Location[] => {
+		return debugAnalyzer.solve(params,"onReferences") as Location[];
+		//return wordBasedCalc.wordBasedCalc(params,wordBasedCalc.findAllRefernces);
+		//return debugAnalyzer.x["onReferences"].calc() as Location [];
+	}
+);
 
  //import {runme} from './textmate_playing_around';
 
@@ -204,10 +250,12 @@ connection.onCompletionResolve(
 documents.onDidChangeContent(change => {
 	//validateTextDocument(change.document);
 	//runme();  //jonathan: I added this just to play around with textmate and see the print
+	//debugAnalyzer.updateDoc(change);
+	console.log(change);
 });
 
 
-/*
+
 connection.onDidOpenTextDocument((params) => {
 	// A text document got opened in VSCode.
 	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
@@ -225,7 +273,6 @@ connection.onDidCloseTextDocument((params) => {
 	// params.textDocument.uri uniquely identifies the document.
 	connection.console.log(`${params.textDocument.uri} closed.`);
 });
-*/
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
