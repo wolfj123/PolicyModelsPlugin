@@ -12,6 +12,9 @@
 		"url": "https://github.com/wolfj123/PolicyModelsPlugin/tree/master/plugin/server"
 	},
 	"dependencies": {
+		"tree-sitter": "^0.16.0",
+		"tree-sitter-policyspace": "*",
+		"tree-sitter-decisiongraph": "*",
 		"vscode-languageserver": "^6.1.1",
 		"vscode-languageserver-textdocument": "*"
 	},
