@@ -1,9 +1,9 @@
 {
 	"name": "policymodels-lsp",
 	"description": "A language server example",
-	"author": "Jonathan Wolf, Shira Evron, Ofir Bedarshi, Ariel Amsel",
+	"author": "wolfj123, ofirbed, arielAmselBGU, shiraev",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wolfj123/PolicyModelsPlugin"
@@ -20,7 +20,6 @@
 	},
 	"activationEvents": [
 		"onLanguage:policyspace",
-		"onLanguage:decisionGraph",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
@@ -51,6 +50,13 @@
 				}
 			}
 		},
+		"grammars": [
+			{
+				"language": "policyspace",
+				"scopeName": "source.pspace",
+				"path": "./client/textmate/policyspace.tmLanguage.json"
+			}
+		],
 		"languages": [
 			{
 				"id": "policyspace",
@@ -61,18 +67,7 @@
 				"extensions": [
 					".pspace"
 				],
-				"configuration": "./pspace-graph-language-configuration.json"
-			},
-			{
-				"id": "decisionGraph",
-				"aliases": [
-					"decisiongraph",
-					"DecisionGraph"
-				],
-				"extensions": [
-					".dg"
-				],
-				"configuration": "./pspace-graph-language-configuration.json"
+				"configuration": "./client/pspace-graph-language-configuration.json"
 			},
 			{
 				"id": "policyModelDescription",
@@ -110,13 +105,6 @@
 				],
 				"configuration": "./pspace-graph-language-configuration.json"
 			}
-		],
-		"grammars": [
-			{
-				"language": "policyspace",
-				"scopeName": "source.pspace",
-				"path": "./syntaxes/policyspace.tmLanguage.json"
-			}
 		]
 	},
 	"scripts": {
@@ -129,9 +117,9 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.7",
-		"@types/node": "^12.11.7",
-		"tslint": "^5.16.0",
-		"typescript": "^3.6.4"
+		"@types/node": "^12.12.30",
+		"tslint": "^5.20.1",
+		"typescript": "^3.8.3"
 	},
 	"dependencies": {}
 }
