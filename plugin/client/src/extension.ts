@@ -6,7 +6,6 @@
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
-//import * as cmd from 'node-cmd';
 
 import {
 	LanguageClient,
