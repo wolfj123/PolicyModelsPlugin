@@ -1,9 +1,9 @@
 {
 	"name": "policymodels-lsp",
 	"description": "A language server example",
-	"author": "Jonathan Wolf, Shira Evron, Ofir Bedarshi, Ariel Amsel",
+	"author": "wolfj123, ofirbed, arielAmselBGU, shiraev",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/wolfj123/PolicyModelsPlugin"
@@ -19,6 +19,7 @@
 		"vscode": "^1.41.0"
 	},
 	"activationEvents": [
+		"onLanguage:policyspace",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
@@ -49,7 +50,25 @@
 				}
 			}
 		},
+		"grammars": [
+			{
+				"language": "policyspace",
+				"scopeName": "source.pspace",
+				"path": "./client/textmate/policyspace.tmLanguage.json"
+			}
+		],
 		"languages": [
+			{
+				"id": "policyspace",
+				"aliases": [
+					"PolicySpace",
+					"policyspace"
+				],
+				"extensions": [
+					".pspace"
+				],
+				"configuration": "./client/pspace-graph-language-configuration.json"
+			},
 			{
 				"id": "policyModelDescription",
 				"aliases": [
