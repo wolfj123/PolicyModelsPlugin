@@ -19,8 +19,6 @@
 		"vscode": "^1.41.0"
 	},
 	"activationEvents": [
-		"onLanguage:policyspace",
-		"onLanguage:decisionGraph",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
@@ -52,28 +50,6 @@
 			}
 		},
 		"languages": [
-			{
-				"id": "policyspace",
-				"aliases": [
-					"PolicySpace",
-					"policyspace"
-				],
-				"extensions": [
-					".pspace"
-				],
-				"configuration": "./pspace-graph-language-configuration.json"
-			},
-			{
-				"id": "decisionGraph",
-				"aliases": [
-					"decisiongraph",
-					"DecisionGraph"
-				],
-				"extensions": [
-					".dg"
-				],
-				"configuration": "./pspace-graph-language-configuration.json"
-			},
 			{
 				"id": "policyModelDescription",
 				"aliases": [
@@ -109,13 +85,6 @@
 					".vi"
 				],
 				"configuration": "./pspace-graph-language-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "policyspace",
-				"scopeName": "source.pspace",
-				"path": "./syntaxes/policyspace.tmLanguage.json"
 			}
 		]
 	},
