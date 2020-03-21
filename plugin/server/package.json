@@ -13,18 +13,15 @@
 	},
 	"dependencies": {
 		"vscode-languageserver": "^6.1.1",
-		"vscode-languageserver-textdocument": "*",
-		"vscode-textmate": "^4.4.0"
+		"vscode-languageserver-textdocument": "*"
 	},
 	"scripts": {
-		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts",
-		"postinstall": "electron-rebuild --version 6"
+		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.11",
 		"@types/mocha": "^5.2.7",
 		"chai": "^4.2.0",
-		"electron-rebuild": "^1.10.1",
 		"mocha": "^7.1.1",
 		"ts-node": "^8.6.1"
 	}
