@@ -11,15 +11,17 @@ import {
 		TextDocumentChangeEvent,
 		FoldingRangeParams,
 		FoldingRange,
-		FoldingRangeKind
+		FoldingRangeKind,
+		WorkspaceEdit,
+		TextDocumentEdit
 	} from 'vscode-languageserver';
 
-
+import { TextEdit } from 'vscode-languageserver-textdocument';
 
 declare type wordBasedParams = ReferenceParams | DeclarationParams | RenameParams;
 declare type allParamsTypes = wordBasedParams | TextDocumentPositionParams | FoldingRangeParams;
 
-declare type wordBasedSolutions = Location [] | LocationLink [];
+declare type wordBasedSolutions = Location [] | LocationLink []| WorkspaceEdit;
 declare type allSolutionsTypes = wordBasedSolutions | CompletionItem [] | FoldingRange [];
 
 declare type wordSpecificSolver = (word: string, params:wordBasedParams) => wordBasedSolutions;
@@ -63,6 +65,38 @@ function solveOnDefiniton (word:string, _params:wordBasedParams ) : LocationLink
 	];
 }
 
+function solveOnRename(word:string, _params:wordBasedParams): WorkspaceEdit{
+	let params: RenameParams = _params as RenameParams;
+
+	// TODO Implement shira
+
+	let pos1: Position = {line:0,character:0};
+		let pos2: Position = {line:0,character:5};
+		
+		let fileName:string = params.textDocument.uri;
+
+		let edit: TextEdit = {
+			range:{start:pos1, end: pos2},
+			newText: "abcde"
+		}
+
+		let dc:TextDocumentEdit = {
+			edits: [edit],
+			textDocument: {
+				uri: fileName,
+				version: null
+			}
+		}
+		
+		let ans:WorkspaceEdit = {
+			changes: null, // this can be null always it isn't used.
+			documentChanges: [dc]
+		}
+
+		return ans;
+
+}
+
 function findWordFromPositionInFile (fileName: string, lineNumber: number, charPosition: number): string {
 	//return currDoc.getWordAt(lineNumber,charPosition);
 	return "Encryption";
@@ -73,6 +107,7 @@ function wordBasedGeneralSolver(_params: allParamsTypes, funcName: string): word
 	{
 		"onReferences":solveOnRefernce,
 		"onDefinition":solveOnDefiniton,
+		'onRenameRequest':solveOnRename
 	}
 
 	let params = _params as wordBasedParams;
@@ -111,7 +146,8 @@ export function solve(params:allParamsTypes , funcName: string): allSolutionsTyp
 	
 	{
 		"onReferences":wordBasedGeneralSolver,
-		"onDefiniton": wordBasedGeneralSolver,
+		"onDefinition": wordBasedGeneralSolver,
+		'onRenameRequest': wordBasedGeneralSolver,
 		'onFoldingRanges': solveOnFoldingRange,
 
 		default:

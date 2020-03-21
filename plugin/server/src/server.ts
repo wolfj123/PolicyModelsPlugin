@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
+import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
 
 import {
 	createConnection,
@@ -24,7 +24,11 @@ import {
 	FoldingRange,
 	FoldingRangeKind,
 	ReferenceParams,
-	Location
+	Location,
+	PrepareRenameParams,
+	WorkspaceEdit,
+	RenameParams,
+	TextDocumentEdit
 } from 'vscode-languageserver';
 import * as child_process from "child_process";
 
@@ -74,7 +78,7 @@ connection.onInitialize((params: InitializeParams) => {
 			definitionProvider: true,
 			foldingRangeProvider: true,
 			referencesProvider: true,
-			RenameClientCapabilities: true,
+			renameProvider: true,
 		}
 	};
 });
@@ -226,10 +230,14 @@ connection.onFoldingRanges(
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
 		return debugAnalyzer.solve(params,"onReferences") as Location[];
-		//return wordBasedCalc.wordBasedCalc(params,wordBasedCalc.findAllRefernces);
-		//return debugAnalyzer.x["onReferences"].calc() as Location [];
 	}
 );
+
+connection.onRenameRequest(
+	(params: RenameParams): WorkspaceEdit =>{
+		return debugAnalyzer.solve(params,"onRenameRequest") as WorkspaceEdit;
+	}
+)
 
  //import {runme} from './textmate_playing_around';
 
