@@ -1,33 +1,22 @@
 Storage: one of clear, serverEncrypt, clientEncrypt, doubleEncrypt.
 
-StorageWithDescription [The way data are stored on the server.]: one of
-  clear [Not encrypted at all],
-  serverEncrypt [Encryption on the server, "at rest". Attacker cannot use the data by getting the files from the file system],
-  clientEncrypt [Encryption on the client side. Data obtained from the server (e.g. buy data breach or subpeona)
-                cannot be used unless the depositor provides the password],
-  doubleEncrypt [Encryption on the client, and then on the server. Both passwords are required in order to make use of the data].
+StorageWithDescription [The way data are stored on the server.]: one of clear [Not encrypted at all], serverEncrypt [Encryption on the server, "at rest". Attacker cannot use the data by getting the files from the file system], clientEncrypt [Encryption on the client side. Data obtained from the server (e.g. buy data breach or subpeona) cannot be used unless the depositor provides the password], doubleEncrypt [Encryption on the client, and then on the server. Both passwords are required in order to make use of the data].
 
 
 
-ProtectedDataSubjects: some of livingPersons, deadPeople,
-							endangeredSpecies, rareMinerals.
+ProtectedDataSubjects: some of livingPersons, deadPeople, endangeredSpecies, rareMinerals.
 
 DataSubject_LivingPersons: one of yes, no.
 DataSubject_DeadPeople: one of yes, no.
 DataSubject_EndangeredSpecies: one of yes, no.
 DataSubject_RareMinerals: one of yes, no.
 
-ProtectedDataSubjectsWithDescription [The type of entities that could be harmed by misuse of the data]: some of
-  livingPersons [Living persons - including privacy issues],
-  deadPeople [They don't know they're dead],
-  endangeredSpecies [Endangered species need protection from poachers],
-  rareMinerals [Disclosing location of rare minerals might lead to illegal mining].
+ProtectedDataSubjectsWithDescription [The type of entities that could be harmed by misuse of the data]: some of livingPersons [Living persons - including privacy issues], deadPeople [They don't know they're dead], endangeredSpecies [Endangered species need protection from poachers], rareMinerals [Disclosing location of rare minerals might lead to illegal mining].
 
 
 Handling: consists of Storage, Transit, Authentication.
 
-HandlingWithDescription [Practical aspects of the developed dataset policy]:
-    consists of Storage, Transit, Authentication.
+HandlingWithDescription [Practical aspects of the developed dataset policy]: consists of Storage, Transit, Authentication.
 
 IntellecualProperty: TODO.
 
