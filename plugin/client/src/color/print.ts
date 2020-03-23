@@ -2,15 +2,15 @@
 import Parser = require('web-tree-sitter')
 import fs = require('fs')
 
-testRust()
+testPolicySpace()
 
-async function testRust() {
+async function testPolicySpace() {
     await Parser.init()
     const parser = new Parser()
-    const wasm = 'parsers/tree-sitter-rust.wasm'
+    const wasm = 'client/parsers/tree-sitter-policyspace.wasm'
     const lang = await Parser.Language.load(wasm)
     parser.setLanguage(lang)
-    const text = fs.readFileSync('examples/rust/scratch.rs', {encoding: 'utf-8'})
+    const text = fs.readFileSync('client/examples/policyspace/small_slots.pspace', {encoding: 'utf-8'})
     const tree = parser.parse(text)
     const lines = text.split('\n')
     const maxLine = maxWidth(lines)
