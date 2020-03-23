@@ -113,8 +113,8 @@
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test-server": "cd ./server && npm test && cd ../",
-		"test-client-color": "node .client/out/color/test",
-		"test": "npm run test-server && sh ./scripts/e2e.sh && npm run test-client-color "
+		"test-client": "cd ./client && npm test && cd ../",
+		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh  "
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.7",
