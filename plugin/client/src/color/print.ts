@@ -10,7 +10,7 @@ async function testPolicySpace() {
     const wasm = 'client/parsers/tree-sitter-policyspace.wasm'
     const lang = await Parser.Language.load(wasm)
     parser.setLanguage(lang)
-    const text = fs.readFileSync('client/examples/policyspace/small_slots.pspace', {encoding: 'utf-8'})
+    const text = fs.readFileSync('client/examples/policyspace/slots.pspace', {encoding: 'utf-8'})
     const tree = parser.parse(text)
     const lines = text.split('\n')
     const maxLine = maxWidth(lines)
