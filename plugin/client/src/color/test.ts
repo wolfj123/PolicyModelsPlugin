@@ -9,7 +9,7 @@ type TestCase = [string, ...Assert[]]
 
 const policyspaceTests: TestCase[] = [
     [
-        `Storage: one of clear, serverEncrypt.`, 
+        `Storage: of clear, serverEncrypt.`, 
         ['Storage', 'entity.name.function'], ['clear', 'variable'], ['serverEncrypt', 'variable']
     ],
 ]
