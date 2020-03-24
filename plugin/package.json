@@ -65,7 +65,8 @@
 					"policyspace"
 				],
 				"extensions": [
-					".pspace"
+					".pspace",
+					".ps"
 				],
 				"configuration": "./client/pspace-graph-language-configuration.json"
 			},
