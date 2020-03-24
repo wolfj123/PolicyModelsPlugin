@@ -7,8 +7,8 @@ import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
 import * as Parser from 'web-tree-sitter'
-import * as scopes from './scopes'
-import * as colors from './colors'
+import * as scopes from './color/scopes'
+import * as colors from './color/colors'
 
 import {
 	LanguageClient,

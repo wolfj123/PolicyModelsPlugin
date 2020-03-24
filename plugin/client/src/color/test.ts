@@ -5,6 +5,16 @@ import colors = require('./colors')
 type Assert = [string, string|{not:string}]
 type TestCase = [string, ...Assert[]]
 
+
+
+const policyspaceTests: TestCase[] = [
+    [
+        `Storage: one of clear, serverEncrypt.`, 
+        ['Storage', 'entity.name.function'], ['clear', 'variable'], ['serverEncrypt', 'variable']
+    ],
+]
+test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace)
+
 const goTests: TestCase[] = [
     [
         `package p; func f() int { }`, 
@@ -168,7 +178,7 @@ const goTests: TestCase[] = [
         ['i', {not: 'markup.underline'}]
     ],
 ]
-test(goTests, 'parsers/tree-sitter-go.wasm', colors.colorGo)
+//test(goTests, 'parsers/tree-sitter-go.wasm', colors.colorGo)
 
 const rubyTests: TestCase[] = [
     [
@@ -242,7 +252,7 @@ const rubyTests: TestCase[] = [
         ['bar', 'entity.name.function'],
     ],
 ]
-test(rubyTests, 'parsers/tree-sitter-ruby.wasm', colors.colorRuby)
+//test(rubyTests, 'parsers/tree-sitter-ruby.wasm', colors.colorRuby)
 
 const rustTests: TestCase[] = [
     [
@@ -275,7 +285,7 @@ const rustTests: TestCase[] = [
     ],
     // TODO more coverage
 ]
-test(rustTests, 'parsers/tree-sitter-rust.wasm', colors.colorRust)
+//test(rustTests, 'parsers/tree-sitter-rust.wasm', colors.colorRust)
 
 const typescriptTests: TestCase[] = [
     [
@@ -313,7 +323,7 @@ const typescriptTests: TestCase[] = [
         ['Foo', 'entity.name.type'], ['set', 'keyword'], ['bar', 'variable']
     ],
 ]
-test(typescriptTests, 'parsers/tree-sitter-typescript.wasm', colors.colorTypescript)
+//test(typescriptTests, 'parsers/tree-sitter-typescript.wasm', colors.colorTypescript)
 
 async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunction) {
     await Parser.init()
