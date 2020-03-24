@@ -62,10 +62,16 @@ const getMethods = (obj) => {
 let cursor = newTree.rootNode.walk();
 //console.log(cursor);
 console.log(cursor.nodeType);
+
 cursor.gotoFirstChild();
 console.log(cursor.nodeType);
 console.log(cursor.currentNode);
+
 cursor.gotoFirstChild();
+console.log(cursor.nodeType);
+console.log(cursor.currentNode);
+
+cursor.gotoNextSibling(); cursor.gotoNextSibling();
 console.log(cursor.nodeType);
 console.log(cursor.currentNode);
 
