@@ -184,6 +184,7 @@ connection.onInitialized(() => {
 	//TODO amsel delete
 	if (hasWorkspaceFolderCapability) {
 		//pretty sure this is not needed - because we the server closes when we change folders
+		// leaving it here for now just to be sure
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
 			connection.console.log('Workspace folder change event received.');
 			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
@@ -209,6 +210,7 @@ connection.onInitialized(() => {
 });
 
 connection.onExit(():void => {
+	connection.dispose();
 	process.exit(0);
 });
 
@@ -266,6 +268,7 @@ documents.onDidChangeContent(change => {
 	//validateTextDocument(change.document);
 	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+
 });
 
 // this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
