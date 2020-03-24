@@ -45,17 +45,6 @@ console.log(newTree.rootNode.toString());
 // 			(identifier_simple) 
 // 			(identifier_simple))))
 
-
-
-const getMethods = (obj) => {
-	let properties = new Set()
-	let currentObj = obj
-	do {
-	  Object.getOwnPropertyNames(currentObj).map(item => properties.add(item))
-	} while ((currentObj = Object.getPrototypeOf(currentObj)))
-	return [...properties.keys()].filter(item => typeof obj[item] === 'function')
-  }
-
 //Traverse
 //https://tree-sitter.github.io/tree-sitter/using-parsers#walking-trees-with-tree-cursors
 
@@ -74,13 +63,6 @@ console.log(cursor.currentNode);
 cursor.gotoNextSibling(); cursor.gotoNextSibling();
 console.log(cursor.nodeType);
 console.log(cursor.currentNode);
-
-
-// console.log(newTree.rootNode.toString());
-// console.log(newTree.rootNode.toString());
-// console.log(newTree.rootNode.toString());
-// console.log(newTree.rootNode.toString());
-// console.log(newTree.rootNode.toString());
 
 
 
