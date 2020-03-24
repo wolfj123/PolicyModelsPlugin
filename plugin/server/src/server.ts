@@ -87,6 +87,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			//TODO : amsel add all capabilites		
 			/*
 				not supported:
+				workspaceFolders,
 				hoverProvider,
 				signatureHelpProvider,
 				typeDefinitionProvider,
@@ -95,9 +96,22 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				experimental,
 				codeActionProvide - this are some refactor options including: extract, inline, rewrite, organize imports,
 				executeCommandProvider - this are commends connected to workspace folders we don't care about this, maybe will be need for localiztion,
-				workspaceSymbolProvider - symbol serach feautre we don't support this
+				workspaceSymbolProvider - symbol serach feautre we don't support this,
+				implementationProvider, - go to implementation - we support go to definiton as the sam I think
+				colorProvider, - sets colors for user for now will be set to VS code defaults
+				documentLinkProvider - a link to another file / URL 
+				documentFormattingProvider - allows some basic formatting to the file like Lint
+				documentRangeFormattingProvider - same as documentFormattingProvider but in a specifc range
+				documentOnTypeFormattingProvider - same as documentFormattingProvider during typing
+				selectionRangeProvider - when the user asks to select a scope aroung the current cursor / mouse position
 			*/
+			
 
+			/* to check:
+				documentHighlightProvider, - to check with others
+				documentSymbolProvider, - WTF
+			*/
+			
 			workspace:{
 				workspaceFolders:{
 					supported: false,
@@ -109,21 +123,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				openClose:true,
 				change:TextDocumentSyncKind.Full, // incremental only cause the client to send also _lineoffset therefore not need
 			},
-
-			/* to check:
-				workspaceFolders ??
-				implementationProvider,
-				documentHighlightProvider,
-				documentSymbolProvider,
-				documentLinkProvider,
-				colorProvider,
-				documentFormattingProvider,
-				documentRangeFormattingProvider,
-				documentOnTypeFormattingProvider,
-				FoldingRangeRegistrationOptions,
-				selectionRangeProvider,
-				
-			*/
 
 			completionProvider: {
 				resolveProvider: true
@@ -174,11 +173,7 @@ connection.onInitialized(() => {
 	connection.client.register(DidSaveTextDocumentNotification.type,textDocumentNotificationOptions);
 	connection.client.register(DidCloseTextDocumentNotification.type,textDocumentNotificationOptions);
 	connection.client.register(DidChangeTextDocumentNotification.type,textDocumentNotificationOptions);
-	
-	
-
-
-
+		
 
 	//amse probalby not needed beacuse we don't care about configurations
 	if (hasConfigurationCapability) {

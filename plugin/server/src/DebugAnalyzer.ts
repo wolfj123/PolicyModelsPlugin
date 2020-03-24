@@ -123,11 +123,11 @@ function solveOnFoldingRange(_params: allParamsTypes) : FoldingRange[]{
 	let params: FoldingRangeParams = _params as FoldingRangeParams;
 
 	// TODO Implement shira
-
+	// NOTE the client we are using only supports for line folding - meaning the startCharacter & endCharacter are Irrelevant 
 	return [
 		{
 			startLine:1,
-			startCharacter:0,
+			startCharacter:12,
 			endLine:2,
 			endCharacter:20,
 			kind:FoldingRangeKind.Region
