@@ -12,29 +12,32 @@ import {
 	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
-	DidChangeConfigurationNotification,
 	CompletionItem,
-	CompletionItemKind,
 	TextDocumentPositionParams,
 	LocationLink,
 	DeclarationParams,
-	DefinitionLink,
-	Position,
 	FoldingRangeParams,
 	FoldingRange,
-	FoldingRangeKind,
 	ReferenceParams,
 	Location,
-	PrepareRenameParams,
 	WorkspaceEdit,
 	RenameParams,
-	TextDocumentEdit,
-	CompletionList
+	CompletionList,
+	EOL, // send this to document controller - represents the end of line optins allowed
+	InitializeResult,
+	DidChangeWatchedFilesNotification,
+	DidChangeWatchedFilesRegistrationOptions,
+	WatchKind,
+	TextDocumentSyncKind,
+	TextDocumentRegistrationOptions,
+	TextDocumentChangeEvent,
+	DidOpenTextDocumentNotification,
+	DidSaveTextDocumentNotification,
+	DidChangeTextDocumentNotification,
+	DidCloseTextDocumentNotification,
 } from 'vscode-languageserver';
+
 import * as child_process from "child_process";
-
-import * as languagesService from './LanguageService';
-
 import * as debugAnalyzer from './DebugAnalyzer';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
@@ -49,7 +52,13 @@ let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
-connection.onInitialize((params: InitializeParams) => {
+let clientSupportswatchedFiles: boolean = false;
+
+
+connection.onInitialize((params: InitializeParams): InitializeResult => {
+	// console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
+	// connection.console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
+
 	let capabilities = params.capabilities;
 
 	// Does the client support the `workspace/configuration` request?
@@ -65,14 +74,57 @@ connection.onInitialize((params: InitializeParams) => {
 		capabilities.textDocument.publishDiagnostics &&
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
+	
 
+
+
+	// the didChangeWatchedFiles is used to notify the server when a new file was opned a file was delted or renamed
+	clientSupportswatchedFiles = capabilities.workspace.didChangeWatchedFiles.dynamicRegistration; 
 
 
 	return {
 		capabilities: {
-			//TODO : add all capabilites
-			//textDocumentSync: documents.syncKind,
-			// Tell the client that the server supports code completion
+			//TODO : amsel add all capabilites		
+			/*
+				not supported:
+				hoverProvider,
+				signatureHelpProvider,
+				typeDefinitionProvider,
+				declarationProvider,
+				codeLensProvider,
+				experimental,
+				codeActionProvide - this are some refactor options including: extract, inline, rewrite, organize imports,
+				executeCommandProvider - this are commends connected to workspace folders we don't care about this, maybe will be need for localiztion,
+				workspaceSymbolProvider - symbol serach feautre we don't support this
+			*/
+
+			workspace:{
+				workspaceFolders:{
+					supported: false,
+				}
+			},
+
+			textDocumentSync:
+			{
+				openClose:true,
+				change:TextDocumentSyncKind.Full, // incremental only cause the client to send also _lineoffset therefore not need
+			},
+
+			/* to check:
+				workspaceFolders ??
+				implementationProvider,
+				documentHighlightProvider,
+				documentSymbolProvider,
+				documentLinkProvider,
+				colorProvider,
+				documentFormattingProvider,
+				documentRangeFormattingProvider,
+				documentOnTypeFormattingProvider,
+				FoldingRangeRegistrationOptions,
+				selectionRangeProvider,
+				
+			*/
+
 			completionProvider: {
 				resolveProvider: true
 			},
@@ -80,22 +132,241 @@ connection.onInitialize((params: InitializeParams) => {
 			foldingRangeProvider: true,
 			referencesProvider: true,
 			renameProvider: true,
+		},
+		serverInfo:{
+			name: 'Ps server to extened',
+			version: '0.1'	
 		}
 	};
 });
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
+
+	
+	if (clientSupportswatchedFiles){
+		let wtachedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
+			watchers: [
+				{
+					kind: WatchKind.Create | WatchKind.Delete, // this will notiryf only when files are created or delted from workspace
+					globPattern: "**/*.{ps,pspace}"
+				} //TODO add support for DG and more supported file types
+			]
+		}
+		connection.client.register(DidChangeWatchedFilesNotification.type,wtachedFilesOptions);
+	}else{
+		//TODO amsel what wolud happen if we don't support (we will need to check the filesystem all the time to see if file was created or delted)
+		console.log("client doesn't support watched files - is this a problem??");
+	}
+	
+	
+	let textDocumentNotificationOptions: TextDocumentRegistrationOptions = {
+		documentSelector: [
+			{
+				language:'policyspace',
+				pattern:"**/*.{ps,pspace}"
+			}, ////TODO add support for DG and more supported file types
+		]
+	};	
+
+	//this options must be implemented by the client therfore we don't need to check for clinet support like other options
+	connection.client.register(DidOpenTextDocumentNotification.type,textDocumentNotificationOptions);
+	connection.client.register(DidSaveTextDocumentNotification.type,textDocumentNotificationOptions);
+	connection.client.register(DidCloseTextDocumentNotification.type,textDocumentNotificationOptions);
+	connection.client.register(DidChangeTextDocumentNotification.type,textDocumentNotificationOptions);
+	
+	
+
+
+
+
+	//amse probalby not needed beacuse we don't care about configurations
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
-		connection.client.register(DidChangeConfigurationNotification.type, undefined);
+		//connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
+
+	//TODO amsel delete
 	if (hasWorkspaceFolderCapability) {
+		//pretty sure this is not needed - because we the server closes when we change folders
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
 			connection.console.log('Workspace folder change event received.');
+			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+			connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
+
+		//this in not needed - we support only one root folder
+		// connection.workspace.getWorkspaceFolders().then(_event => {
+		// 	connection.console.log('getWorkspaceFolders folder change event received.');
+		// 	console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+		// 	connection.console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+		// });
+
+
+		// //this is not needed - returns VS code configurations we don't care
+		// connection.workspace.getConfiguration().then(_event => {
+		// 	connection.console.log('Workspace folder change event received.');
+		// 	console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
+		// 	connection.console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
+		// });
+
 	}
 });
+
+connection.onExit(():void => {
+	process.exit(0);
+});
+
+connection.onCompletion(
+	(params: TextDocumentPositionParams): CompletionList => {	
+		return debugAnalyzer.solve(params,"onCompletion") as CompletionList;
+	}
+);
+
+connection.onCompletionResolve(
+	(item: CompletionItem): CompletionItem => {
+		return debugAnalyzer.solve(item,"onCompletionResolve") as CompletionItem;
+	}
+);
+
+connection.onDefinition(
+	(params: DeclarationParams) : LocationLink[] => {
+		return debugAnalyzer.solve(params,"onDefinition") as LocationLink[];
+	}
+);
+
+connection.onFoldingRanges(
+	(params: FoldingRangeParams) : FoldingRange[] => {
+		return debugAnalyzer.solve(params,"onFoldingRanges") as FoldingRange[];
+	}
+);
+
+connection.onReferences(
+	(params: ReferenceParams): Location[] => {
+		return debugAnalyzer.solve(params,"onReferences") as Location[];
+	}
+);
+
+connection.onRenameRequest(
+	(params: RenameParams): WorkspaceEdit =>{
+		return debugAnalyzer.solve(params,"onRenameRequest") as WorkspaceEdit;
+	}
+)
+
+
+
+
+
+
+// every change to file that matches pattern above will be notifed here
+connection.onDidChangeWatchedFiles(_change => {
+	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
+	connection.console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
+});
+
+
+// The content of a text document has changed. This event is emitted
+// when the text document first opened or when its content has changed.
+documents.onDidChangeContent(change => {
+	//validateTextDocument(change.document);
+	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+});
+
+// this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
+// in order to control if it is a new on we need onDidChangeWatchedFiles
+documents.onDidOpen(
+	(params: TextDocumentChangeEvent<TextDocument>): void => {
+		console.log(`onDidOpen \n ${JSON.stringify(params)}`);
+		connection.console.log(`onDidOpen \n ${JSON.stringify(params)}`);
+	});
+
+// this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
+documents.onDidClose(
+	(params: TextDocumentChangeEvent<TextDocument>): void => {
+		console.log(`onDidClose \n ${JSON.stringify(params)}`);
+		connection.console.log(`onDidClose \n ${JSON.stringify(params)}`);
+	});
+
+//this is called when the usere saves the document
+documents.onDidSave(
+	(params: TextDocumentChangeEvent<TextDocument>): void => {
+		console.log(`onDidSave \n ${JSON.stringify(params)}`);
+		connection.console.log(`onDidSave \n ${JSON.stringify(params)}`);
+	});
+
+
+
+/*
+this funcations aren't really called in current configuration -NO IDEA why but we have supplemnts aboce
+
+connection.onDidOpenTextDocument((params) => {
+	// A text document got opened in VSCode.
+	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
+	// params.textDocument.text the initial full content of the document.
+	console.log(`onDidOpenTextDocument\n${params.textDocument.uri} opened.`);
+	connection.console.log(`onDidOpenTextDocument\n${params.textDocument.uri} opened.`);
+});
+
+connection.onDidChangeTextDocument((params) => {
+	// The content of a text document did change in VSCode.
+	// params.textDocument.uri uniquely identifies the document.
+	// params.contentChanges describe the content changes to the document.
+	console.log(`onDidChangeTextDocument\n${params.textDocument.uri} opened.`);
+	connection.console.log(`onDidChangeTextDocument\n${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
+});
+
+connection.onDidCloseTextDocument((params) => {
+	// A text document got closed in VSCode.
+	// params.textDocument.uri uniquely identifies the document.
+	console.log(`onDidCloseTextDocument\n${params.textDocument.uri} opened.`);
+	connection.console.log(`onDidCloseTextDocument\n${params.textDocument.uri} closed.`);
+});*/
+
+
+// Make the text document manager listen on the connection
+// for open, change and close text document events
+documents.listen(connection);
+
+// Listen on the connection
+connection.listen();
+
+
+function runModel(param : string[]) : string {
+	console.log("server is running the model")
+	let cwd = __dirname + "/../../";
+	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
+	return "execute ends";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // The example settings
 interface ExampleSettings {
@@ -192,99 +463,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
-connection.onDidChangeWatchedFiles(_change => {
-	// Monitored files have change in VSCode
-	connection.console.log('We received an file change event');
-});
-
-// This handler provides the initial list of the completion items.
-connection.onCompletion(
-	(params: TextDocumentPositionParams): CompletionList => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		//return  languagesService.getInitialCompleteItems();
-		
-		return debugAnalyzer.solve(params,"onCompletion") as CompletionList;
-	}
-);
-
-// This handler resolves additional information for the item selected in
-// the completion list.
-connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		//return  languagesService.getCompleteItemsAdditionalInformation(item);
-
-		return debugAnalyzer.solve(item,"onCompletionResolve") as CompletionItem;
-	}
-);
-
-connection.onDefinition(
-	(params: DeclarationParams) : LocationLink[] => {
-		return debugAnalyzer.solve(params,"onDefinition") as LocationLink[];
-	}
-);
-
-connection.onFoldingRanges(
-	(params: FoldingRangeParams) : FoldingRange[] => {
-		return debugAnalyzer.solve(params,"onFoldingRanges") as FoldingRange[];
-	}
-);
-
-connection.onReferences(
-	(params: ReferenceParams): Location[] => {
-		return debugAnalyzer.solve(params,"onReferences") as Location[];
-	}
-);
-
-connection.onRenameRequest(
-	(params: RenameParams): WorkspaceEdit =>{
-		return debugAnalyzer.solve(params,"onRenameRequest") as WorkspaceEdit;
-	}
-)
-
- //import {runme} from './textmate_playing_around';
-
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	//validateTextDocument(change.document);
-	//runme();  //jonathan: I added this just to play around with textmate and see the print
-	//debugAnalyzer.updateDoc(change);
-	console.log(change);
-});
 
 
 
-connection.onDidOpenTextDocument((params) => {
-	// A text document got opened in VSCode.
-	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
-	// params.textDocument.text the initial full content of the document.
-	connection.console.log(`${params.textDocument.uri} opened.`);
-});
-connection.onDidChangeTextDocument((params) => {
-	// The content of a text document did change in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	// params.contentChanges describe the content changes to the document.
-	connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
-});
-connection.onDidCloseTextDocument((params) => {
-	// A text document got closed in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	connection.console.log(`${params.textDocument.uri} closed.`);
-});
-
-// Make the text document manager listen on the connection
-// for open, change and close text document events
-documents.listen(connection);
-
-// Listen on the connection
-connection.listen();
 
 
-function runModel(param : string[]) : string{
-	console.log("server is running the model")
-	let cwd = __dirname + "/../../";
-	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
-	return "execute ends";
-}

@@ -47,7 +47,7 @@ function solveOnRefernce (word:string, _params:wordBasedParams ) : Location[]{
 	];
 }
 
-function solveOnDefiniton (word:string, _params:wordBasedParams ) : LocationLink[]{
+function solveOnDefiniton (word:string, _params:wordBasedParams ) : LocationLink[] {
 	let params = _params as ReferenceParams;
 	// TODO Implement shira
 	
@@ -72,7 +72,7 @@ function solveOnRename(word:string, _params:wordBasedParams): WorkspaceEdit{
 
 	// TODO Implement shira
 
-	let pos1: Position = {line:0,character:0};
+		let pos1: Position = {line:0,character:0};
 		let pos2: Position = {line:0,character:5};
 		
 		let fileName:string = params.textDocument.uri;
@@ -99,7 +99,7 @@ function solveOnRename(word:string, _params:wordBasedParams): WorkspaceEdit{
 
 }
 
-function findWordFromPositionInFile (fileName: string, lineNumber: number, charPosition: number): string {
+function findWordFromPositionInFile (lineNumber: number, charPosition: number): string {
 	//return currDoc.getWordAt(lineNumber,charPosition);
 	return "Encryption";
 }
@@ -107,14 +107,14 @@ function findWordFromPositionInFile (fileName: string, lineNumber: number, charP
 function wordBasedGeneralSolver(_params: allParamsTypes, funcName: string): wordBasedSolutions {
 	let wordSolvers: {[id: string]: wordSpecificSolver} =
 	{
-		"onReferences":solveOnRefernce,
-		"onDefinition":solveOnDefiniton,
+		'onReferences':solveOnRefernce,
+		'onDefinition':solveOnDefiniton,
 		'onRenameRequest':solveOnRename
 	}
 
 	let params = _params as wordBasedParams;
 
-	let word: string = findWordFromPositionInFile (params.textDocument.uri, params.position.line, params.position.character);
+	let word: string = findWordFromPositionInFile (params.position.line, params.position.character);
 
 	return wordSolvers[funcName](word,params);
 }
@@ -133,8 +133,6 @@ function solveOnFoldingRange(_params: allParamsTypes) : FoldingRange[]{
 			kind:FoldingRangeKind.Region
 		}
 	];
-	return null;
-
 }
 
 function solveOnCompletion (_params: allParamsTypes): CompletionList {
