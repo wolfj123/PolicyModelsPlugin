@@ -8,7 +8,7 @@ type TestCase = [string, ...Assert[]]
 
 const policyspaceTests: TestCase[] = [
     [
-        `Storage: one of clear, serverEncrypt.`, 
+        `Storage : one of clear, serverEncrypt.`, 
         ['Storage', 'entity.name.function'], ['clear', 'variable'], ['serverEncrypt', 'variable']
     ],
 ]
@@ -37,6 +37,7 @@ async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunc
         function printSrcAndTree() {
             console.error('Source:\t' + src)
             console.error('Parsed:\t' + tree.rootNode.toString())
+            throw new Error('color tests failed');
         }
         for (const [code, assert] of expect) {
             if (typeof assert == 'string') {
