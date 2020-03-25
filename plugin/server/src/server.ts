@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { TextDocument, TextEdit } from 'vscode-languageserver-textdocument';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import {
 	createConnection,
@@ -23,7 +23,7 @@ import {
 	WorkspaceEdit,
 	RenameParams,
 	CompletionList,
-	EOL, // send this to document controller - represents the end of line optins allowed
+	EOL, //  represents the end of line optins allowed
 	InitializeResult,
 	DidChangeWatchedFilesNotification,
 	DidChangeWatchedFilesRegistrationOptions,
@@ -48,6 +48,7 @@ let connection = createConnection(ProposedFeatures.all);
 // supports full document sync only
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
+// probably can be deleted
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
@@ -75,16 +76,12 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
 	
-
-
-
 	// the didChangeWatchedFiles is used to notify the server when a new file was opned a file was delted or renamed
 	clientSupportswatchedFiles = capabilities.workspace.didChangeWatchedFiles.dynamicRegistration; 
 
 
 	return {
-		capabilities: {
-			//TODO : amsel add all capabilites		
+		capabilities: {		
 			/*
 				not supported:
 				workspaceFolders,
