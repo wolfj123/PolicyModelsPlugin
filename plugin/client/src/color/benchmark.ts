@@ -17,7 +17,7 @@ async function benchmarkPolicySpace() {
     const tree = parser.parse(text)
     for (let i = 0; i < 10; i++) {
         console.time('colorPolicySpace')
-        colors.colorGo(tree, [{start: 0, end: tree.rootNode.endPosition.row}])
+        colors.colorPolicySpace(tree, [{start: 0, end: tree.rootNode.endPosition.row}])
         console.timeEnd('colorPolicySpace')
     }
 }
