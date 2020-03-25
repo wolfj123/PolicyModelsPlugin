@@ -6,9 +6,10 @@
 import * as path from 'path';
 import { workspace, ExtensionContext } from 'vscode';
 import * as vscode from 'vscode';
-import * as Parser from 'web-tree-sitter'
-import * as scopes from './color/scopes'
-import * as colors from './color/colors'
+import * as Parser from 'web-tree-sitter';
+import * as scopes from './color/scopes';
+import * as colors from './color/colors';
+import ViewLoader from "./view/ViewLoader";
 
 import {
 	LanguageClient,
@@ -20,6 +21,41 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+
+	console.log('Congratulations, your extension "vscode-react" is now active!');
+
+  // The command has been defined in the package.json file
+  // Now provide the implementation of the command with registerCommand
+  // The commandId parameter must match the command field in package.json
+  let disposable = vscode.commands.registerCommand(
+    "extension.viewconfig",
+    () => {
+      let openDialogOptions: vscode.OpenDialogOptions = {
+        canSelectFiles: true,
+        canSelectFolders: false,
+        canSelectMany: false,
+        filters: {
+          Json: ["json"]
+        }
+      };
+
+      vscode.window
+        .showOpenDialog(openDialogOptions)
+        .then(async (uri: vscode.Uri[] | undefined) => {
+          if (uri && uri.length > 0) {
+            const view = new ViewLoader(uri[0], context.extensionPath);
+          } else {
+            vscode.window.showErrorMessage("No valid file selected!");
+            return;
+          }
+        });
+    }
+  );
+
+  context.subscriptions.push(disposable);
+
+
+
 	activateSyntaxColoring(context);
 
 	// The server is implemented in node

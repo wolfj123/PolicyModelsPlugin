@@ -3,10 +3,21 @@
 		"module": "commonjs",
 		"target": "es6",
 		"outDir": "out",
+		"lib": [
+			"es6"
+		],
 		"rootDir": "src",
 		"noImplicitAny": false,
 		"sourceMap": true
 	},
 	"include": ["src"],
-	"exclude": ["node_modules", ".vscode-test"]
+	"exclude": [
+		"node_modules",
+		".vscode-test",
+		"**/view/app/index.css",
+		"**/view/app/index.tsx",
+		"**/view/app/tsconfig.json",
+		"**/view/app/config.tsx"
+	]
 }
+
