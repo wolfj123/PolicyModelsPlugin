@@ -20,6 +20,7 @@
 	},
 	"activationEvents": [
 		"onLanguage:policyspace",
+		"onLanguage:decisiongraph",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
@@ -55,6 +56,11 @@
 				"language": "policyspace",
 				"scopeName": "source.pspace",
 				"path": "./client/textmate/policyspace.tmLanguage.json"
+			},
+			{
+				"language": "decisiongraph",
+				"scopeName": "source.dg",
+				"path": "./client/textmate/decisiongraph.tmLanguage.json"
 			}
 		],
 		"languages": [
@@ -66,9 +72,20 @@
 				],
 				"extensions": [
 					".pspace",
-					".ps"
+					".ts"
 				],
-				"configuration": "./client/pspace-graph-language-configuration.json"
+				"configuration": "./client/pspace-language-configuration.json"
+			},			
+			{
+				"id": "decisiongraph",
+				"aliases": [
+					"DecisionGraph",
+					"decisiongraph"
+				],
+				"extensions": [
+					".dg"
+				],
+				"configuration": "./client/decisiongraph-language-configuration.json"
 			},
 			{
 				"id": "policyModelDescription",

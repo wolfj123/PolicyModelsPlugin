@@ -3,6 +3,17 @@ const Parser = require('tree-sitter');
 const PolicySpace = require('tree-sitter-policyspace');
 const DecisionGraph = require('tree-sitter-decisiongraph');
 
+
+// const getMethods = (obj) => {
+//   let properties = new Set()
+//   let currentObj = obj
+//   do {
+//     Object.getOwnPropertyNames(currentObj).map(item => properties.add(item))
+//   } while ((currentObj = Object.getPrototypeOf(currentObj)))
+//   return [...properties.keys()].filter(item => typeof obj[item] === 'function')
+// }
+
+
 const parser = new Parser();
 parser.setLanguage(PolicySpace);
 //Then you can parse some source code,
@@ -62,7 +73,7 @@ console.log(cursor.currentNode);
 
 cursor.gotoNextSibling(); cursor.gotoNextSibling();
 console.log(cursor.nodeType);
-console.log(cursor.currentNode);
+//console.log(getMethods(cursor.currentNode));
 
 
 
@@ -75,5 +86,4 @@ console.log(cursor.currentNode);
 
 //decisiongraph ast examples:
 // https://github.com/wolfj123/tree-sitter-decisiongraph/tree/master/test/corpus
-
 
