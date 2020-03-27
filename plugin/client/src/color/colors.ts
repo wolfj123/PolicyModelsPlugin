@@ -1,4 +1,8 @@
 /******** COLOR SYNTAX ********/
+
+//text mate scopes:
+//https://macromates.com/manual/en/language_grammars
+
 import * as Parser from 'web-tree-sitter'
 
 export type Range = {start: Parser.Point, end: Parser.Point}
@@ -7,10 +11,12 @@ export type ColorFunction = (x: Parser.Tree, visibleRanges: {start: number, end:
 
 export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
 	//const functions: Range[] = []
-	const variables: Range[] = []
-	const keywords: Range[] = []
-	const strings: Range[] = []
-	const constants: Range[] = []
+	const nodeIds: Range[] = []
+	const nodeTypes: Range[] = []
+	const freeTexts: Range[] = []
+	const slotValues: Range[] = []
+	const freeTextAnswerTerm : Range[] = []
+	const slots: Range[] = []
 
 	const keywordsStrings : string[] = [
 		"todo",
@@ -29,6 +35,7 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 		"end",
 		"reject",
 		"set",
+		//"slot",
 		"#import"
 	]
 
@@ -67,37 +74,56 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
 		if(keywordsStrings.indexOf(cursor.nodeType) > -1){
-			keywords.push({start: cursor.startPosition, end: cursor.endPosition})
+			nodeTypes.push({start: cursor.startPosition, end: cursor.endPosition})
 		}
 		else {
 			switch (cursor.nodeType) {
 				case 'free_text':
-					strings.push({start: cursor.startPosition, end: cursor.endPosition})	
+					let node = cursor.currentNode()
+					let nextNode = node.nextSibling;
+					if(nextNode != null && nextNode.type == ':') {
+						freeTextAnswerTerm.push({start: cursor.startPosition, end: cursor.endPosition})	
+					} 
+					else {
+						freeTexts.push({start: cursor.startPosition, end: cursor.endPosition})
+					}
 					break
 				case 'node_id':
-					variables.push({start: cursor.startPosition, end: cursor.endPosition})	
+					nodeIds.push({start: cursor.startPosition, end: cursor.endPosition})	
 					break
 				case 'slot_identifier':
-					variables.push({start: cursor.startPosition, end: cursor.endPosition})	
+					slots.push({start: cursor.startPosition, end: cursor.endPosition})	
 					break
 				case 'decision_graph_name':
-					variables.push({start: cursor.startPosition, end: cursor.endPosition})	
+					nodeIds.push({start: cursor.startPosition, end: cursor.endPosition})	
 					break
 				case 'node_id_value':
 					if (parent != 'node_id') {
-						variables.push({start: cursor.startPosition, end: cursor.endPosition})
+						nodeIds.push({start: cursor.startPosition, end: cursor.endPosition})
 					}	
-					break	
+					break
+				case 'slot_value':
+					slotValues.push({start: cursor.startPosition, end: cursor.endPosition})	
+					break
+				case 'slot':
+					slots.push({start: cursor.startPosition, end: cursor.endPosition})	
+					break
+				case 'file_path':
+					freeTexts.push({start: cursor.startPosition, end: cursor.endPosition})
+					break
 			}
 		}
 	}
 
 	return new Map([
 		//['entity.name.function', functions],
-		['variable', variables],
-		['constant', constants],
-		['string', strings],
-		['keyword', keywords]
+		['variable', nodeIds],
+		//['constant.numeric', slotValues],
+		['entity.name.function', slotValues],
+		['comment', slots],								//TODO: this is temporary color for now, only to see that it works
+		['keyword.control', freeTextAnswerTerm],
+		['string', freeTexts],
+		['keyword', nodeTypes]
 	])
 }
 

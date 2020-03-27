@@ -73,9 +73,8 @@ async function demo() {
 
 
 
-  //more features here:
-  // https://github.com/tree-sitter/node-tree-sitter
-  // https://github.com/tree-sitter/node-tree-sitter/blob/master/index.js
+  //API (file is in our project)
+  // client\node_modules\web-tree-sitter\tree-sitter-web.d.ts
 
   //policyspace ast examples:
   // https://github.com/wolfj123/tree-sitter-policyspace/tree/master/test/corpus
