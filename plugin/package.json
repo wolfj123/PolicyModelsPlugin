@@ -12,6 +12,15 @@
 	"categories": [
 		"Other"
 	],
+	"scripts": {
+		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test-server": "cd ./server && npm test && cd ../",
+		"test-client": "cd ./client && npm test && cd ../",
+		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh  "
+	},
 	"keywords": [
 		"multi-root ready"
 	],
@@ -20,6 +29,7 @@
 	},
 	"activationEvents": [
 		"onLanguage:policyspace",
+		"onLanguage:decisiongraph",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
@@ -55,6 +65,11 @@
 				"language": "policyspace",
 				"scopeName": "source.pspace",
 				"path": "./client/textmate/policyspace.tmLanguage.json"
+			},
+			{
+				"language": "decisiongraph",
+				"scopeName": "source.dg",
+				"path": "./client/textmate/decisiongraph.tmLanguage.json"
 			}
 		],
 		"languages": [
@@ -66,9 +81,20 @@
 				],
 				"extensions": [
 					".pspace",
-					".ps"
+					".ts"
 				],
-				"configuration": "./client/pspace-graph-language-configuration.json"
+				"configuration": "./client/pspace-language-configuration.json"
+			},
+			{
+				"id": "decisiongraph",
+				"aliases": [
+					"DecisionGraph",
+					"decisiongraph"
+				],
+				"extensions": [
+					".dg"
+				],
+				"configuration": "./client/decisiongraph-language-configuration.json"
 			},
 			{
 				"id": "policyModelDescription",
@@ -108,20 +134,17 @@
 			}
 		]
 	},
-	"scripts": {
-		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test-server": "cd ./server && npm test && cd ../",
-		"test-client": "cd ./client && npm test && cd ../",
-		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh  "
-	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.12.30",
 		"tslint": "^5.20.1",
-		"typescript": "^3.8.3"
+		"typescript": "^3.8.3",
+		"tree-sitter-cli": "^0.16.5",
+		"tree-sitter-decisiongraph": "0.0.6",
+		"tree-sitter-policyspace": "0.0.4"
 	},
-	"dependencies": {}
+	"dependencies": {
+		"tree-sitter": "^0.16.0",
+		"web-tree-sitter": "^0.16.2"
+	}
 }

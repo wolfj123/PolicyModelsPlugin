@@ -10,7 +10,7 @@ async function benchmarkPolicySpace() {
     //console.log('Current directory: ' + process.cwd());
     await Parser.init()
     const parser = new Parser()
-    const wasm = 'client/parsers/tree-sitter-policyspace.wasm'
+    const wasm = 'parsers/tree-sitter-policyspace.wasm'
     const lang = await Parser.Language.load(wasm)
     parser.setLanguage(lang)
     const text = fs.readFileSync('client/examples/policyspace/slots.pspace', {encoding: 'utf-8'})

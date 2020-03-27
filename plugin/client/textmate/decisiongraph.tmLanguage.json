@@ -1,0 +1,35 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "DecisionGraph",
+	"scopeName": "source.dg",
+	"comment": "guide can be found here - https://macromates.com/manual/en/language_grammars   |  for oniguruma regex - https://raw.githubusercontent.com/kkos/oniguruma/master/doc/RE",
+	"patterns": [
+		{"include": "#comments"}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{"include": "#line_comment"}
+				,{"include": "#block_comment"}
+			]
+		},
+		"line_comment": {
+			"patterns": [
+				{
+					"name": "comment.line.policyspace",
+					"begin": "<--",
+					"end": "\n"
+				}
+			]
+		},
+		"block_comment": {
+			"patterns": [
+				{
+					"name": "comment.block.policyspace",
+					"begin": "<\\*",
+					"end": "\\*>"
+				}
+			]
+		}
+	}
+}
