@@ -13,7 +13,7 @@
 		"vscode": "*"
 	},
 	"scripts": {
-		"test": "node out/color/test",
+		"test": "cd ../ && node client/out/color/test",
 		"update-vscode": "vscode-install",
 		"postinstall": "vscode-install"
 	},
@@ -25,9 +25,6 @@
 	},
 	"devDependencies": {
 		"@types/node": "^8.10.59",
-		"tree-sitter-cli": "^0.16.5",
-		"tree-sitter-decisiongraph": "0.0.6",
-		"tree-sitter-policyspace": "0.0.4",
 		"tslint": "^6.1.0",
 		"typescript": "^3.8.3",
 		"vsce": "^1.74.0",

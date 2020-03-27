@@ -185,7 +185,7 @@ export async function activateSyntaxColoring(context: vscode.ExtensionContext) {
 		const language = languages[editor.document.languageId]
 		if (language == null) return
 		if (language.parser == null) {
-			const absolute = path.join(context.extensionPath, 'client/parsers', language.module + '.wasm')
+			const absolute = path.join(context.extensionPath, 'parsers', language.module + '.wasm')
 			const wasm = path.relative(process.cwd(), absolute)
 			const lang = await Parser.Language.load(wasm)
 			const parser = new Parser()
