@@ -35,10 +35,14 @@ import {
 	DidSaveTextDocumentNotification,
 	DidChangeTextDocumentNotification,
 	DidCloseTextDocumentNotification,
+	DidChangeConfigurationNotification,
+	TextDocumentChangeRegistrationOptions,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
 import * as debugAnalyzer from './DebugAnalyzer';
+import {DocumentManager} from './DocumentManager';
+
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -46,14 +50,24 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+let documents: TextDocuments<DocumentManager> = new TextDocuments(DocumentManager);
+
+
+// Make the text document manager listen on the connection
+// for open, change and close text document events
+documents.listen(connection);
+
+// Listen on the connection
+connection.listen();
+
+// -------------- Initialize And Capabilites ----------------------
+let clientSupportswatchedFiles: boolean = false;
 
 // probably can be deleted
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
-let clientSupportswatchedFiles: boolean = false;
 
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
@@ -118,7 +132,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			textDocumentSync:
 			{
 				openClose:true,
-				change:TextDocumentSyncKind.Full, // incremental only cause the client to send also _lineoffset therefore not need
+				change:TextDocumentSyncKind.Incremental, // incremental only cause the client to send also _lineoffset therefore not need
 			},
 
 			completionProvider: {
@@ -135,6 +149,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 		}
 	};
 });
+
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
@@ -165,17 +180,27 @@ connection.onInitialized(() => {
 		]
 	};	
 
+	let x: TextDocumentChangeRegistrationOptions = {
+		syncKind: TextDocumentSyncKind.Incremental,
+		documentSelector: [
+			{
+				language:'policyspace',
+				pattern:"**/*.{ps,pspace}"
+			}, ////TODO add support for DG and more supported file types
+		]
+	};
+
 	//this options must be implemented by the client therfore we don't need to check for clinet support like other options
-	connection.client.register(DidOpenTextDocumentNotification.type,textDocumentNotificationOptions);
-	connection.client.register(DidSaveTextDocumentNotification.type,textDocumentNotificationOptions);
-	connection.client.register(DidCloseTextDocumentNotification.type,textDocumentNotificationOptions);
-	connection.client.register(DidChangeTextDocumentNotification.type,textDocumentNotificationOptions);
-		
+	connection.client.register(DidOpenTextDocumentNotification.type,x);
+	connection.client.register(DidSaveTextDocumentNotification.type,x);
+	connection.client.register(DidCloseTextDocumentNotification.type,x);
+	connection.client.register(DidChangeTextDocumentNotification.type,x);
+
 
 	//amse probalby not needed beacuse we don't care about configurations
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
-		//connection.client.register(DidChangeConfigurationNotification.type, undefined);
+		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
 
 	//TODO amsel delete
@@ -206,9 +231,12 @@ connection.onInitialized(() => {
 	}
 });
 
+
+
+//------------- User Requests ------------------------------
+
 connection.onExit(():void => {
 	connection.dispose();
-	process.exit(0);
 });
 
 connection.onCompletion(
@@ -247,45 +275,77 @@ connection.onRenameRequest(
 	}
 )
 
+function runModel(param : string[]) : string {
+	console.log("server is running the model")
+	let cwd = __dirname + "/../../";
+	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
+	return "execute ends";
+}
 
 
-
+// --------------------- Automatic Updates  -----------------------------
 
 
 // every change to file that matches pattern above will be notifed here
 connection.onDidChangeWatchedFiles(_change => {
+	let x = documents;
 	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 	connection.console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
 
 
+//THIS has range CAHNGE, doesn't have entire code
+// connection.onDidChangeTextDocument(_change =>{
+// 	console.log(`onDidChangeTextDocument\n${JSON.stringify(_change)}`);
+// 	connection.console.log(`onDidChangeTextDocument\n${JSON.stringify(_change)}`);
+// });
+
+// connection.onDidOpenTextDocument(_change =>{
+// 	console.log(`onDidOpenTextDocument\n${JSON.stringify(_change)}`);
+// 	connection.console.log(`onDidOpenTextDocument\n${JSON.stringify(_change)}`);
+// });
+
+// connection.onDidCloseTextDocument(_change =>{
+// 	console.log(`onDidCloseTextDocument\n${JSON.stringify(_change)}`);
+// 	connection.console.log(`onDidCloseTextDocument\n${JSON.stringify(_change)}`);
+// });
+
+// connection.onDidSaveTextDocument(_change =>{
+// 	console.log(`onDidSaveTextDocument\n${JSON.stringify(_change)}`);
+// 	connection.console.log(`onDidSaveTextDocument\n${JSON.stringify(_change)}`);
+// });
+
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
+	//receives the same version twice
 	//validateTextDocument(change.document);
+	let x = documents;
 	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
-
 });
 
 // this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
 // in order to control if it is a new on we need onDidChangeWatchedFiles
 documents.onDidOpen(
-	(params: TextDocumentChangeEvent<TextDocument>): void => {
+	(params: TextDocumentChangeEvent<DocumentManager>): void => {
+		let x = documents;
 		console.log(`onDidOpen \n ${JSON.stringify(params)}`);
 		connection.console.log(`onDidOpen \n ${JSON.stringify(params)}`);
 	});
 
 // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
 documents.onDidClose(
-	(params: TextDocumentChangeEvent<TextDocument>): void => {
+	(params: TextDocumentChangeEvent<DocumentManager>): void => {
+		let x = documents;
 		console.log(`onDidClose \n ${JSON.stringify(params)}`);
 		connection.console.log(`onDidClose \n ${JSON.stringify(params)}`);
 	});
 
 //this is called when the usere saves the document
 documents.onDidSave(
-	(params: TextDocumentChangeEvent<TextDocument>): void => {
+	(params: TextDocumentChangeEvent<DocumentManager>): void => {
+		let x = documents;
 		console.log(`onDidSave \n ${JSON.stringify(params)}`);
 		connection.console.log(`onDidSave \n ${JSON.stringify(params)}`);
 	});
@@ -319,49 +379,11 @@ connection.onDidCloseTextDocument((params) => {
 });*/
 
 
-// Make the text document manager listen on the connection
-// for open, change and close text document events
-documents.listen(connection);
-
-// Listen on the connection
-connection.listen();
-
-
-function runModel(param : string[]) : string {
-	console.log("server is running the model")
-	let cwd = __dirname + "/../../";
-	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
-	return "execute ends";
-}
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//------------------------------ UNKOWN CODE   ----------------------------------------------
 
 // The example settings
 interface ExampleSettings {
@@ -388,7 +410,9 @@ connection.onDidChangeConfiguration(change => {
 	}
 
 	// Revalidate all open text documents
-	documents.all().forEach(validateTextDocument);
+	documents.all().forEach(element => {
+		validateTextDocument(element.TextDocument);
+	});//    forEach(validateTextDocument);
 });
 
 function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
@@ -405,11 +429,6 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 	}
 	return result;
 }
-
-// Only keep settings for open documents
-documents.onDidClose(e => {
-	documentSettings.delete(e.document.uri);
-});
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// In this simple example we get the settings for every validate run.
@@ -457,9 +476,3 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
-
-
-
-
-
-

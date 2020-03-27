@@ -31,8 +31,6 @@ declare type wordGeneralSolverType = (params: allParamsTypes, funcName: string) 
 declare type generalSolverType = wordGeneralSolverType;
 
 
-let currDoc: currnetFileState = undefined;
-
 function solveOnRefernce (word:string, _params:wordBasedParams ) : Location[]{
 	let params: ReferenceParams = _params as ReferenceParams;
 
@@ -183,7 +181,7 @@ function onCompletionResolve (_params: allParamsTypes) : CompletionItem {
 }
 
 export function updateDoc (change: TextDocumentChangeEvent<TextDocument>){
-	currDoc = new currnetFileState(change.document.uri, change.document.getText())
+	//currDoc = new currnetFileState(change.document.uri, change.document.getText())
 	//docState = new docState(change.document.uri,change.document.)
 }
 
