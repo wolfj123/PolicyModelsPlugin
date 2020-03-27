@@ -6,8 +6,32 @@ export type ColorFunction = (x: Parser.Tree, visibleRanges: {start: number, end:
 
 
 export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
-	const functions: Range[] = []
+	//const functions: Range[] = []
 	const variables: Range[] = []
+	const keywords: Range[] = []
+	const strings: Range[] = []
+	const constants: Range[] = []
+
+	const keywordsStrings : string[] = [
+		"todo",
+		"ask",
+		"text",
+		"terms",
+		"answers",
+		"call",
+		"consider",
+		"options",
+		"else",
+		"when",
+		"section",
+		"title",
+		"continue",
+		"end",
+		"reject",
+		"set",
+		"#import"
+	]
+
 
 	let visitedChildren = false
 	let cursor = root.walk()
@@ -42,75 +66,38 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 		// Color tokens
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
-		switch (cursor.nodeType) {
-			case 'todo':
-				if (parent == 'todo_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'ask':
-				if (parent == 'ask_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'text':
-				if (parent == 'text_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'terms':
-				if (parent == 'terms_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'free_text':
-				if (parent == 'term_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'answers':
-				if (parent == 'answers_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'free_text':
-				if (parent == 'answer_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'call':
-				if (parent == 'call_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'consider':
-				if (parent == 'consider_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'slot':
-				if (parent == 'slot_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'options':
-				if (parent == 'consider_options_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'slot_value':
-				if (parent == 'consider_option_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'else':
-				if (parent == 'else_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'when':
-				if (parent == 'when_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-			case 'assignment_slot':
-				if (parent == 'when_answer_sub_node') {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				}
-								
-			break
+		if(keywordsStrings.indexOf(cursor.nodeType) > -1){
+			keywords.push({start: cursor.startPosition, end: cursor.endPosition})
+		}
+		else {
+			switch (cursor.nodeType) {
+				case 'free_text':
+					strings.push({start: cursor.startPosition, end: cursor.endPosition})	
+					break
+				case 'node_id':
+					variables.push({start: cursor.startPosition, end: cursor.endPosition})	
+					break
+				case 'slot_identifier':
+					variables.push({start: cursor.startPosition, end: cursor.endPosition})	
+					break
+				case 'decision_graph_name':
+					variables.push({start: cursor.startPosition, end: cursor.endPosition})	
+					break
+				case 'node_id_value':
+					if (parent != 'node_id') {
+						variables.push({start: cursor.startPosition, end: cursor.endPosition})
+					}	
+					break	
+			}
 		}
 	}
 
 	return new Map([
-		['entity.name.function', functions],
+		//['entity.name.function', functions],
 		['variable', variables],
+		['constant', constants],
+		['string', strings],
+		['keyword', keywords]
 	])
 }
 
