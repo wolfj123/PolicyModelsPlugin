@@ -6,6 +6,7 @@ type Assert = [string, string|{not:string}]
 type TestCase = [string, ...Assert[]]
 
 
+
 const policyspaceTests: TestCase[] = [
     [
         `Storage : one of clear, serverEncrypt.`, 
@@ -16,9 +17,10 @@ test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolic
 
 async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunction) {
     await Parser.init()
-    const parser = new Parser()
+    const parser = new Parser() 
+    console.log(__dirname)
     const lang = await Parser.Language.load(wasm)
-    parser.setLanguage(lang)
+    parser.setLanguage(lang) 
     for (const [src, ...expect] of testCases) {
         const tree = parser.parse(src)
         const scope2ranges = color(tree, [{start: 0, end: tree.rootNode.endPosition.row}])
