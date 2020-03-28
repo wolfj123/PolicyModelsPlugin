@@ -6,6 +6,8 @@ import { TextDocuments } from 'vscode-languageserver';
  * we have this in order to save also the changes when file changes
  */
 export interface TextDocWithChanges extends TextDocument {
+	//I know this property is stupid but we must use it in order to call original TextDocument functions (updatem, applyedits)
+	textDocument: TextDocument, //Don't use this
 	changes: TextDocumentContentChangeEvent[] | undefined
 }
 
@@ -28,7 +30,8 @@ export namespace TextDocWithChanges {
 			getText: doc.getText,
 			offsetAt: doc.offsetAt,
 			positionAt: doc.positionAt,
-			changes: undefined
+			changes: undefined,
+			textDocument:doc
 		}
 	}
 
@@ -40,7 +43,7 @@ export namespace TextDocWithChanges {
 	 * @returns The updated DocManager. Note: That's the same document manager instance passed in as first parameter.
 	 */
 	export function update(document: TextDocWithChanges, changes: TextDocumentContentChangeEvent[], version: number): TextDocWithChanges{
-		let doc:TextDocument = TextDocument.update(document,changes,version);
+		let doc:TextDocument = TextDocument.update(document.textDocument,changes,version);
 		return{
 			uri: doc.uri,
 			version: doc.version,
@@ -49,11 +52,12 @@ export namespace TextDocWithChanges {
 			getText: doc.getText,
 			offsetAt: doc.offsetAt,
 			positionAt: doc.positionAt,
-			changes: changes
+			changes: changes,
+			textDocument:doc
 		}
 	}
 
 	export function applyEdits(document: TextDocWithChanges, edits: TextEdit[]): string{
-		return TextDocument.applyEdits(document, edits);
+		return TextDocument.applyEdits(document.textDocument, edits);
 	}
 }

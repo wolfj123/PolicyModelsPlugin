@@ -123,11 +123,12 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			*/
 			
 
-			// textDocumentSync:
-			// {
-			// 	openClose:true,
-			// 	change:TextDocumentSyncKind.Incremental, // incremental only cause the client to send also _lineoffset therefore not need
-			// },
+			//TODO check if needed
+			textDocumentSync:
+			{
+				openClose:true,
+				change:TextDocumentSyncKind.Full, // incremental only cause the client to send also _lineoffset therefore not need
+			},
 
 			workspace:{
 				workspaceFolders:{
@@ -181,7 +182,7 @@ connection.onInitialized(() => {
 			{
 				language:'decisiongraph',
 				pattern:"**/*.{dg}"
-			} ////TODO add support for DG and more supported file types
+			}
 		]
 	};
 
@@ -222,6 +223,8 @@ connection.onInitialized(() => {
 		// 	console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
 		// 	connection.console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
 		// });
+
+		console.log('finish on intilized')
 
 	}
 });

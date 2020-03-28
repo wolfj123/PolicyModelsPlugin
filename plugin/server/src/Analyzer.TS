@@ -206,6 +206,7 @@ export class Solver<T extends TextDocument> implements SolverInt<T>{
 		this.policyAnalyzer = new PolicySpaceAnalyzer();
 		this.decisionGraphAnalyzer = new DecisionGraphAnalyzer();
 		this.documentsManager = documentsManager;
+		//TODO we need to get the entire folder files
 	}
 
 	public solve(params:any, requestName: string, fileUri: string): any {	
@@ -249,10 +250,10 @@ export class Solver<T extends TextDocument> implements SolverInt<T>{
 	}
 
 	onDidChangeContent(change: TextDocumentChangeEvent<T>): void {
-		throw new Error('Method not implemented.');
+		//TODO
 	}
 
 	onDidChangeWatchedFiles(change:DidChangeWatchedFilesParams): void {
-		throw new Error('Method not implemented.');
+		//TODO
 	}
 }
