@@ -1,14 +1,15 @@
 import { TextDocument, TextDocumentContentChangeEvent, DocumentUri, TextEdit } from 'vscode-languageserver-textdocument';
 
 /**
- * Text documnet Manager used to extend vscode-languageserver-textdocument  TextDocument in order to save also the changes when file changes
+ * Text documnet Manager used to extend vscode-languageserver-textdocument  TextDocument
+ * we have this in order to save also the changes when file changes
  */
-export interface DocumentManager {
+export interface TextDocWithChanges {
 	TextDocument: TextDocument,
 	changes: TextDocumentContentChangeEvent[] | undefined
 }
 
-export namespace DocumentManager{
+export namespace TextDocWithChanges {
 	/**
 	 * Creates a new text document manger object
 	 * 
@@ -17,7 +18,7 @@ export namespace DocumentManager{
      * @param version The document's initial version number.
      * @param content The document's content.
 	 */
-	export function create(uri: DocumentUri, languageId: string, version: number, content: string): DocumentManager{
+	export function create(uri: DocumentUri, languageId: string, version: number, content: string): TextDocWithChanges{
 		let doc:TextDocument = TextDocument.create(uri,languageId,version,content);
 		return{
 			TextDocument: doc,
@@ -32,7 +33,7 @@ export namespace DocumentManager{
 	 * @param version document version after chage
 	 * @returns The updated DocManager. Note: That's the same document manager instance passed in as first parameter.
 	 */
-	export function update(document: DocumentManager, changes: TextDocumentContentChangeEvent[], version: number): DocumentManager{
+	export function update(document: TextDocWithChanges, changes: TextDocumentContentChangeEvent[], version: number): TextDocWithChanges{
 		let doc:TextDocument = TextDocument.update(document.TextDocument,changes,version);
 		return{
 			TextDocument: doc,
@@ -40,7 +41,7 @@ export namespace DocumentManager{
 		}
 	}
 
-	export function applyEdits(document: DocumentManager, edits: TextEdit[]): string{
+	export function applyEdits(document: TextDocWithChanges, edits: TextEdit[]): string{
 		return TextDocument.applyEdits(document.TextDocument,edits);
 	}
 }

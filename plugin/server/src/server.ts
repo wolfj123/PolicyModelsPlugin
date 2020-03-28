@@ -30,7 +30,6 @@ import {
 	WatchKind,
 	TextDocumentSyncKind,
 	TextDocumentRegistrationOptions,
-	TextDocumentChangeEvent,
 	DidOpenTextDocumentNotification,
 	DidSaveTextDocumentNotification,
 	DidChangeTextDocumentNotification,
@@ -41,7 +40,7 @@ import {
 
 import * as child_process from "child_process";
 import * as debugAnalyzer from './DebugAnalyzer';
-import {DocumentManager} from './DocumentManager';
+import {TextDocWithChanges} from './DocumentManager';
 
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
@@ -50,7 +49,7 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-let documents: TextDocuments<DocumentManager> = new TextDocuments(DocumentManager);
+let documents: TextDocuments<TextDocWithChanges> = new TextDocuments(TextDocWithChanges);
 
 
 // Make the text document manager listen on the connection
@@ -123,21 +122,23 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				documentSymbolProvider, - WTF
 			*/
 			
+
+			// textDocumentSync:
+			// {
+			// 	openClose:true,
+			// 	change:TextDocumentSyncKind.Incremental, // incremental only cause the client to send also _lineoffset therefore not need
+			// },
+
 			workspace:{
 				workspaceFolders:{
 					supported: false,
 				}
 			},
 
-			textDocumentSync:
-			{
-				openClose:true,
-				change:TextDocumentSyncKind.Incremental, // incremental only cause the client to send also _lineoffset therefore not need
-			},
-
 			completionProvider: {
 				resolveProvider: true
 			},
+			
 			definitionProvider: true,
 			foldingRangeProvider: true,
 			referencesProvider: true,
@@ -153,7 +154,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
-
 	
 	if (clientSupportswatchedFiles){
 		let wtachedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
@@ -170,31 +170,26 @@ connection.onInitialized(() => {
 		console.log("client doesn't support watched files - is this a problem??");
 	}
 	
-	
-	let textDocumentNotificationOptions: TextDocumentRegistrationOptions = {
-		documentSelector: [
-			{
-				language:'policyspace',
-				pattern:"**/*.{ps,pspace}"
-			}, ////TODO add support for DG and more supported file types
-		]
-	};	
-
-	let x: TextDocumentChangeRegistrationOptions = {
+	let textDocumnetNotificationOptions: TextDocumentChangeRegistrationOptions = {
 		syncKind: TextDocumentSyncKind.Incremental,
-		documentSelector: [
+		documentSelector: 
+		[
 			{
 				language:'policyspace',
 				pattern:"**/*.{ps,pspace}"
-			}, ////TODO add support for DG and more supported file types
+			},
+			{
+				language:'policyspace',
+				pattern:"**/*.{dg}"
+			} ////TODO add support for DG and more supported file types
 		]
 	};
 
 	//this options must be implemented by the client therfore we don't need to check for clinet support like other options
-	connection.client.register(DidOpenTextDocumentNotification.type,x);
-	connection.client.register(DidSaveTextDocumentNotification.type,x);
-	connection.client.register(DidCloseTextDocumentNotification.type,x);
-	connection.client.register(DidChangeTextDocumentNotification.type,x);
+	connection.client.register(DidOpenTextDocumentNotification.type,textDocumnetNotificationOptions);
+	connection.client.register(DidSaveTextDocumentNotification.type,textDocumnetNotificationOptions);
+	connection.client.register(DidCloseTextDocumentNotification.type,textDocumnetNotificationOptions);
+	connection.client.register(DidChangeTextDocumentNotification.type,textDocumnetNotificationOptions);
 
 
 	//amse probalby not needed beacuse we don't care about configurations
@@ -294,96 +289,40 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 
-//THIS has range CAHNGE, doesn't have entire code
-// connection.onDidChangeTextDocument(_change =>{
-// 	console.log(`onDidChangeTextDocument\n${JSON.stringify(_change)}`);
-// 	connection.console.log(`onDidChangeTextDocument\n${JSON.stringify(_change)}`);
-// });
-
-// connection.onDidOpenTextDocument(_change =>{
-// 	console.log(`onDidOpenTextDocument\n${JSON.stringify(_change)}`);
-// 	connection.console.log(`onDidOpenTextDocument\n${JSON.stringify(_change)}`);
-// });
-
-// connection.onDidCloseTextDocument(_change =>{
-// 	console.log(`onDidCloseTextDocument\n${JSON.stringify(_change)}`);
-// 	connection.console.log(`onDidCloseTextDocument\n${JSON.stringify(_change)}`);
-// });
-
-// connection.onDidSaveTextDocument(_change =>{
-// 	console.log(`onDidSaveTextDocument\n${JSON.stringify(_change)}`);
-// 	connection.console.log(`onDidSaveTextDocument\n${JSON.stringify(_change)}`);
-// });
-
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
 	//receives the same version twice
 	//validateTextDocument(change.document);
-	let x = documents;
-	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
-	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+	let x = documents.all();
+	//console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+	//connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 });
+
+
+// ------------------ this code isn't needed for now when file opens and closes the documnet manager works automatically
+// this will be needed in case we want some more functionality when closing, opening or saving
 
 // this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
 // in order to control if it is a new on we need onDidChangeWatchedFiles
-documents.onDidOpen(
-	(params: TextDocumentChangeEvent<DocumentManager>): void => {
-		let x = documents;
-		console.log(`onDidOpen \n ${JSON.stringify(params)}`);
-		connection.console.log(`onDidOpen \n ${JSON.stringify(params)}`);
-	});
+// documents.onDidOpen(
+// 	(params: TextDocumentChangeEvent<DocumentManager>): void => {
+// 	});
 
-// this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
-documents.onDidClose(
-	(params: TextDocumentChangeEvent<DocumentManager>): void => {
-		let x = documents;
-		console.log(`onDidClose \n ${JSON.stringify(params)}`);
-		connection.console.log(`onDidClose \n ${JSON.stringify(params)}`);
-	});
+// // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
+// documents.onDidClose(
+// 	(params: TextDocumentChangeEvent<DocumentManager>): void => {
+// 	});
 
-//this is called when the usere saves the document
-documents.onDidSave(
-	(params: TextDocumentChangeEvent<DocumentManager>): void => {
-		let x = documents;
-		console.log(`onDidSave \n ${JSON.stringify(params)}`);
-		connection.console.log(`onDidSave \n ${JSON.stringify(params)}`);
-	});
-
-
-
-/*
-this funcations aren't really called in current configuration -NO IDEA why but we have supplemnts aboce
-
-connection.onDidOpenTextDocument((params) => {
-	// A text document got opened in VSCode.
-	// params.textDocument.uri uniquely identifies the document. For documents store on disk this is a file URI.
-	// params.textDocument.text the initial full content of the document.
-	console.log(`onDidOpenTextDocument\n${params.textDocument.uri} opened.`);
-	connection.console.log(`onDidOpenTextDocument\n${params.textDocument.uri} opened.`);
-});
-
-connection.onDidChangeTextDocument((params) => {
-	// The content of a text document did change in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	// params.contentChanges describe the content changes to the document.
-	console.log(`onDidChangeTextDocument\n${params.textDocument.uri} opened.`);
-	connection.console.log(`onDidChangeTextDocument\n${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
-});
-
-connection.onDidCloseTextDocument((params) => {
-	// A text document got closed in VSCode.
-	// params.textDocument.uri uniquely identifies the document.
-	console.log(`onDidCloseTextDocument\n${params.textDocument.uri} opened.`);
-	connection.console.log(`onDidCloseTextDocument\n${params.textDocument.uri} closed.`);
-});*/
+// //this is called when the user saves the document
+// documents.onDidSave(
+// 	(params: TextDocumentChangeEvent<DocumentManager>): void => {
+// 	});
 
 
 
 
-
-
-//------------------------------ UNKOWN CODE   ----------------------------------------------
+//------------------------------ UNKOWNN CODE   ----------------------------------------------
 
 // The example settings
 interface ExampleSettings {
