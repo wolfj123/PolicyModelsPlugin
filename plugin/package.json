@@ -33,7 +33,7 @@
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
-		"onLanguage:valueInference"
+		"onLanguage:valueinference"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
@@ -70,6 +70,11 @@
 				"language": "decisiongraph",
 				"scopeName": "source.dg",
 				"path": "./client/textmate/decisiongraph.tmLanguage.json"
+			},
+			{
+				"language": "valueinference",
+				"scopeName": "source.vi",
+				"path": "./client/textmate/valueinference.tmLanguage.json"
 			}
 		],
 		"languages": [
@@ -83,7 +88,7 @@
 					".pspace",
 					".ts"
 				],
-				"configuration": "./client/pspace-language-configuration.json"
+				"configuration": "./pspace-language-configuration.json"
 			},
 			{
 				"id": "decisiongraph",
@@ -94,7 +99,7 @@
 				"extensions": [
 					".dg"
 				],
-				"configuration": "./client/decisiongraph-language-configuration.json"
+				"configuration": "./decisiongraph-language-configuration.json"
 			},
 			{
 				"id": "policyModelDescription",
@@ -126,11 +131,11 @@
 				"configuration": "./pspace-graph-language-configuration.json"
 			},
 			{
-				"id": "valueInference",
+				"id": "valueinference",
 				"extensions": [
 					".vi"
 				],
-				"configuration": "./pspace-graph-language-configuration.json"
+				"configuration": "./valueinference-language-configuration.json"
 			}
 		]
 	},
@@ -138,8 +143,9 @@
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.12.32",
 		"tree-sitter-cli": "^0.16.5",
-		"tree-sitter-decisiongraph": "^0.0.7",
+		"tree-sitter-valueinference": "^0.0.2",
 		"tree-sitter-policyspace": "^0.0.4",
+		"tree-sitter-decisiongraph": "^0.0.7",
 		"tslint": "^5.20.1",
 		"typescript": "^3.8.3"
 	},

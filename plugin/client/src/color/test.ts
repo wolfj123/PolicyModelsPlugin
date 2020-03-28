@@ -6,11 +6,10 @@ type Assert = [string, string|{not:string}]
 type TestCase = [string, ...Assert[]]
 
 
-
 const policyspaceTests: TestCase[] = [
     [
         `Storage : one of clear, serverEncrypt.`, 
-        ['Storage', 'entity.name.function'], ['clear', 'variable'], ['serverEncrypt', 'variable']
+        ['Storage', 'entity.name.type'], ['clear', 'constant.numeric'], ['serverEncrypt', 'constant.numeric']
     ],
 ]
 test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace)
