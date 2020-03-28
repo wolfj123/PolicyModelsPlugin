@@ -136,12 +136,12 @@
 	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.7",
-		"@types/node": "^12.12.30",
-		"tslint": "^5.20.1",
-		"typescript": "^3.8.3",
+		"@types/node": "^12.12.32",
 		"tree-sitter-cli": "^0.16.5",
-		"tree-sitter-decisiongraph": "0.0.6",
-		"tree-sitter-policyspace": "0.0.4"
+		"tree-sitter-decisiongraph": "^0.0.7",
+		"tree-sitter-policyspace": "^0.0.4",
+		"tslint": "^5.20.1",
+		"typescript": "^3.8.3"
 	},
 	"dependencies": {
 		"tree-sitter": "^0.16.0",
