@@ -38,9 +38,8 @@ import {
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
-import * as debugAnalyzer from './DebugAnalyzer';
-import {TextDocWithChanges} from './DocumentManager';
-
+import {TextDocWithChanges} from './DocumentChangesManager';
+import {Solver} from './Analyzer';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -48,15 +47,17 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
+
+
 let documents: TextDocuments<TextDocWithChanges> = new TextDocuments(TextDocWithChanges);
-
-
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
+
+let solver: Solver<TextDocWithChanges> = new Solver(documents);
 
 // -------------- Initialize And Capabilites ----------------------
 let clientSupportswatchedFiles: boolean = false;
@@ -235,37 +236,37 @@ connection.onExit(():void => {
 
 connection.onCompletion(
 	(params: TextDocumentPositionParams): CompletionList => {	
-		return debugAnalyzer.solve(params,"onCompletion") as CompletionList;
+		return solver.solve(params, "onCompletion" ,params.textDocument.uri);
 	}
 );
 
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		return debugAnalyzer.solve(item,"onCompletionResolve") as CompletionItem;
+		return solver.solve(item, "onCompletionResolve", item.data.textDocument.uri);
 	}
 );
 
 connection.onDefinition(
 	(params: DeclarationParams) : LocationLink[] => {
-		return debugAnalyzer.solve(params,"onDefinition") as LocationLink[];
+		return solver.solve(params, "onDefinition", params.textDocument.uri);
 	}
 );
 
 connection.onFoldingRanges(
 	(params: FoldingRangeParams) : FoldingRange[] => {
-		return debugAnalyzer.solve(params,"onFoldingRanges") as FoldingRange[];
+		return solver.solve(params, "onFoldingRanges", params.textDocument.uri);
 	}
 );
 
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
-		return debugAnalyzer.solve(params,"onReferences") as Location[];
+		return solver.solve(params, "onReferences", params.textDocument.uri);
 	}
 );
 
 connection.onRenameRequest(
 	(params: RenameParams): WorkspaceEdit =>{
-		return debugAnalyzer.solve(params,"onRenameRequest") as WorkspaceEdit;
+		return solver.solve(params, "onRenameRequest", params.textDocument.uri);
 	}
 )
 
@@ -349,7 +350,7 @@ connection.onDidChangeConfiguration(change => {
 
 	// Revalidate all open text documents
 	documents.all().forEach(element => {
-		validateTextDocument(element.TextDocument);
+		validateTextDocument(element);
 	});//    forEach(validateTextDocument);
 });
 

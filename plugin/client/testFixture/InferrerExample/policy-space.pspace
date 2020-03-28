@@ -1,4 +1,4 @@
-abcde consists of HumanDataType, Harm, Encryption.
+Human: consists of HumanDataType, Harm, Encryption.
 HumanDataType: one of none, aggregated, anonymized, identifiable.
 Harm: one of none, minor, medium, major.
 Encryption: one of clear, serverSide, doubleEncrypt.

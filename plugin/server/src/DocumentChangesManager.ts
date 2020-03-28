@@ -1,11 +1,11 @@
 import { TextDocument, TextDocumentContentChangeEvent, DocumentUri, TextEdit } from 'vscode-languageserver-textdocument';
+import { TextDocuments } from 'vscode-languageserver';
 
 /**
  * Text documnet Manager used to extend vscode-languageserver-textdocument  TextDocument
  * we have this in order to save also the changes when file changes
  */
-export interface TextDocWithChanges {
-	TextDocument: TextDocument,
+export interface TextDocWithChanges extends TextDocument {
 	changes: TextDocumentContentChangeEvent[] | undefined
 }
 
@@ -21,7 +21,13 @@ export namespace TextDocWithChanges {
 	export function create(uri: DocumentUri, languageId: string, version: number, content: string): TextDocWithChanges{
 		let doc:TextDocument = TextDocument.create(uri,languageId,version,content);
 		return{
-			TextDocument: doc,
+			uri: doc.uri,
+			version: doc.version,
+			languageId: doc.languageId,
+			lineCount: doc.lineCount,
+			getText: doc.getText,
+			offsetAt: doc.offsetAt,
+			positionAt: doc.positionAt,
 			changes: undefined
 		}
 	}
@@ -34,14 +40,20 @@ export namespace TextDocWithChanges {
 	 * @returns The updated DocManager. Note: That's the same document manager instance passed in as first parameter.
 	 */
 	export function update(document: TextDocWithChanges, changes: TextDocumentContentChangeEvent[], version: number): TextDocWithChanges{
-		let doc:TextDocument = TextDocument.update(document.TextDocument,changes,version);
+		let doc:TextDocument = TextDocument.update(document,changes,version);
 		return{
-			TextDocument: doc,
+			uri: doc.uri,
+			version: doc.version,
+			languageId: doc.languageId,
+			lineCount: doc.lineCount,
+			getText: doc.getText,
+			offsetAt: doc.offsetAt,
+			positionAt: doc.positionAt,
 			changes: changes
 		}
 	}
 
 	export function applyEdits(document: TextDocWithChanges, edits: TextEdit[]): string{
-		return TextDocument.applyEdits(document.TextDocument,edits);
+		return TextDocument.applyEdits(document, edits);
 	}
 }
