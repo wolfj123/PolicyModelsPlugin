@@ -35,7 +35,7 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 		"end",
 		"reject",
 		"set",
-		//"slot",
+		"slot",
 		"#import"
 	]
 
@@ -105,7 +105,7 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 				case 'slot_value':
 					slotValues.push({start: cursor.startPosition, end: cursor.endPosition})	
 					break
-				case 'slot':
+				case 'slot_reference':
 					slots.push({start: cursor.startPosition, end: cursor.endPosition})	
 					break
 				case 'file_path':
@@ -119,8 +119,8 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 		//['entity.name.function', functions],
 		['variable', nodeIds],
 		//['constant.numeric', slotValues],
-		['entity.name.function', slotValues],
-		['comment', slots],								//TODO: this is temporary color for now, only to see that it works
+		['constant.numeric', slotValues],
+		['entity.name.type', slots],								//TODO: this is temporary color for now, only to see that it works
 		['keyword.control', freeTextAnswerTerm],
 		['string', freeTexts],
 		['keyword', nodeTypes]
