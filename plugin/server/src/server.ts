@@ -39,7 +39,7 @@ import {
 
 import * as child_process from "child_process";
 import {TextDocWithChanges} from './DocumentChangesManager';
-import {Solver} from './Analyzer';
+import {SolverInt, Solver} from './Analyzer';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -57,7 +57,7 @@ documents.listen(connection);
 // Listen on the connection
 connection.listen();
 
-let solver: Solver<TextDocWithChanges> = new Solver(documents);
+let solver: SolverInt<TextDocWithChanges> = new Solver(documents);
 
 // -------------- Initialize And Capabilites ----------------------
 let clientSupportswatchedFiles: boolean = false;
@@ -283,7 +283,7 @@ function runModel(param : string[]) : string {
 
 // every change to file that matches pattern above will be notifed here
 connection.onDidChangeWatchedFiles(_change => {
-	let x = documents;
+	solver.onDidChangeWatchedFiles(_change);
 	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 	connection.console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
@@ -294,7 +294,7 @@ connection.onDidChangeWatchedFiles(_change => {
 documents.onDidChangeContent(change => {
 	//receives the same version twice
 	//validateTextDocument(change.document);
-	let x = documents.all();
+	solver.onDidChangeContent(change);
 	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 });

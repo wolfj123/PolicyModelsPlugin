@@ -8,7 +8,6 @@ import {
 	LocationLink,
 	CompletionItem,
 	TextDocumentPositionParams,
-	TextDocumentChangeEvent,
 	FoldingRangeParams,
 	FoldingRange,
 	FoldingRangeKind,
@@ -17,15 +16,17 @@ import {
 	CompletionList,
 	CompletionItemKind,
 	TextDocuments,
-	TextDocumentIdentifier
+	TextDocumentIdentifier,
+	TextDocumentChangeEvent,
+	DidChangeWatchedFilesParams,
 } from 'vscode-languageserver';
 
 import { TextEdit } from 'vscode-languageserver-textdocument';
-import { TextDocWithChanges } from './DocumentChangesManager';
 
 declare type allParamsTypes = ReferenceParams | DeclarationParams | RenameParams | TextDocumentPositionParams | 
-							  CompletionItem | FoldingRangeParams;
-declare type allSolutionTypes = Location[] | WorkspaceEdit | CompletionList | CompletionItem | FoldingRange[] | LocationLink[];
+							  CompletionItem | FoldingRangeParams | string;
+declare type allSolutionTypes = Location[] | WorkspaceEdit | CompletionList | CompletionItem | FoldingRange[] |
+							    LocationLink[] | void;
 
 enum langugeIds {
 	policyspace =  0,
@@ -188,7 +189,15 @@ class DecisionGraphAnalyzer implements Analyzer{
 	
 }
 
-export class Solver<T extends TextDocument> {
+export interface SolverInt<T extends TextDocument> {
+	solve(params:any, requestName: string, fileUri: string): any;
+	onDidChangeContent(change: TextDocumentChangeEvent<T>): void;
+	onDidSave?(change: TextDocumentChangeEvent<T>): void;
+	onDidClose?(change: TextDocumentChangeEvent<T>): void;
+	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
+}
+
+export class Solver<T extends TextDocument> implements SolverInt<T>{
 	private policyAnalyzer: Analyzer;
 	private decisionGraphAnalyzer: Analyzer;
 	private documentsManager: TextDocuments<T>; // probalby will be extended 
@@ -206,7 +215,8 @@ export class Solver<T extends TextDocument> {
 			'onRenameRequest': this.policyAnalyzer.doRename,
 			'onFoldingRanges': this.policyAnalyzer.getFoldingRange,
 			'onCompletion': this.policyAnalyzer.autoCompleteRequest,
-			'onCompletionResolve': this.policyAnalyzer.resolveAutoCompleteItem
+			'onCompletionResolve': this.policyAnalyzer.resolveAutoCompleteItem,
+			default: this.errorFindingFunction
 		}
 
 		let decisionGrpahHandler: {[id: string]: (paramas:allParamsTypes ) => allSolutionTypes} = {
@@ -215,7 +225,8 @@ export class Solver<T extends TextDocument> {
 			'onRenameRequest': this.decisionGraphAnalyzer.doRename,
 			'onFoldingRanges': this.decisionGraphAnalyzer.getFoldingRange,
 			'onCompletion': this.decisionGraphAnalyzer.autoCompleteRequest,
-			'onCompletionResolve': this.decisionGraphAnalyzer.resolveAutoCompleteItem
+			'onCompletionResolve': this.decisionGraphAnalyzer.resolveAutoCompleteItem,
+			default: this.errorFindingFunction
 		}
 
 		let relevantHandler: {[id: number]: {[id: string]: (paramas:allParamsTypes ) => allSolutionTypes}} = {
@@ -231,5 +242,17 @@ export class Solver<T extends TextDocument> {
 		let allDocuments: T []= this.documentsManager.all();
 		let langId: string = allDocuments.find (curr => curr.uri === uri).languageId
 		return langugeIds[langId];
+	}
+
+	private errorFindingFunction (params: string): void {
+		//TODO 
+	}
+
+	onDidChangeContent(change: TextDocumentChangeEvent<T>): void {
+		throw new Error('Method not implemented.');
+	}
+
+	onDidChangeWatchedFiles(change:DidChangeWatchedFilesParams): void {
+		throw new Error('Method not implemented.');
 	}
 }
