@@ -29,7 +29,6 @@ import {
 	DidChangeWatchedFilesRegistrationOptions,
 	WatchKind,
 	TextDocumentSyncKind,
-	TextDocumentRegistrationOptions,
 	DidOpenTextDocumentNotification,
 	DidSaveTextDocumentNotification,
 	DidChangeTextDocumentNotification,
@@ -179,7 +178,7 @@ connection.onInitialized(() => {
 				pattern:"**/*.{ps,pspace}"
 			},
 			{
-				language:'policyspace',
+				language:'decisiongraph',
 				pattern:"**/*.{dg}"
 			} ////TODO add support for DG and more supported file types
 		]
@@ -295,8 +294,8 @@ documents.onDidChangeContent(change => {
 	//receives the same version twice
 	//validateTextDocument(change.document);
 	let x = documents.all();
-	//console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
-	//connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 });
 
 
