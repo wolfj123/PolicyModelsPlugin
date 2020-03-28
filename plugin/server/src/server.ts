@@ -39,7 +39,7 @@ import {
 
 import * as child_process from "child_process";
 import {TextDocWithChanges} from './DocumentChangesManager';
-import {SolverInt, Solver} from './Analyzer';
+import {SolverInt, Solver} from './Analyzer1';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
