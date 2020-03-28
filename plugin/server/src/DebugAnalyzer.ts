@@ -178,6 +178,7 @@ export function updateDoc (change: TextDocumentChangeEvent<TextDocument>){
 	//docState = new docState(change.document.uri,change.document.)
 }
 
+// DONT USE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 export function solve(params:allParamsTypes , funcName: string): allSolutionsTypes{
 	let allSolvers: {[id: string]: generalSolverType} =
 	
