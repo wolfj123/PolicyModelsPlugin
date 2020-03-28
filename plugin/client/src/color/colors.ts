@@ -128,8 +128,8 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 }
 
 export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
-	const functions: Range[] = []
-	const variables: Range[] = []
+	const slots: Range[] = []
+	const slotValues: Range[] = []
 
 	let visitedChildren = false
 	let cursor = root.walk()
@@ -167,24 +167,30 @@ export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: numbe
 		switch (cursor.nodeType) {
 			case 'identifier_simple':
 				if (parent == 'slot' || (parent == 'identifier_with_desc' && grandparent == 'slot')) {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
+					slots.push({start: cursor.startPosition, end: cursor.endPosition})
 				}
 				else {
-					variables.push({start: cursor.startPosition, end: cursor.endPosition})
+					slotValues.push({start: cursor.startPosition, end: cursor.endPosition})
 				}
 			break
 		}
 	}
 
 	return new Map([
-		['entity.name.function', functions],
-		['variable', variables],
+		['entity.name.type', slots],
+		['constant.numeric', slotValues],
 	])
 }
 
 export function colorValueInference(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
-	const functions: Range[] = []
-	const variables: Range[] = []
+	const slots: Range[] = []
+	const slotValues: Range[] = []
+	const keywords : Range[] = []
+
+	const keywordsStrings : string[] = [
+		"support",
+		"->"
+	]
 
 	let visitedChildren = false
 	let cursor = root.walk()
@@ -219,21 +225,26 @@ export function colorValueInference(root: Parser.Tree, visibleRanges: {start: nu
 		// Color tokens
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
-		switch (cursor.nodeType) {
-			case 'identifier_simple':
-				//if (parent == 'slot' || (parent == 'identifier_with_desc' && grandparent == 'slot')) {
-					functions.push({start: cursor.startPosition, end: cursor.endPosition})
-				//}
-				//else {
-				//	variables.push({start: cursor.startPosition, end: cursor.endPosition})
-				//}
-			break
+		if(keywordsStrings.indexOf(cursor.nodeType) > -1){
+			keywords.push({start: cursor.startPosition, end: cursor.endPosition})
+		}
+		else {
+			switch (cursor.nodeType) {
+				case 'slot_identifier':
+					slots.push({start: cursor.startPosition, end: cursor.endPosition})
+				break
+				case 'identifier_simple':
+					if (parent != 'slot_identifier')
+					slotValues.push({start: cursor.startPosition, end: cursor.endPosition})
+				break
+			}
 		}
 	}
 
 	return new Map([
-		['entity.name.function', functions],
-		['variable', variables],
+		['entity.name.type', slots],
+		['constant.numeric', slotValues],
+		['keyword', keywords]
 	])
 }
 
