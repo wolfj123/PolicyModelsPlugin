@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { ICommand, CommandAction } from './app/model';
+import { ICommand, CommandAction } from './Types/model';
 
 export default class ViewLoader {
   private readonly _panel: vscode.WebviewPanel | undefined;

@@ -7,14 +7,17 @@
         "lib": [
             "es6",
             "dom"
-        ],  
+        ],
         "jsx": "react",
         "sourceMap": true,
         "rootDir": "..",
         "noUnusedLocals": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "noUnusedParameters": true
     },
     "exclude": [
         "node_modules"
