@@ -1,17 +1,12 @@
-export interface IConfig {
-  name: string;
-  description: string;
-  users: IUser[];
-}
-export interface IUser {
-  name: string;
-  active: boolean;
-  roles: string[];
+
+export interface AdditionalInfo {
+  path: string;
 }
 
 export interface ICommand {
   action: CommandAction;
-  content: IConfig;
+  content: JSON;
+  additionalInfo?: AdditionalInfo;
 }
 
 export enum CommandAction {

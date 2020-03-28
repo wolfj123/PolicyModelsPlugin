@@ -1,56 +1,48 @@
-import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
+import * as vscode from 'vscode';
+import * as path from 'path';
 
-import { IConfig, ICommand, CommandAction } from "./app/model";
+import { ICommand, CommandAction } from './app/model';
 
 export default class ViewLoader {
   private readonly _panel: vscode.WebviewPanel | undefined;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
 
-  constructor(fileUri: vscode.Uri, extensionPath: string) {
+  constructor(languageFilesData, extensionProps, onSave) {
+    const { extensionPath } = extensionProps;
     this._extensionPath = extensionPath;
+    this._panel = vscode.window.createWebviewPanel('Localization', 'Localization', vscode.ViewColumn.One, {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'configViewer'))]
+    });
 
-    let config = this.getFileContent(fileUri);
-    if (config) {
-      this._panel = vscode.window.createWebviewPanel(
-        "configView",
-        "Config View",
-        vscode.ViewColumn.One,
-        {
-          enableScripts: true,
+    this._panel.webview.html = this.getWebviewContent(languageFilesData);
 
-          localResourceRoots: [
-            vscode.Uri.file(path.join(extensionPath, "configViewer"))
-          ]
+    this._panel.webview.onDidReceiveMessage(
+      (command: ICommand) => {
+        switch (command.action) {
+          case CommandAction.Save:
+            const newLanguageFilesData = onSave(command.additionalInfo.path, command.content);
+            this.updateLanguageFilesData(newLanguageFilesData);
+
+            return;
         }
-      );
-
-      this._panel.webview.html = this.getWebviewContent(config);
-
-      this._panel.webview.onDidReceiveMessage(
-        (command: ICommand) => {
-          switch (command.action) {
-            case CommandAction.Save:
-              this.saveFileContent(fileUri, command.content);
-              return;
-          }
-        },
-        undefined,
-        this._disposables
-      );
-    }
+      },
+      undefined,
+      this._disposables
+    );
   }
 
-  private getWebviewContent(config: IConfig): string {
-    // Local path to main script run in the webview
-    const reactAppPathOnDisk = vscode.Uri.file(
-      path.join(this._extensionPath, "configViewer", "configViewer.js")
-    );
-    const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
+  private updateLanguageFilesData(newLanguageFilesData) {
+    this._panel.webview.postMessage({ languageFilesData: newLanguageFilesData });
+  }
 
-    const configJson = JSON.stringify(config);
+  private getWebviewContent(languageFilesData): string {
+    // Local path to main script run in the webview
+    const reactAppPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'configViewer', 'configViewer.js'));
+    const reactAppUri = reactAppPathOnDisk.with({ scheme: 'vscode-resource' });
+
+    const languageFilesDataJson = JSON.stringify(languageFilesData);
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -67,35 +59,13 @@ export default class ViewLoader {
 
         <script>
           window.acquireVsCodeApi = acquireVsCodeApi;
-          window.initialData = ${configJson};
+          window.initialData = ${languageFilesDataJson};
         </script>
     </head>
     <body>
         <div id="root"></div>
-
         <script src="${reactAppUri}"></script>
     </body>
     </html>`;
-  }
-
-  private getFileContent(fileUri: vscode.Uri): IConfig | undefined {
-    if (fs.existsSync(fileUri.fsPath)) {
-      let content = fs.readFileSync(fileUri.fsPath, "utf8");
-      let config: IConfig = JSON.parse(content);
-
-      return config;
-    }
-    return undefined;
-  }
-
-  private saveFileContent(fileUri: vscode.Uri, config: IConfig) {
-    if (fs.existsSync(fileUri.fsPath)) {
-      let content: string = JSON.stringify(config);
-      fs.writeFileSync(fileUri.fsPath, content);
-
-      vscode.window.showInformationMessage(
-        `👍 Configuration saved to ${fileUri.fsPath}`
-      );
-    }
   }
 }
