@@ -83,7 +83,7 @@
 					".pspace",
 					".ts"
 				],
-				"configuration": "./client/pspace-language-configuration.json"
+				"configuration": "./pspace-language-configuration.json"
 			},
 			{
 				"id": "decisiongraph",
@@ -94,7 +94,7 @@
 				"extensions": [
 					".dg"
 				],
-				"configuration": "./client/decisiongraph-language-configuration.json"
+				"configuration": "./decisiongraph-language-configuration.json"
 			},
 			{
 				"id": "policyModelDescription",
