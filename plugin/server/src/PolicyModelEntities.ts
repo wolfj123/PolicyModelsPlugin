@@ -37,8 +37,9 @@ class PolicyModelEntity {
 	name : string;
 	declaration : Location;
 	references : Location[];
+	text : string;
 
-	constructor(name : string, type : PolicyModelEntityType, declaration : Location) {
+	constructor(name : string, type : PolicyModelEntityType, text: string, declaration : Location) {
 		this.name = name;
 		this.type = type;
         this.declaration = declaration;
@@ -67,24 +68,9 @@ class PolicyModelEntity {
 // }
 
 
-function isVisible(x: Parser.SyntaxNode, visibleRanges: {start: number, end: number}[]) {
-	for (const {start, end} of visibleRanges) {
-		const overlap = x.startPosition.row <= end+1 && start-1 <= x.endPosition.row
-		if (overlap) return true
-	}
-	return false
-}
-function visible(x: Parser.TreeCursor, visibleRanges: { start: number, end: number }[]) {
-	for (const { start, end } of visibleRanges) {
-		const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
-		if (overlap) return true
-	}
-	return false
-}
-
 
 function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {start: number, end: number}[]) : PolicyModelEntity[] {
-	let result : PolicyModelEntity[]
+	let result : PolicyModelEntity[] = []
 
 	let fileExtensionsDecisionGraph = ['.dg']
 	let fileExtensionsPolicySpace = ['.pspace']
@@ -97,6 +83,21 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	let parent
 	let grandparent
 
+	function isVisible(x: Parser.SyntaxNode, visibleRanges: {start: number, end: number}[]) {
+		for (const {start, end} of visibleRanges) {
+			const overlap = x.startPosition.row <= end+1 && start-1 <= x.endPosition.row
+			if (overlap) return true
+		}
+		return false
+	}
+	function visible(x: Parser.TreeCursor, visibleRanges: { start: number, end: number }[]) {
+		for (const { start, end } of visibleRanges) {
+			const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
+			if (overlap) return true
+		}
+		return false
+	}
+
 	function cursorNext() : boolean {
 		// Advance cursor
 		if (visitedChildren) {
@@ -105,7 +106,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 			} else if (cursor.gotoParent()) {
 				parents.pop()
 				visitedChildren = true
-				return true
+				return cursorNext()
 			} else {
 				return false
 			}
@@ -116,14 +117,15 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 				visitedChildren = false
 			} else {
 				visitedChildren = true
-				return true
+				return cursorNext()
 			}
 		}
 		// Skip nodes that are not visible
 		if (!visible(cursor, visibleRanges)) {
 			visitedChildren = true
-			return true
+			return cursorNext()
 		}
+		return true
 	}
 
 	function analyzeParseTreeDecisionGraph() {
@@ -166,18 +168,16 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 				let currNode = cursor.currentNode()
 				let idArray = currNode.descendantsOfType('node_id')
 				if(idArray.length > 0){
-					let id = idArray[0].text
+					let id : string = idArray[0].descendantsOfType('node_id_value')[0].text
+					let text = currNode.text
 					let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
-					let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNode, loc)
+					let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNode, text, loc)
 					result.push(newNode)
 				} 
 				else {
 					//TODO: what about nameless nodes for folding?
 				}
 			} 
-			else if() {
-
-			}
 		}
 	}
 
@@ -186,7 +186,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	}
 
 	function analyzeParseTreeValueInference() {
-		
+		//TODO:
 	}
 
 	if(fileExtensionsDecisionGraph.indexOf(getFileExtension(uri)) > -1) {
@@ -236,6 +236,30 @@ function newLocation(uri : DocumentUri, pos1 : Position, pos2 : Position) : Loca
 
 function getFileExtension(filename : string) : string {
 	let re = /(?:\.([^.]+))?$/;
+	//console.log(re.exec(filename)[1])
 	return re.exec(filename)[1];   
 }
 
+
+//***********************PLAYGROUND******************
+
+
+
+
+async function demo() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+		
+	//Then you can parse some source code,
+	const sourceCode = '[>node< todo : idk]';
+	const tree = parser.parse(sourceCode);
+	
+	//and inspect the syntax tree.
+	console.log(analyzeParseTree(tree, "somefile.dg", [{start: 0 , end: 0}]))
+
+}
+
+demo()
