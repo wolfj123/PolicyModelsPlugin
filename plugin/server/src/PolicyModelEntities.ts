@@ -72,9 +72,9 @@ class PolicyModelEntity {
 function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {start: number, end: number}[]) : PolicyModelEntity[] {
 	let result : PolicyModelEntity[] = []
 
-	let fileExtensionsDecisionGraph = ['.dg']
-	let fileExtensionsPolicySpace = ['.pspace']
-	let fileExtensionsvalueInference = ['.vi']
+	let fileExtensionsDecisionGraph = ['dg']
+	let fileExtensionsPolicySpace = ['pspace']
+	let fileExtensionsvalueInference = ['vi']
 
 
 	let visitedChildren = false
@@ -97,6 +97,8 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 		}
 		return false
 	}
+
+
 
 	function cursorNext() : boolean {
 		// Advance cursor
@@ -199,6 +201,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 		analyzeParseTreeValueInference()
 	}
 
+
 	return result
 }
 
@@ -262,4 +265,11 @@ async function demo() {
 
 }
 
+function myprint(msg){
+	if(true){
+		console.log(msg)
+	}
+}
+
 demo()
+
