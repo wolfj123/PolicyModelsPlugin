@@ -124,11 +124,11 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			*/
 			
 
-			//TODO check if needed
+			// TODO check if needed
 			textDocumentSync:
 			{
 				openClose:true,
-				change:TextDocumentSyncKind.Full, // incremental only cause the client to send also _lineoffset therefore not need
+				change:TextDocumentSyncKind.Incremental
 			},
 
 			workspace:{
@@ -210,12 +210,12 @@ connection.onInitialized(() => {
 			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
 
-		//this in not needed - we support only one root folder
-		// connection.workspace.getWorkspaceFolders().then(_event => {
-		// 	connection.console.log('getWorkspaceFolders folder change event received.');
-		// 	console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-		// 	connection.console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-		// });
+		//we need this in order to get the folder that is currently open.
+		connection.workspace.getWorkspaceFolders().then(_event => {
+			connection.console.log('getWorkspaceFolders folder change event received.');
+			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+			connection.console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+		});
 
 
 		// //this is not needed - returns VS code configurations we don't care
@@ -293,34 +293,60 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
+				// The content of a text document has changed. This event is emitted
+				// when the text document first opened or when its content has changed.
+
+				// connection.onDidChangeTextDocument(event =>{
+				// 	let x = documents;
+				// 	//console.log(`onDidChangeTextDocument\n${JSON.stringify(event)}`);
+				// 	console.log(`onDidChangeTextDocument ${testCounter}`);
+				// 	testCounter ++;
+				// });
+
+				// connection.onDidCloseTextDocument(event =>{
+				// 	let x = documents;
+				// 	//console.log(`onDidCloseTextDocument\n${JSON.stringify(event)}`);
+				// 	 console.log(`onDidCloseTextDocument`);
+				// });
+
+				// connection.onDidOpenTextDocument(event =>{
+				// 	let x = documents;
+				// 	// console.log(`onDidOpenTextDocument\n${JSON.stringify(event)}`);
+				// 	 console.log(`onDidOpenTextDocument`);
+				// });
+
+				// connection.onDidSaveTextDocument(event =>{
+				// 	let x = documents;
+				// 	// console.log(`onDidSaveTextDocument\n${JSON.stringify(event)}`);
+				// 	console.log(`onDidSaveTextDocument`);
+				// });
+
 documents.onDidChangeContent(change => {
-	//receives the same version twice
-	//validateTextDocument(change.document);
-	solver.onDidChangeContent(change);
+// 	//receives the same version twice
+// 	//validateTextDocument(change.document);
+// 	//solver.onDidChangeContent(change);
 	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
-	// connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+// 	// connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 });
 
 
-// ------------------ this code isn't needed for now when file opens and closes the documnet manager works automatically
-// this will be needed in case we want some more functionality when closing, opening or saving
+// // ------------------ this code isn't needed for now when file opens and closes the documnet manager works automatically
+// // this will be needed in case we want some more functionality when closing, opening or saving
 
-// this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
-// in order to control if it is a new on we need onDidChangeWatchedFiles
+// // this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
+// // in order to control if it is a new on we need onDidChangeWatchedFiles
 documents.onDidOpen(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidOpen");
 	});
 
-// // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
+// // // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
 documents.onDidClose(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidClose");
 	});
 
-// //this is called when the user saves the document
+// // //this is called when the user saves the document
 documents.onDidSave(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidSave");
@@ -357,7 +383,7 @@ connection.onDidChangeConfiguration(change => {
 
 	// Revalidate all open text documents
 	documents.all().forEach(element => {
-		validateTextDocument(element);
+		validateTextDocument(element.textDocument);
 	});//    forEach(validateTextDocument);
 });
 

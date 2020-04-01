@@ -189,7 +189,7 @@ class DecisionGraphAnalyzer implements Analyzer{
 	
 }
 
-export interface SolverInt<T extends TextDocument> {
+export interface SolverInt<T> {
 	solve(params:any, requestName: string, fileUri: string): any;
 	onDidChangeContent(change: TextDocumentChangeEvent<T>): void;
 	onDidSave?(change: TextDocumentChangeEvent<T>): void;
@@ -197,7 +197,7 @@ export interface SolverInt<T extends TextDocument> {
 	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
 }
 
-export class Solver<T extends TextDocument> implements SolverInt<T>{
+export class Solver<T> implements SolverInt<T>{
 	private policyAnalyzer: Analyzer;
 	private decisionGraphAnalyzer: Analyzer;
 	private documentsManager: TextDocuments<T>; // probalby will be extended 
@@ -236,13 +236,14 @@ export class Solver<T extends TextDocument> implements SolverInt<T>{
 		}
 
 		let langugeId:number = this.findLangugeIdFromUri(fileUri);
-		return relevantHandler[langugeId][requestName](params);
+		return relevantHandler[0][requestName](params);
 	}
 
 	private findLangugeIdFromUri(uri: string): number {
-		let allDocuments: T []= this.documentsManager.all();
-		let langId: string = allDocuments.find (curr => curr.uri === uri).languageId
-		return langugeIds[langId];
+		// let allDocuments: T []= this.documentsManager.all();
+		// let langId: string = allDocuments.find (curr => curr.uri === uri).languageId
+		// return langugeIds[langId];
+		return 0;
 	}
 
 	private errorFindingFunction (params: string): void {
