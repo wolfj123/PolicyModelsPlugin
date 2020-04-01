@@ -35,6 +35,7 @@ import {
 	DidCloseTextDocumentNotification,
 	DidChangeConfigurationNotification,
 	TextDocumentChangeRegistrationOptions,
+	TextDocumentChangeEvent,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -206,7 +207,7 @@ connection.onInitialized(() => {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
 			connection.console.log('Workspace folder change event received.');
 			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-			connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
 
 		//this in not needed - we support only one root folder
@@ -288,7 +289,7 @@ function runModel(param : string[]) : string {
 connection.onDidChangeWatchedFiles(_change => {
 	solver.onDidChangeWatchedFiles(_change);
 	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
-	connection.console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
+	//connection.console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
 
 
@@ -299,7 +300,7 @@ documents.onDidChangeContent(change => {
 	//validateTextDocument(change.document);
 	solver.onDidChangeContent(change);
 	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
-	connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
+	// connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 });
 
 
@@ -308,19 +309,22 @@ documents.onDidChangeContent(change => {
 
 // this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
 // in order to control if it is a new on we need onDidChangeWatchedFiles
-// documents.onDidOpen(
-// 	(params: TextDocumentChangeEvent<DocumentManager>): void => {
-// 	});
+documents.onDidOpen(
+	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
+		console.log ("onDidOpen");
+	});
 
 // // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
-// documents.onDidClose(
-// 	(params: TextDocumentChangeEvent<DocumentManager>): void => {
-// 	});
+documents.onDidClose(
+	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
+		console.log ("onDidClose");
+	});
 
 // //this is called when the user saves the document
-// documents.onDidSave(
-// 	(params: TextDocumentChangeEvent<DocumentManager>): void => {
-// 	});
+documents.onDidSave(
+	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
+		console.log ("onDidSave");
+	});
 
 
 

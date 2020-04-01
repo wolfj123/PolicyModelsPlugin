@@ -81,7 +81,7 @@
 				],
 				"extensions": [
 					".pspace",
-					".ts"
+					".ps"
 				],
 				"configuration": "./client/pspace-language-configuration.json"
 			},
