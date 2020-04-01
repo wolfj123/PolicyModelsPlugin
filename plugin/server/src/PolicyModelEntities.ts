@@ -99,38 +99,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	}
 
 
-
-	function cursorNext() : boolean {
-		// Advance cursor
-		if (visitedChildren) {
-			if (cursor.gotoNextSibling()) {
-				visitedChildren = false
-			} else if (cursor.gotoParent()) {
-				parents.pop()
-				visitedChildren = true
-				return cursorNext()
-			} else {
-				return false
-			}
-		} else {
-			const parent = cursor.nodeType
-			if (cursor.gotoFirstChild()) {
-				parents.push(parent)
-				visitedChildren = false
-			} else {
-				visitedChildren = true
-				return cursorNext()
-			}
-		}
-		// Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
-			visitedChildren = true
-			return cursorNext()
-		}
-		return true
-	}
-
-	function analyzeParseTreeDecisionGraph() {
+	let analyzeParseTreeDecisionGraph = function() {
 		let nodeTypes = [
 			'ask_node',
 			'continue_node', 
@@ -161,44 +130,76 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 			'part_node'
 		]
 
-		//declarations
-		while(cursorNext()){
-			parent = parents[parents.length - 1]
-			grandparent = parents[parents.length - 2]
-
-			if(nodeTypes.indexOf(cursor.nodeType) > -1){
-				let currNode = cursor.currentNode()
-				let idArray = currNode.descendantsOfType('node_id')
-				if(idArray.length > 0){
-					let id : string = idArray[0].descendantsOfType('node_id_value')[0].text
-					let text = currNode.text
-					let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
-					let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNode, text, loc)
-					result.push(newNode)
-				} 
-				else {
-					//TODO: what about nameless nodes for folding?
-				}
+		if(nodeTypes.indexOf(cursor.nodeType) > -1){
+			let currNode = cursor.currentNode()
+			let idArray = currNode.descendantsOfType('node_id')
+			if(idArray.length > 0){
+				let id : string = idArray[0].descendantsOfType('node_id_value')[0].text
+				let text = currNode.text
+				let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
+				let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNode, text, loc)
+				console.log("************************")
+				result.push(newNode)
 			} 
-		}
-	}
-
-	function analyzeParseTreePolicySpace() {
+			else {
+				//TODO: what about nameless nodes for folding?
+			}
+		} 
 		
 	}
 
-	function analyzeParseTreeValueInference() {
+	let analyzeParseTreePolicySpace = function() {
 		//TODO:
 	}
 
+	let analyzeParseTreeValueInference = function() {
+		//TODO:
+	}
+
+
+	let collectionFunction;
 	if(fileExtensionsDecisionGraph.indexOf(getFileExtension(uri)) > -1) {
-		analyzeParseTreeDecisionGraph()
+		collectionFunction = analyzeParseTreeDecisionGraph
 	} 
 	else if(fileExtensionsPolicySpace.indexOf(getFileExtension(uri)) > -1) {
-		analyzeParseTreePolicySpace()
+		collectionFunction = analyzeParseTreePolicySpace
 	} 
 	else if (fileExtensionsvalueInference.indexOf(getFileExtension(uri)) > -1) {
-		analyzeParseTreeValueInference()
+		collectionFunction = analyzeParseTreeValueInference
+	}
+	else {
+		return result
+	}
+
+	while (true) {
+		// Advance cursor
+		console.log(cursor.nodeType)
+		if (visitedChildren) {
+			if (cursor.gotoNextSibling()) {
+				visitedChildren = false
+			} else if (cursor.gotoParent()) {
+				parents.pop()
+				visitedChildren = true
+				continue
+			} else {
+				break
+			}
+		} else {
+			const parent = cursor.nodeType
+			if (cursor.gotoFirstChild()) {
+				parents.push(parent)
+				visitedChildren = false
+			} else {
+				visitedChildren = true
+				continue
+			}
+		}
+		// Skip nodes that are not visible
+		if (!visible(cursor, visibleRanges)) {
+			visitedChildren = true
+			continue
+		}
+		collectionFunction();
 	}
 
 
@@ -248,7 +249,6 @@ function getFileExtension(filename : string) : string {
 
 
 
-
 async function demo() {
 	await Parser.init()
 	const parser = new Parser()
@@ -257,11 +257,16 @@ async function demo() {
 	parser.setLanguage(lang)
 		
 	//Then you can parse some source code,
-	const sourceCode = '[>node< todo : idk]';
+	const sourceCode = `
+	[ask:
+	{text: Do the data contain health information?}
+	{answers:
+	  {yes: [ >yo< call: healthSection]}}]
+	`;
 	const tree = parser.parse(sourceCode);
 	
 	//and inspect the syntax tree.
-	console.log(analyzeParseTree(tree, "somefile.dg", [{start: 0 , end: 0}]))
+	console.log(analyzeParseTree(tree, "somefile.dg", [{start: 0 , end: 8}]))
 
 }
 
