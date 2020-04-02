@@ -148,9 +148,11 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 
 		if(nodeTypes.indexOf(cursor.nodeType) > -1){
 			let currNode = cursor.currentNode()
-			let idArray = currNode.descendantsOfType('node_id')
-			if(idArray.length > 0){
-				let id : string = idArray[0].descendantsOfType('node_id_value')[0].text
+			//let idArray = currNode.descendantsOfType('node_id')
+			let idNode = currNode.children.filter(child => child.type === 'node_id')[0]
+			//console.log(idNode == null)
+			if(idNode){
+				let id : string = idNode.descendantsOfType('node_id_value')[0].text
 				let text = currNode.text
 				let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
 				let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNode, text, loc)
@@ -230,8 +232,8 @@ async function demo() {
 		
 	//Then you can parse some source code,
 	const sourceCode = `
-	[ask:
-	{text: Do the data contain health information?}
+	[>bb< ask:
+	{>asd< text: Do the data contain health information?}
 	{answers:
 	  {yes: [ >yo< call: healthSection]}}]
 	`;
