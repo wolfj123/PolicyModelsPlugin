@@ -87,7 +87,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	let grandparent
 	function nextCursor() : boolean {
 		// Advance cursor
-		console.log(cursor.nodeType)
+		//console.log(cursor.nodeType)
 		if (visitedChildren) {
 			if (cursor.gotoNextSibling()) {
 				visitedChildren = false
@@ -155,7 +155,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 				let text = currNode.text
 				let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
 				let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNode, text, loc)
-				console.log("************************")
+				//console.log("************************")
 				result.push(newNode)
 			} 
 			else {
@@ -187,37 +187,6 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	else {
 		return result
 	}
-
-	// while (true) {
-	// 	// Advance cursor
-	// 	console.log(cursor.nodeType)
-	// 	if (visitedChildren) {
-	// 		if (cursor.gotoNextSibling()) {
-	// 			visitedChildren = false
-	// 		} else if (cursor.gotoParent()) {
-	// 			parents.pop()
-	// 			visitedChildren = true
-	// 			continue
-	// 		} else {
-	// 			break
-	// 		}
-	// 	} else {
-	// 		const parent = cursor.nodeType
-	// 		if (cursor.gotoFirstChild()) {
-	// 			parents.push(parent)
-	// 			visitedChildren = false
-	// 		} else {
-	// 			visitedChildren = true
-	// 			continue
-	// 		}
-	// 	}
-	// 	// Skip nodes that are not visible
-	// 	if (!visible(cursor, visibleRanges)) {
-	// 		visitedChildren = true
-	// 		continue
-	// 	}
-	// 	collectionFunction();
-	// }
 
 	while(nextCursor()){
 		collectionFunction()
