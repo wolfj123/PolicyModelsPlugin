@@ -162,6 +162,7 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 
 function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: number, end: number}[], uri : DocumentUri, result : PolicyModelEntity[]) {
 	let cursor = root.walk()
+
 	let slots = cursor.currentNode().descendantsOfType("slot")
 	for (let slot of slots) {
 		let identifierNode : Parser.SyntaxNode = slot.firstNamedChild
@@ -171,7 +172,7 @@ function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: 
 		let name : string = identifierNode.text
 		let text = slot.text
 		let loc : Location = newLocation(uri, point2Position(slot.startPosition), point2Position(slot.endPosition))
-		let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
+		let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.Slot, text, loc)
 		result.push(newNode)
 	}
 }
