@@ -24,7 +24,6 @@ import {
 } from 'vscode-languageserver';
 
 import * as Parser from 'web-tree-sitter'
-//import { Point } from 'web-tree-sitter';
 
 enum PolicyModelEntityType {
 	Slot,
@@ -65,14 +64,9 @@ class PolicyModelEntity {
 }
 
 
-function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {start: number, end: number}[]) : PolicyModelEntity[] {
-	let result : PolicyModelEntity[] = []
 
-	let fileExtensionsDecisionGraph = ['dg']
-	let fileExtensionsPolicySpace = ['pspace']
-	let fileExtensionsvalueInference = ['vi']
-
-	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number }[]) {
+function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[]) {
+	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
 		for (const { start, end } of visibleRanges) {
 			const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
 			if (overlap) return true
@@ -80,95 +74,22 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 		return false
 	}
 
-
-	let analyzeParseTreeDecisionGraph = function() {
-		let nodeTypes = [
-			'ask_node',
-			'continue_node', 
-			'todo_node', 
-			'call_node', 
-			'reject_node', 
-			'set_node', 
-			'section_node', 
-			'part_node', 
-			'consider_node', 
-			'when_node', 
-			'import_node',
-			'end_node',
-	
-			//------------------ sub nodes:
-			'text_sub_node',
-			'terms_sub_node',
-			'term_sub_node',
-			//'answers_sub_node',  - no id here
-			'answer_sub_node',
-			//'slot_sub_node', 	- no id here
-			//consider_options_sub_node, - no id here
-			'consider_option_sub_node',
-			//'else_sub_node',  - no id here
-			//when_answer_sub_node, - no id here
-			'info_sub_node',
-			'continue_node',
-			'part_node'
-		]
-
-		if(nodeTypes.indexOf(cursor.nodeType) > -1){
-			let currNode = cursor.currentNode()
-			let idNode = currNode.children.filter(child => child.type === 'node_id')[0]
-			//console.log(idNode == null)
-			if(idNode){
-				let id : string = idNode.descendantsOfType('node_id_value')[0].text
-				let text = currNode.text
-				let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
-				let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
-				result.push(newNode)
-			} 
-			else {
-				let text = currNode.text
-				let loc : Location = newLocation(uri, point2Position(currNode.startPosition), point2Position(currNode.endPosition))
-				let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
-				result.push(newNode)
-			}
-		} 
-	}
-	let analyzeParseTreeDecisionGraphPass2 = function() {
-		//TODO:
-	}
-
-	let analyzeParseTreePolicySpace = function() {
-		//TODO:
-	}
-	let analyzeParseTreePolicySpacePass2 = function() {
-		//TODO:
-	}
-
-	let analyzeParseTreeValueInference = function() {
-		//TODO:
-	}
-	let analyzeParseTreeValueInferencePass2 = function() {
-		//TODO:
-	}
-
-
-	//pass1
 	let visitedChildren = false
 	let cursor = root.walk()
 	let parents = [cursor.nodeType]
 	let parent
 	let grandparent
-	
-	function nextCursor() : boolean {
+	while (true) {
 		// Advance cursor
-		//console.log(cursor.nodeType)
 		if (visitedChildren) {
 			if (cursor.gotoNextSibling()) {
 				visitedChildren = false
 			} else if (cursor.gotoParent()) {
 				parents.pop()
 				visitedChildren = true
-				return nextCursor()
+				continue
 			} else {
-				return false
+				break
 			}
 		} else {
 			const parent = cursor.nodeType
@@ -177,16 +98,83 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 				visitedChildren = false
 			} else {
 				visitedChildren = true
-				return nextCursor()
+				continue
 			}
 		}
 		// Skip nodes that are not visible
 		if (!visible(cursor, visibleRanges)) {
 			visitedChildren = true
-			return nextCursor()
+			continue
 		}
-		return true
+
+		yield cursor.currentNode()
 	}
+}
+
+
+function analyzeParseTreeDecisionGraph(node : Parser.SyntaxNode, uri : DocumentUri, result : PolicyModelEntity[]) {
+	let nodeTypes = [
+		'ask_node',
+		'continue_node', 
+		'todo_node', 
+		'call_node', 
+		'reject_node', 
+		'set_node', 
+		'section_node', 
+		'part_node', 
+		'consider_node', 
+		'when_node', 
+		'import_node',
+		'end_node',
+
+		//------------------ sub nodes:
+		'text_sub_node',
+		'terms_sub_node',
+		'term_sub_node',
+		//'answers_sub_node',  - no id here
+		'answer_sub_node',
+		//'slot_sub_node', 	- no id here
+		//consider_options_sub_node, - no id here
+		'consider_option_sub_node',
+		//'else_sub_node',  - no id here
+		//when_answer_sub_node, - no id here
+		'info_sub_node',
+		'continue_node',
+		'part_node'
+	]
+	
+	if(nodeTypes.indexOf(node.type) > -1){
+		let idNode = node.children.filter(child => child.type === 'node_id')[0]
+		if(idNode){
+			let id : string = idNode.descendantsOfType('node_id_value')[0].text
+			let text = node.text
+			let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
+			let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
+			result.push(newNode)
+		} 
+		else {
+			let text = node.text
+			let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
+			let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
+			result.push(newNode)
+		}
+	} 
+}
+function analyzeParseTreePolicySpace(node : Parser.SyntaxNode, uri : DocumentUri, result : PolicyModelEntity[]) {
+	//TODO:
+}
+function  analyzeParseTreeValueInference(node : Parser.SyntaxNode, uri : DocumentUri, result : PolicyModelEntity[]) {
+	//TODO:
+}
+
+
+
+function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {start: number, end: number}[]) : PolicyModelEntity[] {
+	let result : PolicyModelEntity[] = []
+
+	let fileExtensionsDecisionGraph = ['dg']
+	let fileExtensionsPolicySpace = ['pspace']
+	let fileExtensionsvalueInference = ['vi']
 
 	let collectionFunction;
 	if(fileExtensionsDecisionGraph.indexOf(getFileExtension(uri)) > -1) {
@@ -202,32 +190,9 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 		return result
 	}
 
-	while(nextCursor()){
-		collectionFunction()
+	for (let node of nextNode(root, visibleRanges)){
+		collectionFunction(node, uri, result)
 	}
-
-	//pass2
-	visitedChildren = false
-	cursor = root.walk()
-	parents = [cursor.nodeType]
-
-	if(fileExtensionsDecisionGraph.indexOf(getFileExtension(uri)) > -1) {
-		collectionFunction = analyzeParseTreeDecisionGraph
-	} 
-	else if(fileExtensionsPolicySpace.indexOf(getFileExtension(uri)) > -1) {
-		collectionFunction = analyzeParseTreePolicySpace
-	} 
-	else if (fileExtensionsvalueInference.indexOf(getFileExtension(uri)) > -1) {
-		collectionFunction = analyzeParseTreeValueInference
-	}
-	else {
-		return result
-	}
-
-	// while(nextCursor()){
-	// 	collectionFunction()
-	// }
-
 	return result
 }
 
@@ -255,7 +220,6 @@ function getFileExtension(filename : string) : string {
 
 
 //***********************PLAYGROUND******************
-
 
 
 async function demo() {
