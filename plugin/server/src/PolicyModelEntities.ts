@@ -24,7 +24,7 @@ import {
 } from 'vscode-languageserver';
 
 import * as Parser from 'web-tree-sitter'
-import { Point } from 'web-tree-sitter';
+//import { Point } from 'web-tree-sitter';
 
 enum PolicyModelEntityType {
 	Slot,
@@ -70,7 +70,6 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	let fileExtensionsDecisionGraph = ['dg']
 	let fileExtensionsPolicySpace = ['pspace']
 	let fileExtensionsvalueInference = ['vi']
-
 
 	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number }[]) {
 		for (const { start, end } of visibleRanges) {
@@ -195,22 +194,7 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	return result
 }
 
-
-// function newLocation(uri : DocumentUri, pos1_line : number, pos1_char : number, pos2_line : number, pos2_char : number) : Location {
-// 	let range = newRange(pos1_line, pos1_char, pos2_line, pos2_char)
-// 	return 	{
-// 		uri: uri,
-// 		range: range
-// 	}
-// }
-
-// function newRange(pos1_line : number, pos1_char : number, pos2_line : number, pos2_char : number) : Range {
-// 	let pos1 : Position = Position.create(pos1_line, pos1_char)
-// 	let pos2 : Position = Position.create(pos2_line, pos2_char)
-// 	return {start: pos1,end: pos2}
-// }
-
-function point2Position(p : Point) : Position {
+function point2Position(p : Parser.Point) : Position {
 	return  Position.create(p.row, p.column)
 }
 
