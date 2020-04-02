@@ -63,8 +63,6 @@ class PolicyModelEntity {
 	}
 }
 
-
-
 function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[]) {
 	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
 		for (const { start, end } of visibleRanges) {
@@ -111,8 +109,7 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 	}
 }
 
-
-function analyzeParseTreeDecisionGraph(node : Parser.SyntaxNode, uri : DocumentUri, result : PolicyModelEntity[]) {
+function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start: number, end: number}[], uri : DocumentUri, result : PolicyModelEntity[]) {
 	let nodeTypes = [
 		'ask_node',
 		'continue_node', 
@@ -143,27 +140,43 @@ function analyzeParseTreeDecisionGraph(node : Parser.SyntaxNode, uri : DocumentU
 		'part_node'
 	]
 	
-	if(nodeTypes.indexOf(node.type) > -1){
-		let idNode = node.children.filter(child => child.type === 'node_id')[0]
-		if(idNode){
-			let id : string = idNode.descendantsOfType('node_id_value')[0].text
-			let text = node.text
-			let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
-			let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
-			result.push(newNode)
+	for (let node of nextNode(root, visibleRanges)) {
+		if(nodeTypes.indexOf(node.type) > -1){
+			let idNode = node.children.filter(child => child.type === 'node_id')[0]
+			if(idNode) {
+				let id : string = idNode.descendantsOfType('node_id_value')[0].text
+				let text = node.text
+				let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
+				let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
+				result.push(newNode)
+			} 
+			else {
+				let text = node.text
+				let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
+				let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
+				result.push(newNode)
+			}
 		} 
-		else {
-			let text = node.text
-			let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
-			let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
-			result.push(newNode)
+	}
+}
+
+function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: number, end: number}[], uri : DocumentUri, result : PolicyModelEntity[]) {
+	let cursor = root.walk()
+	let slots = cursor.currentNode().descendantsOfType("slot")
+	for (let slot of slots) {
+		let identifierNode : Parser.SyntaxNode = slot.firstNamedChild
+		if(identifierNode.type === 'identifier_with_desc') {
+			identifierNode = identifierNode.firstNamedChild
 		}
-	} 
+		let name : string = identifierNode.text
+		let text = slot.text
+		let loc : Location = newLocation(uri, point2Position(slot.startPosition), point2Position(slot.endPosition))
+		let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
+		result.push(newNode)
+	}
 }
-function analyzeParseTreePolicySpace(node : Parser.SyntaxNode, uri : DocumentUri, result : PolicyModelEntity[]) {
-	//TODO:
-}
-function  analyzeParseTreeValueInference(node : Parser.SyntaxNode, uri : DocumentUri, result : PolicyModelEntity[]) {
+
+function  analyzeParseTreeValueInference(root : Parser.Tree, visibleRanges: {start: number, end: number}[], uri : DocumentUri, result : PolicyModelEntity[]) {
 	//TODO:
 }
 
@@ -190,9 +203,8 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 		return result
 	}
 
-	for (let node of nextNode(root, visibleRanges)){
-		collectionFunction(node, uri, result)
-	}
+	collectionFunction(root, visibleRanges, uri, result)
+
 	return result
 }
 
@@ -214,7 +226,6 @@ function newLocation(uri : DocumentUri, pos1 : Position, pos2 : Position) : Loca
 
 function getFileExtension(filename : string) : string {
 	let re = /(?:\.([^.]+))?$/;
-	//console.log(re.exec(filename)[1])
 	return re.exec(filename)[1];   
 }
 
@@ -222,7 +233,7 @@ function getFileExtension(filename : string) : string {
 //***********************PLAYGROUND******************
 
 
-async function demo() {
+async function demoDecisionGraph() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
@@ -240,7 +251,41 @@ async function demo() {
 	
 	//and inspect the syntax tree.
 	console.log(analyzeParseTree(tree, "somefile.dg", [{start: 0 , end: 8}]))
+}
 
+async function demoPolicySpace() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+		
+	//Then you can parse some source code,
+	const sourceCode = `
+	slot1: one of a, b.
+	slot2 [another one]: one of c, d.
+	`;
+	const tree = parser.parse(sourceCode);
+	
+	//and inspect the syntax tree.
+	console.log(analyzeParseTree(tree, "somefile.pspace", [{start: 0 , end: 8}]))
+}
+
+async function demoValueInference() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-valueinference.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+		
+	//Then you can parse some source code,
+	const sourceCode = `
+
+	`;
+	const tree = parser.parse(sourceCode);
+	
+	//and inspect the syntax tree.
+	console.log(analyzeParseTree(tree, "somefile.vi", [{start: 0 , end: 8}]))
 }
 
 function myprint(msg){
@@ -249,5 +294,5 @@ function myprint(msg){
 	}
 }
 
-demo()
-
+demoDecisionGraph()
+demoPolicySpace()
