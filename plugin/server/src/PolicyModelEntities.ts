@@ -69,7 +69,7 @@ abstract class PolicyModelEntity {
 }
 
 
-const namelessNodeIdentifier : string = 'tmp'
+const namelessNodeIdentifier : string = ':foldingRange:'
 class DecisionGraphNode extends PolicyModelEntity {
 	static createNode(name : string , text: string, declaration : Location) : DecisionGraphNode{
 		return new DecisionGraphNode(name, text, declaration)
@@ -82,14 +82,16 @@ class DecisionGraphNode extends PolicyModelEntity {
 	isNamed() : boolean {
 		return !(this.getName() === namelessNodeIdentifier)
 	}
+
+	isComplete() : boolean {
+		return this.name != null && this.text != null && this.declaration != null 
+	}
 }
 
-class Slot extends PolicyModelEntity {
-
-}
+class Slot extends PolicyModelEntity {}
 
 class AtomicSlotValue extends PolicyModelEntity {
-	
+
 }
 
 class AtomicSlot extends Slot {
@@ -113,11 +115,20 @@ class PolicyModelEntityMap {
 	namelessNodes : PolicyModelEntity[]
 
 	addNode(node : PolicyModelEntity){
-
+		if(this.nodes.has(node.getName())) {
+			//Node with same ID already exists
+			//TODO: how do we handle user writing 2 nodes with the same name?
+		}
+		this.nodes.set(node.getName(), node);
 	}
 
 	addNodeReference(name : string, ref : Location){
-
+		let node : PolicyModelEntity
+		if(!this.nodes.has(name)) {
+			node = DecisionGraphNode.createNode(name, null, null)
+		}
+		this.addNode(node)
+		node.addReference(ref)
 	}
 
 	addSlot(slot : PolicyModelEntity) {
