@@ -113,7 +113,8 @@ function updateStatusBarItem(): void {
 // Be sure to declare the language in package.json and include a minimalist grammar.
 const languages: {[id: string]: {module: string, color: colors.ColorFunction, parser?: Parser}} = {
 	'policyspace': {module: 'tree-sitter-policyspace', color: colors.colorPolicySpace},
-	'decisiongraph': {module: 'tree-sitter-decisiongraph', color: colors.colorDecisionGraph}
+	'decisiongraph': {module: 'tree-sitter-decisiongraph', color: colors.colorDecisionGraph},
+	'valueinference': {module: 'tree-sitter-valueinference', color: colors.colorValueInference}
 }
 
 // Create decoration types from scopes lazily
