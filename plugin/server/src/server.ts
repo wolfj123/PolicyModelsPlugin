@@ -40,7 +40,7 @@ import {
 
 import * as child_process from "child_process";
 import {TextDocWithChanges} from './DocumentChangesManager';
-import {SolverInt, Solver} from './Analyzer';
+import {SolverInt, Solver} from './Solver';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -240,37 +240,37 @@ connection.onExit(():void => {
 
 connection.onCompletion(
 	(params: TextDocumentPositionParams): CompletionList => {	
-		return solver.solve(params, "onCompletion" ,params.textDocument.uri);
+		return solver.solve(params, "onCompletion" ,params.textDocument);
 	}
 );
 
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		return solver.solve(item, "onCompletionResolve", item.data.textDocument.uri);
+		return solver.solve(item, "onCompletionResolve", item.data.textDocument);
 	}
 );
 
 connection.onDefinition(
 	(params: DeclarationParams) : LocationLink[] => {
-		return solver.solve(params, "onDefinition", params.textDocument.uri);
+		return solver.solve(params, "onDefinition", params.textDocument);
 	}
 );
 
 connection.onFoldingRanges(
 	(params: FoldingRangeParams) : FoldingRange[] => {
-		return solver.solve(params, "onFoldingRanges", params.textDocument.uri);
+		return solver.solve(params, "onFoldingRanges", params.textDocument);
 	}
 );
 
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
-		return solver.solve(params, "onReferences", params.textDocument.uri);
+		return solver.solve(params, "onReferences", params.textDocument);
 	}
 );
 
 connection.onRenameRequest(
 	(params: RenameParams): WorkspaceEdit =>{
-		return solver.solve(params, "onRenameRequest", params.textDocument.uri);
+		return solver.solve(params, "onRenameRequest", params.textDocument);
 	}
 )
 
@@ -338,6 +338,7 @@ documents.onDidChangeContent(change => {
 documents.onDidOpen(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidOpen");
+		solver.onDidOpen(params);
 	});
 
 // // // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)

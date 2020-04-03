@@ -2,7 +2,6 @@ import {
 	ReferenceParams,
 	Location,
 	Position,
-	TextDocument,
 	DeclarationParams,
 	RenameParams,
 	LocationLink,
@@ -15,41 +14,40 @@ import {
 	TextDocumentEdit,
 	CompletionList,
 	CompletionItemKind,
-	TextDocuments,
 	TextDocumentIdentifier,
-	TextDocumentChangeEvent,
-	DidChangeWatchedFilesParams,
 } from 'vscode-languageserver';
 
 import { TextEdit } from 'vscode-languageserver-textdocument';
+import { TextDocWithChanges } from './DocumentChangesManager';
 
-declare type allParamsTypes = ReferenceParams | DeclarationParams | RenameParams | TextDocumentPositionParams | 
-							  CompletionItem | FoldingRangeParams | string;
-declare type allSolutionTypes = Location[] | WorkspaceEdit | CompletionList | CompletionItem | FoldingRange[] |
-							    LocationLink[] | void;
 
-enum langugeIds {
-	policyspace =  0,
-	decisionGraph =  1
-}
 
 interface CompletionItemData{
 	textDocument: TextDocumentIdentifier
 }
 
-interface Analyzer{
-	getAllRefernces(params:ReferenceParams):  Location[];
-	getDefinition(params:DeclarationParams):  LocationLink[];
-	doRename(params:RenameParams): WorkspaceEdit;
+export abstract class Analyzer{
 
-	autoCompleteRequest(params:TextDocumentPositionParams): CompletionList;
-	resolveAutoCompleteItem(params:CompletionItem): CompletionItem;
+	protected textDocument:TextDocWithChanges;
+	constructor(textDocumet: TextDocWithChanges){
+		this.textDocument = textDocumet;
+	}
 
-	getFoldingRange(params:FoldingRangeParams): FoldingRange[];
+	// needs to Hahve AST, cahing, textDoc
+	abstract getAllRefernces(params:ReferenceParams):  Location[];
+	abstract getDefinition(params:DeclarationParams):  LocationLink[];
+	abstract doRename(params:RenameParams): WorkspaceEdit;
+
+	abstract autoCompleteRequest(params:TextDocumentPositionParams): CompletionList;
+	abstract resolveAutoCompleteItem(params:CompletionItem): CompletionItem;
+
+	abstract getFoldingRange(params:FoldingRangeParams): FoldingRange[];
+
+	abstract update (); // Still not sure about the signature but this will be called when there is an update in the file text
 }
 
 
-class PolicySpaceAnalyzer implements Analyzer{
+export class PolicySpaceAnalyzer extends Analyzer{
 
 	getAllRefernces(params: ReferenceParams): Location[] {
 		//TEST CODE TO DELELE
@@ -155,19 +153,22 @@ class PolicySpaceAnalyzer implements Analyzer{
 		//TEST CODE TO DELELE
 		// NOTE the client we are using only supports for line folding - meaning the startCharacter & endCharacter are Irrelevant 
 		return [
-		{
-			startLine:1,
-			startCharacter:12,
-			endLine:2,
-			endCharacter:20,
-			kind:FoldingRangeKind.Region
-		}
-	];
+			{
+				startLine:1,
+				startCharacter:12,
+				endLine:2,
+				endCharacter:20,
+				kind:FoldingRangeKind.Region
+			}
+		];
 	}
+
+	update (){}
 
 }
 
-class DecisionGraphAnalyzer implements Analyzer{
+export class DecisionGraphAnalyzer extends Analyzer{
+	
 	getAllRefernces(params: ReferenceParams): Location[] {
 		throw new Error('Method not implemented.');
 	}
@@ -186,75 +187,30 @@ class DecisionGraphAnalyzer implements Analyzer{
 	getFoldingRange(params: FoldingRangeParams): FoldingRange[] {
 		throw new Error('Method not implemented.');
 	}
+	update (){}
 	
 }
 
-export interface SolverInt<T> {
-	solve(params:any, requestName: string, fileUri: string): any;
-	onDidChangeContent(change: TextDocumentChangeEvent<T>): void;
-	onDidSave?(change: TextDocumentChangeEvent<T>): void;
-	onDidClose?(change: TextDocumentChangeEvent<T>): void;
-	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
-}
+export class ValueInferenceAnalyzer extends Analyzer{
 
-export class Solver<T> implements SolverInt<T>{
-	private policyAnalyzer: Analyzer;
-	private decisionGraphAnalyzer: Analyzer;
-	private documentsManager: TextDocuments<T>; // probalby will be extended 
-
-	constructor(documentsManager: TextDocuments<T>){
-		this.policyAnalyzer = new PolicySpaceAnalyzer();
-		this.decisionGraphAnalyzer = new DecisionGraphAnalyzer();
-		this.documentsManager = documentsManager;
-		//TODO we need to get the entire folder files
+	getAllRefernces(params: ReferenceParams): Location[] {
+		throw new Error('Method not implemented.');
 	}
-
-	public solve(params:any, requestName: string, fileUri: string): any {	
-		let policySpaceHandler: {[id: string]: (paramas:allParamsTypes ) => allSolutionTypes} = {
-			'onReferences':this.policyAnalyzer.getAllRefernces,
-			'onDefinition': this.policyAnalyzer.getDefinition,
-			'onRenameRequest': this.policyAnalyzer.doRename,
-			'onFoldingRanges': this.policyAnalyzer.getFoldingRange,
-			'onCompletion': this.policyAnalyzer.autoCompleteRequest,
-			'onCompletionResolve': this.policyAnalyzer.resolveAutoCompleteItem,
-			default: this.errorFindingFunction
-		}
-
-		let decisionGrpahHandler: {[id: string]: (paramas:allParamsTypes ) => allSolutionTypes} = {
-			'onReferences':this.decisionGraphAnalyzer.getAllRefernces,
-			'onDefinition': this.decisionGraphAnalyzer.getDefinition,
-			'onRenameRequest': this.decisionGraphAnalyzer.doRename,
-			'onFoldingRanges': this.decisionGraphAnalyzer.getFoldingRange,
-			'onCompletion': this.decisionGraphAnalyzer.autoCompleteRequest,
-			'onCompletionResolve': this.decisionGraphAnalyzer.resolveAutoCompleteItem,
-			default: this.errorFindingFunction
-		}
-
-		let relevantHandler: {[id: number]: {[id: string]: (paramas:allParamsTypes ) => allSolutionTypes}} = {
-			[langugeIds.policyspace]: policySpaceHandler,
-			[langugeIds.decisionGraph]: decisionGrpahHandler
-		}
-
-		let langugeId:number = this.findLangugeIdFromUri(fileUri);
-		return relevantHandler[0][requestName](params);
+	getDefinition(params: DeclarationParams): LocationLink[] {
+		throw new Error('Method not implemented.');
 	}
-
-	private findLangugeIdFromUri(uri: string): number {
-		// let allDocuments: T []= this.documentsManager.all();
-		// let langId: string = allDocuments.find (curr => curr.uri === uri).languageId
-		// return langugeIds[langId];
-		return 0;
+	doRename(params: RenameParams): WorkspaceEdit {
+		throw new Error('Method not implemented.');
 	}
-
-	private errorFindingFunction (params: string): void {
-		//TODO 
+	autoCompleteRequest(params: TextDocumentPositionParams): CompletionList {
+		throw new Error('Method not implemented.');
 	}
-
-	onDidChangeContent(change: TextDocumentChangeEvent<T>): void {
-		//TODO
+	resolveAutoCompleteItem(params: CompletionItem): CompletionItem {
+		throw new Error('Method not implemented.');
 	}
-
-	onDidChangeWatchedFiles(change:DidChangeWatchedFilesParams): void {
-		//TODO
+	getFoldingRange(params: FoldingRangeParams): FoldingRange[] {
+		throw new Error('Method not implemented.');
 	}
+	update (){}
+	
 }
