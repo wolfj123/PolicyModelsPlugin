@@ -163,7 +163,15 @@ connection.onInitialized(() => {
 				{
 					kind: WatchKind.Create | WatchKind.Delete, // this will notiryf only when files are created or delted from workspace
 					globPattern: "**/*.{ps,pspace}"
-				} //TODO add support for DG and more supported file types
+				},
+				{
+					kind: WatchKind.Create | WatchKind.Delete,
+					globPattern:"**/*.{dg}"
+				},
+				{
+					kind: WatchKind.Create | WatchKind.Delete,
+					globPattern:"**/*.{vi}"
+				}
 			]
 		}
 		connection.client.register(DidChangeWatchedFilesNotification.type,wtachedFilesOptions);
@@ -183,6 +191,10 @@ connection.onInitialized(() => {
 			{
 				language:'decisiongraph',
 				pattern:"**/*.{dg}"
+			},
+			{
+				language:'valueinferrence',
+				pattern:"**/*.{vi}"
 			}
 		]
 	};
