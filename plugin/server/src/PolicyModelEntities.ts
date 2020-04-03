@@ -25,43 +25,110 @@ import {
 
 import * as Parser from 'web-tree-sitter'
 
-enum PolicyModelEntityType {
-	Slot,
-	SlotValue,
-	DecisionGraphNodeId,
-	DecisionGraphNode
-}
+// enum PolicyModelEntityType {
+// 	Slot,
+// 	SlotValue,
+// 	DecisionGraphNodeId,
+// 	DecisionGraphNode
+// }
 
-class PolicyModelEntity {
-	type : PolicyModelEntityType;
+abstract class PolicyModelEntity {
+	//type : PolicyModelEntityType;
 	name : string;
 	declaration : Location;
 	references : Location[];
 	text : string;
 
-	constructor(name : string, type : PolicyModelEntityType, text: string, declaration : Location) {
+	constructor(name : string, text: string, declaration : Location) {
 		this.name = name;
-		this.type = type;
-        this.declaration = declaration;
+		this.declaration = declaration;
+		this.text = text;
+		//this.type = type;
     }
+
+	getName() : string {
+		return this.name;
+	}
 
 	addReference(reference : Location) {
 		this.references.push(reference);
 	}
 
-	equals(other : PolicyModelEntity) : boolean {
-		if(this.type == other.type){
-			return false;
-		}
-		if(!(this.name === other.name)){
-			return false;
-		}
-		if(this.declaration.uri === other.declaration.uri){
-			return false;
-		}
-		return true;
+	// equals(other : PolicyModelEntity) : boolean {
+	// 	if(this.type == other.type){
+	// 		return false;
+	// 	}
+	// 	if(!(this.name === other.name)){
+	// 		return false;
+	// 	}
+	// 	if(this.declaration.uri === other.declaration.uri){
+	// 		return false;
+	// 	}
+	// 	return true;
+	// }
+}
+
+
+const namelessNodeIdentifier : string = 'tmp'
+class DecisionGraphNode extends PolicyModelEntity {
+	static createNode(name : string , text: string, declaration : Location) : DecisionGraphNode{
+		return new DecisionGraphNode(name, text, declaration)
+	}
+
+	static createNamelessNode(text: string, declaration : Location) : DecisionGraphNode {
+		return new DecisionGraphNode(namelessNodeIdentifier, text, declaration)
+	}
+	
+	isNamed() : boolean {
+		return !(this.getName() === namelessNodeIdentifier)
 	}
 }
+
+class Slot extends PolicyModelEntity {
+
+}
+
+class AtomicSlotValue extends PolicyModelEntity {
+	
+}
+
+class AtomicSlot extends Slot {
+	values : Map<string, AtomicSlotValue>
+}
+
+class AggregateSlot extends Slot {
+	values : Map<string, AtomicSlot>
+}
+
+class CompoundSlot extends Slot {
+	values : Map<string, Slot>
+}
+
+
+//https://stackoverflow.com/questions/8877666/how-is-a-javascript-hash-map-implemented
+//https://howtodoinjava.com/typescript/maps/
+class PolicyModelEntityMap {
+	slots : Map<string, PolicyModelEntity>
+	nodes : Map<string, PolicyModelEntity>
+	namelessNodes : PolicyModelEntity[]
+
+	addNode(node : PolicyModelEntity){
+
+	}
+
+	addNodeReference(name : string, ref : Location){
+
+	}
+
+	addSlot(slot : PolicyModelEntity) {
+
+	}
+
+	addSlotReference(name : string, ref : Location) {
+
+	}
+}
+
 
 function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[]) {
 	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
@@ -147,13 +214,15 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 				let id : string = idNode.descendantsOfType('node_id_value')[0].text
 				let text = node.text
 				let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
-				let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
+				//let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
+				let newNode : DecisionGraphNode = DecisionGraphNode.createNode(id, text, loc)
 				result.push(newNode)
 			} 
 			else {
 				let text = node.text
 				let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
-				let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
+				//let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
+				let newNode : DecisionGraphNode =  DecisionGraphNode.createNamelessNode(text, loc)
 				result.push(newNode)
 			}
 		} 
@@ -172,8 +241,8 @@ function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: 
 		let name : string = identifierNode.text
 		let text = slot.text
 		let loc : Location = newLocation(uri, point2Position(slot.startPosition), point2Position(slot.endPosition))
-		let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.Slot, text, loc)
-		result.push(newNode)
+		//let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.Slot, text, loc)
+		//result.push(newNode)
 	}
 }
 
@@ -296,4 +365,4 @@ function myprint(msg){
 }
 
 demoDecisionGraph()
-demoPolicySpace()
+//demoPolicySpace()
