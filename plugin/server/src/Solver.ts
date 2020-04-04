@@ -37,10 +37,8 @@ export class Solver<T  extends TextDocWithChanges> implements SolverInt<T> {
 
 	public solve(params:any, requestName: string, textDocument:TextDocumentIdentifier): allSolutionTypes {	
 				
-		let currAnalyzer = this.anlayzers.find(x => x.uri === textDocument.uri)
+		let currAnalyzer = this.anlayzers.find(x => x.uri === textDocument.uri);
 
-		// TODO add here a callback for this solver the callback will be any other analyzers activation needed
-		// think about cyclic call backs how to prevent maybe not possible than the solver will be needed in all analyzers
 		let toActivate: (params: allParamsTypes) => allSolutionTypes = currAnalyzer.analyzer[requestName];
 		if (toActivate === undefined) {
 			//TODO error

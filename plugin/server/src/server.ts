@@ -23,7 +23,6 @@ import {
 	WorkspaceEdit,
 	RenameParams,
 	CompletionList,
-	EOL, //  represents the end of line optins allowed
 	InitializeResult,
 	DidChangeWatchedFilesNotification,
 	DidChangeWatchedFilesRegistrationOptions,
@@ -49,7 +48,6 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-
 
 let documents: TextDocuments<TextDocWithChanges> = new TextDocuments(TextDocWithChanges);
 // Make the text document manager listen on the connection
@@ -159,7 +157,7 @@ connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	
 	if (clientSupportswatchedFiles){
-		let wtachedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
+		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
 			watchers: [
 				{
 					kind: WatchKind.Create | WatchKind.Delete, // this will notiryf only when files are created or delted from workspace
@@ -175,7 +173,7 @@ connection.onInitialized(() => {
 				}
 			]
 		}
-		connection.client.register(DidChangeWatchedFilesNotification.type,wtachedFilesOptions);
+		connection.client.register(DidChangeWatchedFilesNotification.type,watchedFilesOptions);
 	}else{
 		//TODO amsel what wolud happen if we don't support (we will need to check the filesystem all the time to see if file was created or delted)
 		console.log("client doesn't support watched files - is this a problem??");
@@ -247,49 +245,44 @@ connection.onInitialized(() => {
 //------------- User Requests ------------------------------
 
 connection.onExit(():void => {
-connection.dispose();
+	connection.dispose();
 });
 
 connection.onCompletion(
 (params: TextDocumentPositionParams): CompletionList => {	
 	return solver.solve(params, "onCompletion" ,params.textDocument);
-}
-);
+});
 
 connection.onCompletionResolve(
-(item: CompletionItem): CompletionItem => {
-	return solver.solve(item, "onCompletionResolve", item.data.textDocument);
-}
-);
+	(item: CompletionItem): CompletionItem => {
+		return solver.solve(item, "onCompletionResolve", item.data.textDocument);
+});
 
 connection.onDefinition(
-(params: DeclarationParams): LocationLink[] => {
-	return solver.solve(params, "onDefinition", params.textDocument);
+	(params: DeclarationParams): LocationLink[] => {
+		return solver.solve(params, "onDefinition", params.textDocument);
 });
 
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
 	(params:PrepareRenameParams) =>  {
 		return solver.solve(params,"onPrepareRename",params.textDocument);
-	});
+});
 
 connection.onFoldingRanges(
 	(params: FoldingRangeParams): FoldingRange[] => {
 		return solver.solve(params, "onFoldingRanges", params.textDocument);
-	}
-);
+});
 
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
 		return solver.solve(params, "onReferences", params.textDocument);
-	}
-);
+});
 
 connection.onRenameRequest(
 	(params: RenameParams): WorkspaceEdit =>{
 		return solver.solve(params, "onRenameRequest", params.textDocument);
-	}
-)
+});
 
 function runModel(param : string[]) : string {
 	console.log("server is running the model")
@@ -356,19 +349,19 @@ documents.onDidOpen(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidOpen");
 		solver.onDidOpen(params);
-	});
+});
 
 // // // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
 documents.onDidClose(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidClose");
-	});
+});
 
 // // //this is called when the user saves the document
 documents.onDidSave(
 	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
 		console.log ("onDidSave");
-	});
+});
 
 
 
