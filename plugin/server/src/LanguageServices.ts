@@ -27,25 +27,30 @@ import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
+import { getFileExtension } from './Utils';
 
 
 //https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
 
+
+
 class LanguageServices extends Analyzer{
 	//protected textDocument:TextDocWithChanges;
+	parser : Parser
 
 	constructor(textDocument: TextDocWithChanges){
 		super(textDocument)
+		this.parser = getParser(textDocument.textDocument.uri)
 	}
 
 	// this fucntions are called when the request is first made from the server
-	onRefernce(params:ReferenceParams):  Location[] {
+	onReference(params:ReferenceParams):  Location[] {
 		let uri = params.textDocument.uri
 		let location = params.position
 
-		
+
 		//TODO:
 		return null
 	}
@@ -75,10 +80,6 @@ class LanguageServices extends Analyzer{
 	}
 
 
-
-
-
-	
 	//update (); // Still not sure about the signature but this will be called when there is an update in the file text
 
 	//TODO: what is this...
@@ -88,6 +89,31 @@ class LanguageServices extends Analyzer{
 	// findDefintionForOtherFile (params): LocationLink [];
 	// doRenameFromOtherFile (params);
 	// findCompletionsForOtherFile (params): CompletionList;
+}
 
 
+//TODO: maybe extract this info from package.json
+let parsersInfo =
+[ 
+	{ 
+		fileExtentsions : ['dg'],
+		wasm : 'tree-sitter-decisiongraph.wasm'
+	},
+	{ 
+		fileExtentsions : ['pspace', 'ps', 'ts'],
+		wasm : 'tree-sitter-policyspace.wasm'
+	},
+	{ 
+		fileExtentsions :  ['vi'],
+		wasm : 'tree-sitter-valueinference.wasm'
+	}
+]
+function getParser(uri : DocumentUri) : Parser {
+	let fileExtension = getFileExtension(uri)
+	const wasm = parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
+	Parser.init()
+	const parser = new Parser()
+	const lang = Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	return parser
 }

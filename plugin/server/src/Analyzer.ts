@@ -38,7 +38,7 @@ export abstract class Analyzer{
 	}
 
 	// this fucntions are called when the request is first made from the server
-	abstract onRefernce(params:ReferenceParams):  Location[];
+	abstract onReference(params:ReferenceParams):  Location[];
 	abstract onDefinition(params:DeclarationParams):  LocationLink[];
 	abstract onPrepareRename(params:RenameParams): Range | null;
 	abstract onRename(params:RenameParams): WorkspaceEdit;
@@ -54,7 +54,7 @@ export abstract class Analyzer{
 	// abstract doRenameFromOtherFile (params);
 	// abstract findCompletionsForOtherFile (params): CompletionList;
 	
-	public refernceDefinitionCallback (ownResults: Location [] | LocationLink [] ): 
+	public referenceDefinitionCallback (ownResults: Location [] | LocationLink [] ): 
 													(otherResults:Location [][] | LocationLink[][] ) => Location[] | LocationLink [] {
 		return (otherResults:Location[][] | LocationLink[][] ) :  Location [] | LocationLink []  => {	
 			let others: Location [] | LocationLink [] = flatten(otherResults);
@@ -91,7 +91,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 		this.ast = this.parser.parse(textDocumet.textDocument.getText());*/
 	}
 
-	onRefernce(params: ReferenceParams): Location[] {
+	onReference(params: ReferenceParams): Location[] {
 		//TEST CODE TO DELELE
 		let pos1:Position = Position.create(2,4);
 		let pos2:Position = Position.create(2,15);
@@ -216,7 +216,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 
 export class DecisionGraphAnalyzer extends Analyzer{
 
-	referncesFromOtherFiles(params: any): Location[] {
+	referencesFromOtherFiles(params: any): Location[] {
 		throw new Error('Method not implemented.');
 	}
 	findDefintionForOtherFile(params: any): LocationLink[] {
@@ -228,7 +228,7 @@ export class DecisionGraphAnalyzer extends Analyzer{
 	findCompletionsForOtherFile(params: any): CompletionList {
 		throw new Error('Method not implemented.');
 	}	
-	onRefernce(params: ReferenceParams): Location[] {
+	onReference(params: ReferenceParams): Location[] {
 		throw new Error('Method not implemented.');
 	}
 	onDefinition(params: DeclarationParams): LocationLink[] {
@@ -257,7 +257,7 @@ export class DecisionGraphAnalyzer extends Analyzer{
 }
 
 export class ValueInferenceAnalyzer extends Analyzer{
-	referncesFromOtherFiles(params: any): Location[] {
+	referencesFromOtherFiles(params: any): Location[] {
 		throw new Error('Method not implemented.');
 	}
 	findDefintionForOtherFile(params: any): LocationLink[] {
@@ -269,7 +269,7 @@ export class ValueInferenceAnalyzer extends Analyzer{
 	findCompletionsForOtherFile(params: any): CompletionList {
 		throw new Error('Method not implemented.');
 	}
-	onRefernce(params: ReferenceParams): Location[] {
+	onReference(params: ReferenceParams): Location[] {
 		throw new Error('Method not implemented.');
 	}
 	onDefinition(params: DeclarationParams): LocationLink[] {
