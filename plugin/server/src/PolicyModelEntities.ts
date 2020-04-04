@@ -24,6 +24,7 @@ import {
 } from 'vscode-languageserver';
 
 import * as Parser from 'web-tree-sitter'
+import * as Utils from './Utils'
 
 //https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
@@ -227,14 +228,14 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 			if(idNode) {
 				let id : string = idNode.descendantsOfType('node_id_value')[0].text
 				let text = node.text
-				let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
+				let loc : Location = Utils.newLocation(uri, Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
 				//let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
 				let newNode : DecisionGraphNode = DecisionGraphNode.createNode(id, text, loc)
 				result.push(newNode)
 			} 
 			else {
 				let text = node.text
-				let loc : Location = newLocation(uri, point2Position(node.startPosition), point2Position(node.endPosition))
+				let loc : Location = Utils.newLocation(uri, Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
 				//let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
 				let newNode : DecisionGraphNode =  DecisionGraphNode.createNamelessNode(text, loc)
 				result.push(newNode)
@@ -254,7 +255,7 @@ function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: 
 		}
 		let name : string = identifierNode.text
 		let text = slot.text
-		let loc : Location = newLocation(uri, point2Position(slot.startPosition), point2Position(slot.endPosition))
+		let loc : Location = Utils.newLocation(uri, Utils.point2Position(slot.startPosition), Utils.point2Position(slot.endPosition))
 		//let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.Slot, text, loc)
 		//result.push(newNode)
 	}
@@ -274,13 +275,13 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	let fileExtensionsvalueInference = ['vi']
 
 	let collectionFunction;
-	if(fileExtensionsDecisionGraph.indexOf(getFileExtension(uri)) > -1) {
+	if(fileExtensionsDecisionGraph.indexOf(Utils.getFileExtension(uri)) > -1) {
 		collectionFunction = analyzeParseTreeDecisionGraph
 	} 
-	else if(fileExtensionsPolicySpace.indexOf(getFileExtension(uri)) > -1) {
+	else if(fileExtensionsPolicySpace.indexOf(Utils.getFileExtension(uri)) > -1) {
 		collectionFunction = analyzeParseTreePolicySpace
 	} 
-	else if (fileExtensionsvalueInference.indexOf(getFileExtension(uri)) > -1) {
+	else if (fileExtensionsvalueInference.indexOf(Utils.getFileExtension(uri)) > -1) {
 		collectionFunction = analyzeParseTreeValueInference
 	}
 	else {
@@ -290,27 +291,6 @@ function analyzeParseTree(root: Parser.Tree, uri : DocumentUri, visibleRanges: {
 	collectionFunction(root, visibleRanges, uri, result)
 
 	return result
-}
-
-function point2Position(p : Parser.Point) : Position {
-	return  Position.create(p.row, p.column)
-}
-
-function newRange(pos1 : Position, pos2 : Position) : Range {
-	return {start: pos1,end: pos2}
-}
-
-function newLocation(uri : DocumentUri, pos1 : Position, pos2 : Position) : Location {
-	let range = newRange(pos1, pos2)
-	return 	{
-		uri: uri,
-		range: range
-	}
-}
-
-function getFileExtension(filename : string) : string {
-	let re = /(?:\.([^.]+))?$/;
-	return re.exec(filename)[1];   
 }
 
 

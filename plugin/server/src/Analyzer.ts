@@ -1,6 +1,7 @@
 import {
 	ReferenceParams,
 	Location,
+	Range,
 	Position,
 	DeclarationParams,
 	RenameParams,
@@ -32,8 +33,8 @@ export abstract class Analyzer{
 	// protected parser: Parser = undefined;
 	// protected ast: Parser.Tree = undefined;
 
-	constructor(textDocumet: TextDocWithChanges){
-		this.textDocument = textDocumet;
+	constructor(textDocument: TextDocWithChanges){
+		this.textDocument = textDocument;
 	}
 
 	// this fucntions are called when the request is first made from the server
@@ -45,13 +46,13 @@ export abstract class Analyzer{
 	abstract onCompletionResolve(params:CompletionItem): CompletionItem;
 	abstract onFoldingRanges(params:FoldingRangeParams): FoldingRange[];
 
-	abstract update (); // Still not sure about the signature but this will be called when there is an update in the file text
+	//abstract update (); // Still not sure about the signature but this will be called when there is an update in the file text
 
 	//this functions are needed to complete the info of a request made by server to another file
-	abstract referncesFromOtherFiles (params): Location [];
-	abstract findDefintionForOtherFile (params): LocationLink [];
-	abstract doRenameFromOtherFile (params);
-	abstract findCompletionsForOtherFile (params): CompletionList;
+	// abstract referncesFromOtherFiles (params): Location [];
+	// abstract findDefintionForOtherFile (params): LocationLink [];
+	// abstract doRenameFromOtherFile (params);
+	// abstract findCompletionsForOtherFile (params): CompletionList;
 	
 	public refernceDefinitionCallback (ownResults: Location [] | LocationLink [] ): 
 													(otherResults:Location [][] | LocationLink[][] ) => Location[] | LocationLink [] {

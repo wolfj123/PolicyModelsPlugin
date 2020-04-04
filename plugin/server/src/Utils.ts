@@ -1,6 +1,9 @@
 import {
 	ReferenceParams,
+	DocumentUri,
 	Location,
+	Range,
+	Position,
 	DeclarationParams,
 	RenameParams,
 	LocationLink,
@@ -11,6 +14,7 @@ import {
 	WorkspaceEdit,
 	CompletionList,
 } from 'vscode-languageserver';
+import * as Parser from 'web-tree-sitter'
 
 export enum langugeIds {
 	policyspace =  0,
@@ -26,4 +30,26 @@ export function flatten (arr: any [][]): any [] {
 	let ans: any[] = [];
 	arr.forEach(x=> x.forEach(y=> ans.push(y))   );
 	return ans;
+}
+
+
+export function point2Position(p : Parser.Point) : Position {
+	return  Position.create(p.row, p.column)
+}
+
+export function newRange(pos1 : Position, pos2 : Position) : Range {
+	return {start: pos1,end: pos2}
+}
+
+export function newLocation(uri : DocumentUri, pos1 : Position, pos2 : Position) : Location {
+	let range = newRange(pos1, pos2)
+	return 	{
+		uri: uri,
+		range: range
+	}
+}
+
+export function getFileExtension(filename : string) : string {
+	let re = /(?:\.([^.]+))?$/;
+	return re.exec(filename)[1];   
 }
