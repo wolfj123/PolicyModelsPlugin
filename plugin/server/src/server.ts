@@ -265,19 +265,8 @@ connection.onCompletionResolve(
 connection.onDefinition(
 (params: DeclarationParams): LocationLink[] => {
 	return solver.solve(params, "onDefinition", params.textDocument);
-}
-);
+});
 
-// export interface Range {
-//     /**
-//      * The range's start position
-//      */
-//     start: Position;
-//     /**
-//      * The range's end position.
-//      */
-//     end: Position;
-// }
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
 	(params:PrepareRenameParams) =>  {
