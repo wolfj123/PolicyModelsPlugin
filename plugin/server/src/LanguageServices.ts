@@ -28,6 +28,7 @@ import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
 import { getFileExtension } from './Utils';
+import * as path from 'path';
 
 
 //https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
@@ -35,26 +36,27 @@ import { getFileExtension } from './Utils';
 
 
 
-
 class LanguageServices extends Analyzer{
 	//protected textDocument:TextDocWithChanges;
 	parser : Parser
+	tree : Parser.Tree
 
 	constructor(textDocument: TextDocWithChanges){
 		super(textDocument)
 		this.parser = getParser(textDocument.textDocument.uri)
+		this.tree = parser.parse(sourceCode);
 	}
 
+	onDefinition(params:DeclarationParams):  LocationLink[] {
+		//TODO:
+		return null
+	}
 	// this fucntions are called when the request is first made from the server
 	onReference(params:ReferenceParams):  Location[] {
 		let uri = params.textDocument.uri
 		let location = params.position
 
 
-		//TODO:
-		return null
-	}
-	onDefinition(params:DeclarationParams):  LocationLink[] {
 		//TODO:
 		return null
 	}
@@ -109,11 +111,58 @@ let parsersInfo =
 	}
 ]
 function getParser(uri : DocumentUri) : Parser {
-	let fileExtension = getFileExtension(uri)
+	const fileExtension = getFileExtension(uri)
 	const wasm = parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
+	//const absolute = path.join(context.extensionPath, 'parsers', wasm)
 	Parser.init()
 	const parser = new Parser()
 	const lang = Parser.Language.load(wasm)
 	parser.setLanguage(lang)
 	return parser
+}
+
+function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[]) {
+	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
+		for (const { start, end } of visibleRanges) {
+			const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
+			if (overlap) return true
+		}
+		return false
+	}
+
+	let visitedChildren = false
+	let cursor = root.walk()
+	let parents = [cursor.nodeType]
+	let parent
+	let grandparent
+	while (true) {
+		// Advance cursor
+		if (visitedChildren) {
+			if (cursor.gotoNextSibling()) {
+				visitedChildren = false
+			} else if (cursor.gotoParent()) {
+				parents.pop()
+				visitedChildren = true
+				continue
+			} else {
+				break
+			}
+		} else {
+			const parent = cursor.nodeType
+			if (cursor.gotoFirstChild()) {
+				parents.push(parent)
+				visitedChildren = false
+			} else {
+				visitedChildren = true
+				continue
+			}
+		}
+		// Skip nodes that are not visible
+		if (!visible(cursor, visibleRanges)) {
+			visitedChildren = true
+			continue
+		}
+
+		yield cursor.currentNode()
+	}
 }
