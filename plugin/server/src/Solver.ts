@@ -6,11 +6,9 @@ import {
 } from 'vscode-languageserver';
 
 import { Analyzer } from './Analyzer';
-import { allParamsTypes, allSolutionTypes, langugeIds } from './Utils';
+import { allParamsTypes, allSolutionTypes, languagesIds } from './Utils';
 import { CreateAnalyzer } from './Factory';
 import { TextDocWithChanges } from './DocumentChangesManager';
-
-
 
 export interface SolverInt<T extends TextDocWithChanges> {
 	solve(params:any, requestName: string, textDocument): any;
@@ -21,49 +19,50 @@ export interface SolverInt<T extends TextDocWithChanges> {
 	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
 }
 
-export class Solver<T  extends TextDocWithChanges> implements SolverInt<T>{
+interface analyzerHolder {
+	uri: string,
+	language: languagesIds,
+	analyzer: Analyzer
+}
+
+export class Solver<T  extends TextDocWithChanges> implements SolverInt<T> {
 	private documentsManager: TextDocuments<T>; // probalby will be extended 
-	private anlayzers: {[id: string]: Analyzer};
+	private anlayzers: analyzerHolder[]
 
 	constructor(documentsManager: TextDocuments<T>){
 		this.documentsManager = documentsManager;
-		this.anlayzers = {};
+		this.anlayzers = [];
 		//TODO create analyzers for all files in folder
 	}
 
 	public solve(params:any, requestName: string, textDocument:TextDocumentIdentifier): allSolutionTypes {	
-		
-		//@ts-ignore
-		let currAnalyzer = this.anlayzers[textDocument.uri];
-		
-		
-		let handler: {[id: string]: (params: allParamsTypes) => allSolutionTypes} = {
-			'onReferences':currAnalyzer.onRefernce,
-			'onDefinition': currAnalyzer.onDefinition,
-			'onRenameRequest': currAnalyzer.onRename,
-			'onFoldingRanges': currAnalyzer.onFoldingRanges,
-			'onCompletion': currAnalyzer.onCompletion,
-			'onCompletionResolve':currAnalyzer.onCompletionResolve,
-			'onPrepareRename': currAnalyzer.onPrepareRename
-		}
+				
+		let currAnalyzer = this.anlayzers.find(x => x.uri === textDocument.uri)
 
 		// TODO add here a callback for this solver the callback will be any other analyzers activation needed
 		// think about cyclic call backs how to prevent maybe not possible than the solver will be needed in all analyzers
-		let toActivate: (params: allParamsTypes) => allSolutionTypes = handler[requestName];
+		let toActivate: (params: allParamsTypes) => allSolutionTypes = currAnalyzer.analyzer[requestName];
 		if (toActivate === undefined) {
 			//TODO error
 			return null;
 		}
 
-		return toActivate(params);
+		let partialAnswer =  toActivate(params);
+
+		return partialAnswer;
 	}
 
 	// TEMP functions until fix doc manager
 
 	onDidOpen(change: TextDocumentChangeEvent<T>): void {
-		let langId = langugeIds [change.document.textDocument.languageId];
-		
-		this.anlayzers[change.document.textDocument.uri] = CreateAnalyzer(change.document);
+		let langId = languagesIds [change.document.textDocument.languageId];
+		let toAdd: analyzerHolder = {
+			uri: change.document.textDocument.uri,
+			language: langId,
+			analyzer: CreateAnalyzer(change.document)
+		}
+
+		this.anlayzers.push(toAdd);
 	}
 
 	onDidChangeContent(change: TextDocumentChangeEvent<T>): void {

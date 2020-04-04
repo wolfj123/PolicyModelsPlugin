@@ -1,20 +1,18 @@
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer, PolicySpaceAnalyzer, DecisionGraphAnalyzer, ValueInferenceAnalyzer } from './Analyzer';
-import { langugeIds } from './Utils';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-
+import { languagesIds } from './Utils';
 
 export function CreateAnalyzer(textDoc: TextDocWithChanges): Analyzer {	
 
 	let analyzer: Analyzer;
-	switch(langugeIds[textDoc.textDocument.languageId]){
-		case langugeIds.policyspace:
+	switch(languagesIds[textDoc.textDocument.languageId]){
+		case languagesIds.policyspace:
 			analyzer = new PolicySpaceAnalyzer(textDoc);
 			break;	
-		case langugeIds.decisionGraph:
+		case languagesIds.decisiongraph:
 			analyzer = new DecisionGraphAnalyzer(textDoc);
 			break;
-		case langugeIds.valueInference:
+		case languagesIds.valueinference:
 			analyzer = new ValueInferenceAnalyzer(textDoc);
 		default:
 			analyzer = undefined;

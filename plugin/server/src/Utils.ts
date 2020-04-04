@@ -16,10 +16,10 @@ import {
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter'
 
-export enum langugeIds {
+export enum languagesIds {
 	policyspace =  0,
-	decisionGraph =  1,
-	valueInference = 2
+	decisiongraph =  1,
+	valueinference = 2
 }
 export declare type allParamsTypes = ReferenceParams | DeclarationParams | RenameParams | TextDocumentPositionParams | 
 							  CompletionItem | FoldingRangeParams | string;
