@@ -13,7 +13,8 @@
 	},
 	"dependencies": {
 		"vscode-languageserver": "^6.1.1",
-		"vscode-languageserver-textdocument": "*"
+		"vscode-languageserver-textdocument": "*",
+		"web-tree-sitter": "^0.16.2"
 	},
 	"scripts": {
 		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts"

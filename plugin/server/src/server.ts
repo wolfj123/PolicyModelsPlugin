@@ -36,6 +36,7 @@ import {
 	DidChangeConfigurationNotification,
 	TextDocumentChangeRegistrationOptions,
 	TextDocumentChangeEvent,
+	PrepareRenameParams,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -237,9 +238,8 @@ connection.onInitialized(() => {
 		// 	connection.console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
 		// });
 
-		console.log('finish on intilized')
-
 	}
+	console.log('finish on intilized')
 });
 
 
@@ -247,29 +247,45 @@ connection.onInitialized(() => {
 //------------- User Requests ------------------------------
 
 connection.onExit(():void => {
-	connection.dispose();
+connection.dispose();
 });
 
 connection.onCompletion(
-	(params: TextDocumentPositionParams): CompletionList => {	
-		return solver.solve(params, "onCompletion" ,params.textDocument);
-	}
+(params: TextDocumentPositionParams): CompletionList => {	
+	return solver.solve(params, "onCompletion" ,params.textDocument);
+}
 );
 
 connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		return solver.solve(item, "onCompletionResolve", item.data.textDocument);
-	}
+(item: CompletionItem): CompletionItem => {
+	return solver.solve(item, "onCompletionResolve", item.data.textDocument);
+}
 );
 
 connection.onDefinition(
-	(params: DeclarationParams) : LocationLink[] => {
-		return solver.solve(params, "onDefinition", params.textDocument);
-	}
+(params: DeclarationParams): LocationLink[] => {
+	return solver.solve(params, "onDefinition", params.textDocument);
+}
 );
 
+// export interface Range {
+//     /**
+//      * The range's start position
+//      */
+//     start: Position;
+//     /**
+//      * The range's end position.
+//      */
+//     end: Position;
+// }
+connection.onPrepareRename ( 
+	//this reutnrs the range of the word if can be renamed and null if it can't
+	(params:PrepareRenameParams) =>  {
+		return solver.solve(params,"onPrepareRename",params.textDocument);
+	});
+
 connection.onFoldingRanges(
-	(params: FoldingRangeParams) : FoldingRange[] => {
+	(params: FoldingRangeParams): FoldingRange[] => {
 		return solver.solve(params, "onFoldingRanges", params.textDocument);
 	}
 );

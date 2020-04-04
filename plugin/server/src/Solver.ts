@@ -7,7 +7,7 @@ import {
 
 import { Analyzer } from './Analyzer';
 import { allParamsTypes, allSolutionTypes, langugeIds } from './Utils';
-import { CreateAnalyzer } from './AnalyzerFactory';
+import { CreateAnalyzer } from './Factory';
 import { TextDocWithChanges } from './DocumentChangesManager';
 
 
@@ -38,12 +38,13 @@ export class Solver<T  extends TextDocWithChanges> implements SolverInt<T>{
 		
 		
 		let handler: {[id: string]: (params: allParamsTypes) => allSolutionTypes} = {
-			'onReferences':currAnalyzer.getAllRefernces,
-			'onDefinition': currAnalyzer.getDefinition,
-			'onRenameRequest': currAnalyzer.doRename,
-			'onFoldingRanges': currAnalyzer.getFoldingRange,
-			'onCompletion': currAnalyzer.autoCompleteRequest,
-			'onCompletionResolve':currAnalyzer.resolveAutoCompleteItem,
+			'onReferences':currAnalyzer.onRefernce,
+			'onDefinition': currAnalyzer.onDefinition,
+			'onRenameRequest': currAnalyzer.onRename,
+			'onFoldingRanges': currAnalyzer.onFoldingRanges,
+			'onCompletion': currAnalyzer.onCompletion,
+			'onCompletionResolve':currAnalyzer.onCompletionResolve,
+			'onPrepareRename': currAnalyzer.onPrepareRename
 		}
 
 		// TODO add here a callback for this solver the callback will be any other analyzers activation needed
@@ -56,6 +57,8 @@ export class Solver<T  extends TextDocWithChanges> implements SolverInt<T>{
 
 		return toActivate(params);
 	}
+
+	// TEMP functions until fix doc manager
 
 	onDidOpen(change: TextDocumentChangeEvent<T>): void {
 		let langId = langugeIds [change.document.textDocument.languageId];
