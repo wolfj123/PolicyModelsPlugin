@@ -221,7 +221,10 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 		'continue_node',
 		'part_node'
 	]
-	
+	console.time('tree')
+	var tmpNode = root.walk().currentNode().namedDescendantForPosition({row: 2, column: 3})
+	console.log(tmpNode.type)
+
 	for (let node of nextNode(root, visibleRanges)) {
 		if(nodeTypes.indexOf(node.type) > -1){
 			let idNode = node.children.filter(child => child.type === 'node_id')[0]
@@ -242,6 +245,7 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 			}
 		} 
 	}
+	console.timeEnd('tree')
 }
 
 function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: number, end: number}[], uri : DocumentUri, result : PolicyModelEntity[]) {
@@ -302,6 +306,7 @@ async function demoDecisionGraph() {
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
 	const lang = await Parser.Language.load(wasm)
+	//console.log(lang)
 	parser.setLanguage(lang)
 		
 	//Then you can parse some source code,
@@ -314,7 +319,8 @@ async function demoDecisionGraph() {
 	const tree = parser.parse(sourceCode);
 	
 	//and inspect the syntax tree.
-	console.log(analyzeParseTree(tree, "somefile.dg", [{start: 0 , end: 8}]))
+	let result = analyzeParseTree(tree, "somefile.dg", [{start: 0 , end: 8}])
+	//console.log(result)
 }
 
 async function demoPolicySpace() {

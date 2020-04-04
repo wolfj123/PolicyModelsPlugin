@@ -41,18 +41,18 @@ class LanguageServices extends Analyzer{
 	parser : Parser
 	tree : Parser.Tree
 
-	constructor(textDocument: TextDocWithChanges){
+	constructor(textDocument : TextDocWithChanges){
 		super(textDocument)
 		this.parser = getParser(textDocument.textDocument.uri)
-		this.tree = parser.parse(sourceCode);
+		this.tree = parser.parse(textDocument.textDocument.getText());
 	}
 
-	onDefinition(params:DeclarationParams):  LocationLink[] {
+	onDefinition(params : DeclarationParams):  LocationLink[] {
 		//TODO:
 		return null
 	}
 	// this fucntions are called when the request is first made from the server
-	onReference(params:ReferenceParams):  Location[] {
+	onReference(params : ReferenceParams):  Location[] {
 		let uri = params.textDocument.uri
 		let location = params.position
 
@@ -60,26 +60,32 @@ class LanguageServices extends Analyzer{
 		//TODO:
 		return null
 	}
-	onPrepareRename(params:RenameParams): Range | null {
+	onPrepareRename(params : RenameParams): Range | null {
 		//TODO:
 		return null
 	}
-	onRename(params:RenameParams): WorkspaceEdit {
+	onRename(params : RenameParams): WorkspaceEdit {
 		//TODO:
 		return null
 	}
-	onCompletion(params:TextDocumentPositionParams): CompletionList {
+	onCompletion(params : TextDocumentPositionParams): CompletionList {
 		//TODO:
 		return null
 	}
-	onCompletionResolve(params:CompletionItem): CompletionItem {
+	onCompletionResolve(params : CompletionItem): CompletionItem {
 		//TODO:
 		return null
 	}
-	onFoldingRanges(params:FoldingRangeParams): FoldingRange[] {
+	onFoldingRanges(params : FoldingRangeParams): FoldingRange[] {
 		//TODO:
 		return null
 	}
+
+
+
+
+
+
 
 
 	//update (); // Still not sure about the signature but this will be called when there is an update in the file text
@@ -93,6 +99,13 @@ class LanguageServices extends Analyzer{
 	// findCompletionsForOtherFile (params): CompletionList;
 }
 
+
+
+enum LanguageName {
+	PolicySpace,
+	DecisionGraph,
+	ValueInference
+}
 
 //TODO: maybe extract this info from package.json
 let parsersInfo =
@@ -110,6 +123,7 @@ let parsersInfo =
 		wasm : 'tree-sitter-valueinference.wasm'
 	}
 ]
+
 function getParser(uri : DocumentUri) : Parser {
 	const fileExtension = getFileExtension(uri)
 	const wasm = parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
@@ -166,3 +180,6 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 		yield cursor.currentNode()
 	}
 }
+
+
+
