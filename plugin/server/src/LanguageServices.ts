@@ -109,25 +109,30 @@ class DecisionGraphServices {
 		let importedGraphName
 
 		if(decisiongraphSource) {
-			console.log("import logic")
 			let imports : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
 			let importSource : Parser.SyntaxNode = imports.find(
 				node => 
-					node.descendantsOfType("file_path")[0].text === decisiongraphSource)
+					{ 
+						return node.descendantsOfType("file_path")[0].text.trim() === decisiongraphSource
+					}
+				)
+			//console.log(imports)
+			//console.log(importSource)
 			if(importSource){
 				importedGraphName = importSource.descendantsOfType("decision_graph_name")[0].text
 			}
 		}
 
 		let references : Parser.SyntaxNode[] = root.descendantsOfType("node_reference")
-		console.log(references)
 		let relevantReferences = references.filter(
 			ref => 
 			{
+				//console.log(!(importedGraphName))
+				//console.log(importedGraphName)
 				//console.log(ref.descendantsOfType("node_id_value")[0].text)
 				return ref.descendantsOfType("node_id_value")[0].text === name &&
-					(!(importedGraphName) || 
-					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName)
+					(!(importedGraphName) || (importedGraphName &&
+					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName))
 			}	
 		)
 		return relevantReferences.map(
@@ -270,19 +275,40 @@ async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
 	const lang = await Parser.Language.load(wasm)
 	parser.setLanguage(lang)
-		
+	let tree
+	let sourceCode
+	let result
+
 	//Then you can parse some source code,
-	const sourceCode = `
+	sourceCode = `
 	[>bb< ask:
 	{>asd< text: Do the data contain health information?}
 	{answers:
 	  {yes: [ >yo< call: asd]}}]
 	`;
-	const tree = parser.parse(sourceCode);
+	// tree = parser.parse(sourceCode);
+	// result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree)
+	// console.log(result)
 
+	sourceCode = ` [#import dg : file.dg]
+	[>bb< ask:
+	{text: Do the data contain health information?}
+	{answers:
+	  {yes: [ >yo< call: dg>asd]}}]
+	`;
+	tree = parser.parse(sourceCode);
+	result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree, "file.dg")
+	console.log(result)
 
-	//and inspect the syntax tree.
-	let result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree)
+	
+	sourceCode = ` [#import dg : file.dg]
+	[>bb< ask:
+	{text: Do the data contain health information?}
+	{answers:
+	  {yes: [ >yo< call: dg2>asd]}}]
+	`;
+	tree = parser.parse(sourceCode);
+	result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree, "file.dg")
 	console.log(result)
 }
 
