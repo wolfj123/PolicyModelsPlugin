@@ -165,8 +165,8 @@ export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: numbe
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
 		switch (cursor.nodeType) {
-			case 'identifier_simple':
-				if (parent == 'slot' || (parent == 'identifier_with_desc' && grandparent == 'slot')) {
+			case 'identifier_value':
+				if (grandparent == 'slot') {
 					slots.push({start: cursor.startPosition, end: cursor.endPosition})
 				}
 				else {
