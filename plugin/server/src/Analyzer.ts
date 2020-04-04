@@ -57,10 +57,10 @@ export abstract class Analyzer{
 	//abstract update (); // Still not sure about the signature but this will be called when there is an update in the file text
 
 	//this functions are needed to complete the info of a request made by server to another file
-	abstract referncesFromOtherFiles (params): Location [] | any;
-	abstract findDefintionForOtherFile (params): LocationLink [];
-	abstract doRenameFromOtherFile (params);
-	abstract findCompletionsForOtherFile (params): CompletionList;
+	// abstract referncesFromOtherFiles (params): Location [] | any;
+	// abstract findDefintionForOtherFile (params): LocationLink [];
+	// abstract doRenameFromOtherFile (params);
+	// abstract findCompletionsForOtherFile (params): CompletionList;
 }
 
 

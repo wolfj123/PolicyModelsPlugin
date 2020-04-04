@@ -32,9 +32,12 @@ export function flatten (arr: any [][]): any [] {
 	return ans;
 }
 
-
 export function point2Position(p : Parser.Point) : Position {
-	return  Position.create(p.row, p.column)
+	return Position.create(p.row, p.column)
+}
+
+export function position2Point(p : Position) : Parser.Point {
+	return {row: p.line, column: p.character}
 }
 
 export function newRange(pos1 : Position, pos2 : Position) : Range {

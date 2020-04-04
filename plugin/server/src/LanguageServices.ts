@@ -27,7 +27,7 @@ import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { getFileExtension } from './Utils';
+import { getFileExtension, point2Position, position2Point } from './Utils';
 import * as path from 'path';
 
 
@@ -47,14 +47,18 @@ class LanguageServices extends Analyzer{
 		this.tree = parser.parse(textDocument.textDocument.getText());
 	}
 
+	getNodeFromPosition(position : Position) : Parser.SyntaxNode {
+		return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
+	}
+
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		//TODO:
 		return null
 	}
 	// this fucntions are called when the request is first made from the server
-	onReference(params : ReferenceParams):  Location[] {
-		let uri = params.textDocument.uri
-		let location = params.position
+	onReferences(params : ReferenceParams):  Location[] {
+		let uri : DocumentUri = params.textDocument.uri
+		let position : Position = params.position
 
 
 		//TODO:
@@ -64,7 +68,7 @@ class LanguageServices extends Analyzer{
 		//TODO:
 		return null
 	}
-	onRename(params : RenameParams): WorkspaceEdit {
+	onRenameRequest(params : RenameParams): WorkspaceEdit {
 		//TODO:
 		return null
 	}
@@ -99,7 +103,49 @@ class LanguageServices extends Analyzer{
 	// findCompletionsForOtherFile (params): CompletionList;
 }
 
+class DecisionGraphServices {
+	getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
 
+	getDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
+
+	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
+	
+	getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
+}
+
+
+class PolicySpaceServices {
+	getDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
+
+	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
+	
+	getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+		//TODO:
+		return null
+	}
+}
+
+class ValueInferenceServices {
+	//TODO:
+}
 
 enum LanguageName {
 	PolicySpace,

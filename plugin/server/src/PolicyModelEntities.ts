@@ -223,7 +223,7 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 	]
 	console.time('tree')
 	var tmpNode = root.walk().currentNode().namedDescendantForPosition({row: 2, column: 3})
-	console.log(tmpNode.type)
+	console.log(tmpNode)
 
 	for (let node of nextNode(root, visibleRanges)) {
 		if(nodeTypes.indexOf(node.type) > -1){
