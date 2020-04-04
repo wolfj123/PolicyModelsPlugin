@@ -31,7 +31,7 @@ export function CreateAnalyzer(textDoc: TextDocWithChanges): Analyzer {
 
 
 //import Parser = require('web-tree-sitter');
-
+/*
 import Parser = require('web-tree-sitter');
 
 let parserLangs: {[id: number]: Parser.Language}  = {};
@@ -63,4 +63,4 @@ async function ParserFactoryHelper1(){
 async function ParserFactoryHelper2(wasm: string)  {
 	let lang = await Parser.Language.load(wasm);
 	return lang;
-}
+}*/

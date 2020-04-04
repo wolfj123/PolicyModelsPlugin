@@ -19,10 +19,7 @@ import {
 
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
-import Parser = require('web-tree-sitter');
-import { create } from 'domain';
-import { CreateParser } from './Factory';
-import { langugeIds } from './Utils';
+import { flatten } from './Utils';
 
 
 interface CompletionItemData{
@@ -32,40 +29,68 @@ interface CompletionItemData{
 export abstract class Analyzer{
 
 	protected textDocument:TextDocWithChanges;
-	protected parser: Parser = undefined;
-	protected ast: Parser.Tree = undefined;
+	// protected parser: Parser = undefined;
+	// protected ast: Parser.Tree = undefined;
 
 	constructor(textDocumet: TextDocWithChanges){
 		this.textDocument = textDocumet;
 	}
 
-	// needs to Hahve AST, cahing, textDoc
-	abstract getAllRefernces(params:ReferenceParams):  Location[];
-	abstract getDefinition(params:DeclarationParams):  LocationLink[];
-	abstract doRename(params:RenameParams): WorkspaceEdit;
-
-	abstract autoCompleteRequest(params:TextDocumentPositionParams): CompletionList;
-	abstract resolveAutoCompleteItem(params:CompletionItem): CompletionItem;
-
-	abstract getFoldingRange(params:FoldingRangeParams): FoldingRange[];
+	// this fucntions are called when the request is first made from the server
+	abstract onRefernce(params:ReferenceParams):  Location[];
+	abstract onDefinition(params:DeclarationParams):  LocationLink[];
+	abstract onPrepareRename(params:RenameParams): Range | null;
+	abstract onRename(params:RenameParams): WorkspaceEdit;
+	abstract onCompletion(params:TextDocumentPositionParams): CompletionList;
+	abstract onCompletionResolve(params:CompletionItem): CompletionItem;
+	abstract onFoldingRanges(params:FoldingRangeParams): FoldingRange[];
 
 	abstract update (); // Still not sure about the signature but this will be called when there is an update in the file text
+
+	//this functions are needed to complete the info of a request made by server to another file
+	abstract referncesFromOtherFiles (params): Location [];
+	abstract findDefintionForOtherFile (params): LocationLink [];
+	abstract doRenameFromOtherFile (params);
+	abstract findCompletionsForOtherFile (params): CompletionList;
+	
+	public refernceDefinitionCallback (ownResults: Location [] | LocationLink [] ): 
+													(otherResults:Location [][] | LocationLink[][] ) => Location[] | LocationLink [] {
+		return (otherResults:Location[][] | LocationLink[][] ) :  Location [] | LocationLink []  => {	
+			let others: Location [] | LocationLink [] = flatten(otherResults);
+			//@ts-ignore
+			return ownResults.concat(others);
+		}
+	}
 }
 
 
 export class PolicySpaceAnalyzer extends Analyzer{
+	referncesFromOtherFiles(params: any): Location[] {
+		throw new Error('Method not implemented.');
+	}
+	findDefintionForOtherFile(params: any): LocationLink[] {
+		throw new Error('Method not implemented.');
+	}
+	doRenameFromOtherFile(params: any) {
+		throw new Error('Method not implemented.');
+	}
+	findCompletionsForOtherFile(params: any): CompletionList {
+		throw new Error('Method not implemented.');
+	}
+
 
 	constructor(textDocumet: TextDocWithChanges){
 		super(textDocumet);
+		/*	
 		this.parser = CreateParser(langugeIds.policyspace);
 		if (this.parser === undefined){
 			//error?
 			return;
 		}
-		this.ast = this.parser.parse(textDocumet.textDocument.getText());
+		this.ast = this.parser.parse(textDocumet.textDocument.getText());*/
 	}
 
-	getAllRefernces(params: ReferenceParams): Location[] {
+	onRefernce(params: ReferenceParams): Location[] {
 		//TEST CODE TO DELELE
 		let pos1:Position = Position.create(2,4);
 		let pos2:Position = Position.create(2,15);
@@ -76,7 +101,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 			}
 		];
 	}
-	getDefinition(params: DeclarationParams): LocationLink[] {
+	onDefinition(params: DeclarationParams): LocationLink[] {
 		//TEST CODE TO DELELE
 		let uriAns:string = params.textDocument.uri;
 		let pos1: Position = Position.create(1,0);
@@ -93,7 +118,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 			}
 		];
 	}
-	doRename(params: RenameParams): WorkspaceEdit {
+	onRename(params: RenameParams): WorkspaceEdit {
 		//TEST CODE TO DELELE
 		let pos1: Position = {line:0,character:0};
 		let pos2: Position = {line:0,character:5};
@@ -121,7 +146,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 		return ans;
 	}
 
-	autoCompleteRequest(params: TextDocumentPositionParams): CompletionList {
+	onCompletion(params: TextDocumentPositionParams): CompletionList {
 		// We need to add this information for all results - because we use it in the server
 		let data: CompletionItemData = {
 			textDocument: params.textDocument
@@ -150,7 +175,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 			items: compItmes
 		};
 	}
-	resolveAutoCompleteItem(params: CompletionItem): CompletionItem {
+	onCompletionResolve(params: CompletionItem): CompletionItem {
 		//TEST CODE TO DELELE
 		let item = params;
 		if (item.data === 1) {
@@ -165,7 +190,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 		}
 		return item;
 	}
-	getFoldingRange(params: FoldingRangeParams): FoldingRange[] {
+	onFoldingRanges(params: FoldingRangeParams): FoldingRange[] {
 		//TEST CODE TO DELELE
 		// NOTE the client we are using only supports for line folding - meaning the startCharacter & endCharacter are Irrelevant 
 		return [
@@ -181,52 +206,92 @@ export class PolicySpaceAnalyzer extends Analyzer{
 
 	update (){}
 
+	//this causes rename not to work therefore it isn't connected to server
+	onPrepareRename(params:RenameParams): Range | null {
+		throw new Error('Method not implemented.');
+	}
+
 }
 
 export class DecisionGraphAnalyzer extends Analyzer{
-	
-	getAllRefernces(params: ReferenceParams): Location[] {
+
+	referncesFromOtherFiles(params: any): Location[] {
 		throw new Error('Method not implemented.');
 	}
-	getDefinition(params: DeclarationParams): LocationLink[] {
+	findDefintionForOtherFile(params: any): LocationLink[] {
 		throw new Error('Method not implemented.');
 	}
-	doRename(params: RenameParams): WorkspaceEdit {
+	doRenameFromOtherFile(params: any) {
 		throw new Error('Method not implemented.');
 	}
-	autoCompleteRequest(params: TextDocumentPositionParams): CompletionList {
+	findCompletionsForOtherFile(params: any): CompletionList {
+		throw new Error('Method not implemented.');
+	}	
+	onRefernce(params: ReferenceParams): Location[] {
 		throw new Error('Method not implemented.');
 	}
-	resolveAutoCompleteItem(params: CompletionItem): CompletionItem {
+	onDefinition(params: DeclarationParams): LocationLink[] {
 		throw new Error('Method not implemented.');
 	}
-	getFoldingRange(params: FoldingRangeParams): FoldingRange[] {
+	onRename(params: RenameParams): WorkspaceEdit {
+		throw new Error('Method not implemented.');
+	}
+	onCompletion(params: TextDocumentPositionParams): CompletionList {
+		throw new Error('Method not implemented.');
+	}
+	onCompletionResolve(params: CompletionItem): CompletionItem {
+		throw new Error('Method not implemented.');
+	}
+	onFoldingRanges(params: FoldingRangeParams): FoldingRange[] {
 		throw new Error('Method not implemented.');
 	}
 	update (){}
+
+	//this causes rename not to work therefore it isn't connected to server
+	onPrepareRename(params:RenameParams): Range | null {
+		throw new Error('Method not implemented.');
+	}
+
 	
 }
 
 export class ValueInferenceAnalyzer extends Analyzer{
-
-	getAllRefernces(params: ReferenceParams): Location[] {
+	referncesFromOtherFiles(params: any): Location[] {
 		throw new Error('Method not implemented.');
 	}
-	getDefinition(params: DeclarationParams): LocationLink[] {
+	findDefintionForOtherFile(params: any): LocationLink[] {
 		throw new Error('Method not implemented.');
 	}
-	doRename(params: RenameParams): WorkspaceEdit {
+	doRenameFromOtherFile(params: any) {
 		throw new Error('Method not implemented.');
 	}
-	autoCompleteRequest(params: TextDocumentPositionParams): CompletionList {
+	findCompletionsForOtherFile(params: any): CompletionList {
 		throw new Error('Method not implemented.');
 	}
-	resolveAutoCompleteItem(params: CompletionItem): CompletionItem {
+	onRefernce(params: ReferenceParams): Location[] {
 		throw new Error('Method not implemented.');
 	}
-	getFoldingRange(params: FoldingRangeParams): FoldingRange[] {
+	onDefinition(params: DeclarationParams): LocationLink[] {
+		throw new Error('Method not implemented.');
+	}
+	onRename(params: RenameParams): WorkspaceEdit {
+		throw new Error('Method not implemented.');
+	}
+	onCompletion(params: TextDocumentPositionParams): CompletionList {
+		throw new Error('Method not implemented.');
+	}
+	onCompletionResolve(params: CompletionItem): CompletionItem {
+		throw new Error('Method not implemented.');
+	}
+	onFoldingRanges(params: FoldingRangeParams): FoldingRange[] {
 		throw new Error('Method not implemented.');
 	}
 	update (){}
+
+	//this causes rename not to work therefore it isn't connected to server
+	onPrepareRename(params:RenameParams): Range | null {
+		throw new Error('Method not implemented.');
+	}
+	
 	
 }

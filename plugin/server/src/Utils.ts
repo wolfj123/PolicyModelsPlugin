@@ -20,4 +20,10 @@ export enum langugeIds {
 export declare type allParamsTypes = ReferenceParams | DeclarationParams | RenameParams | TextDocumentPositionParams | 
 							  CompletionItem | FoldingRangeParams | string;
 export declare type allSolutionTypes = Location[] | WorkspaceEdit | CompletionList | CompletionItem | FoldingRange[] |
-							    LocationLink[] ;
+								LocationLink[] | Range;
+
+export function flatten (arr: any [][]): any [] {
+	let ans: any[] = [];
+	arr.forEach(x=> x.forEach(y=> ans.push(y))   );
+	return ans;
+}
