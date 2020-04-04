@@ -27,7 +27,7 @@ import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { getFileExtension, point2Position, position2Point , newRange} from './Utils';
+import { getFileExtension, point2Position, position2Point , newRange ,flatten} from './Utils';
 import * as path from 'path';
 
 
@@ -150,11 +150,9 @@ class DecisionGraphServices {
 		let importedGraphName
 
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_reference")
-		let relevantRefs = slotRefs
-			.map(id => id.descendantsOfType("node_id_value")[0])
-			.filter(id => id.text === name)
-
-		return getRangesOfSyntaxNodes(relevantRefs)
+		let slotIdentifiers : Parser.SyntaxNode[] = flatten(slotRefs.map(ref => ref.descendantsOfType("slot_identifier")))
+		let relevant = slotIdentifiers.filter(id => id.text === name)
+		return getRangesOfSyntaxNodes(relevant)
 	}
 	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
@@ -279,7 +277,8 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 
 /*************DEMO*********/
 //demoDecisionGraphAllReferencesOfNodeInDocument()
-demoDecisionGraphAllDefinitionsOfNodeInDocument()
+//demoDecisionGraphAllDefinitionsOfNodeInDocument()
+demoDecisionGraphAllReferencesOfSlotInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -345,7 +344,23 @@ async function demoDecisionGraphAllDefinitionsOfNodeInDocument() {
 	console.log(result)
 	result = DecisionGraphServices.getAllDefinitionsOfNodeInDocument("yo", tree)
 	console.log(result)
-
 }
 
+async function demoDecisionGraphAllReferencesOfSlotInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
 
+	sourceCode = `[set: 
+		DataTags/Mid1/Bottom1=b1a; 
+		DataTags/Mid2/Mid1+=
+			{b2b, b2c}]`;
+	tree = parser.parse(sourceCode);
+	result = DecisionGraphServices.getAllReferencesOfSlotInDocument("Mid1", tree)
+	console.log(result)
+}
