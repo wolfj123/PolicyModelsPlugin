@@ -25,6 +25,9 @@ import {
 
 import * as Parser from 'web-tree-sitter'
 
+//https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
+//https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
+
 // enum PolicyModelEntityType {
 // 	Slot,
 // 	SlotValue,
