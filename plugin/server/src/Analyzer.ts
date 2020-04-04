@@ -19,7 +19,10 @@ import {
 
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
-
+import Parser = require('web-tree-sitter');
+import { create } from 'domain';
+import { CreateParser } from './Factory';
+import { langugeIds } from './Utils';
 
 
 interface CompletionItemData{
@@ -29,6 +32,9 @@ interface CompletionItemData{
 export abstract class Analyzer{
 
 	protected textDocument:TextDocWithChanges;
+	protected parser: Parser = undefined;
+	protected ast: Parser.Tree = undefined;
+
 	constructor(textDocumet: TextDocWithChanges){
 		this.textDocument = textDocumet;
 	}
@@ -48,6 +54,16 @@ export abstract class Analyzer{
 
 
 export class PolicySpaceAnalyzer extends Analyzer{
+
+	constructor(textDocumet: TextDocWithChanges){
+		super(textDocumet);
+		this.parser = CreateParser(langugeIds.policyspace);
+		if (this.parser === undefined){
+			//error?
+			return;
+		}
+		this.ast = this.parser.parse(textDocumet.textDocument.getText());
+	}
 
 	getAllRefernces(params: ReferenceParams): Location[] {
 		//TEST CODE TO DELELE

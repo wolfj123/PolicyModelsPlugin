@@ -7,7 +7,7 @@ import {
 
 import { Analyzer } from './Analyzer';
 import { allParamsTypes, allSolutionTypes, langugeIds } from './Utils';
-import { CreateAnalyzer } from './AnalyzerFactory';
+import { CreateAnalyzer } from './Factory';
 import { TextDocWithChanges } from './DocumentChangesManager';
 
 
