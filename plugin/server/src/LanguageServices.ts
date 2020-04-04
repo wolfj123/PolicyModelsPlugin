@@ -123,11 +123,13 @@ class DecisionGraphServices {
 		console.log(references)
 		let relevantReferences = references.filter(
 			ref => 
-				ref.descendantsOfType("node_id_value")[0].text === name &&
+			{
+				//console.log(ref.descendantsOfType("node_id_value")[0].text)
+				return ref.descendantsOfType("node_id_value")[0].text === name &&
 					(!(importedGraphName) || 
 					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName)
+			}	
 		)
-		
 		return relevantReferences.map(
 			ref => 
 				newRange(point2Position(ref.startPosition), point2Position(ref.endPosition))
@@ -260,9 +262,9 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 
 
 /*************DEMO*********/
-demoDecisionGraph()
+demoDecisionGraphAllReferencesOfNodeInDocument()
 
-async function demoDecisionGraph() {
+async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
@@ -274,7 +276,7 @@ async function demoDecisionGraph() {
 	[>bb< ask:
 	{>asd< text: Do the data contain health information?}
 	{answers:
-	  {yes: [ >yo< call: healthSection]}}]
+	  {yes: [ >yo< call: asd]}}]
 	`;
 	const tree = parser.parse(sourceCode);
 
