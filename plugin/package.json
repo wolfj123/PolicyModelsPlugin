@@ -145,7 +145,7 @@
 		"tree-sitter-cli": "^0.16.5",
 		"tree-sitter-valueinference": "^0.0.2",
 		"tree-sitter-policyspace": "^0.0.4",
-		"tree-sitter-decisiongraph": "^0.0.7",
+		"tree-sitter-decisiongraph": "^0.1.0",
 		"tslint": "^5.20.1",
 		"typescript": "^3.8.3"
 	},

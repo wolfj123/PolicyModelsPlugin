@@ -27,7 +27,7 @@ import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { getFileExtension, point2Position, position2Point } from './Utils';
+import { getFileExtension, point2Position, position2Point , newRange} from './Utils';
 import * as path from 'path';
 
 
@@ -104,22 +104,48 @@ class LanguageServices extends Analyzer{
 }
 
 class DecisionGraphServices {
-	getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+	static getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, decisiongraphSource : DocumentUri = undefined /*if the node is from another file*/) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let importedGraphName
+
+		if(decisiongraphSource) {
+			console.log("import logic")
+			let imports : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
+			let importSource : Parser.SyntaxNode = imports.find(
+				node => 
+					node.descendantsOfType("file_path")[0].text === decisiongraphSource)
+			if(importSource){
+				importedGraphName = importSource.descendantsOfType("decision_graph_name")[0].text
+			}
+		}
+
+		let references : Parser.SyntaxNode[] = root.descendantsOfType("node_reference")
+		console.log(references)
+		let relevantReferences = references.filter(
+			ref => 
+				ref.descendantsOfType("node_id_value")[0].text === name &&
+					(!(importedGraphName) || 
+					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName)
+		)
+		
+		return relevantReferences.map(
+			ref => 
+				newRange(point2Position(ref.startPosition), point2Position(ref.endPosition))
+		)
+	}
+
+
+	getDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 
-	getDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
-		//TODO:
-		return null
-	}
-
-	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 	
-	getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+	getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
@@ -127,17 +153,17 @@ class DecisionGraphServices {
 
 
 class PolicySpaceServices {
-	getDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+	getDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 
-	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 	
-	getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree, uri : DocumentUri) : Location[] {
+	getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
@@ -153,24 +179,25 @@ enum LanguageName {
 	ValueInference
 }
 
-//TODO: maybe extract this info from package.json
-let parsersInfo =
-[ 
-	{ 
-		fileExtentsions : ['dg'],
-		wasm : 'tree-sitter-decisiongraph.wasm'
-	},
-	{ 
-		fileExtentsions : ['pspace', 'ps', 'ts'],
-		wasm : 'tree-sitter-policyspace.wasm'
-	},
-	{ 
-		fileExtentsions :  ['vi'],
-		wasm : 'tree-sitter-valueinference.wasm'
-	}
-]
 
 function getParser(uri : DocumentUri) : Parser {
+	//TODO: maybe extract this info from package.json
+	let parsersInfo =
+	[ 
+		{ 
+			fileExtentsions : ['dg'],
+			wasm : 'tree-sitter-decisiongraph.wasm'
+		},
+		{ 
+			fileExtentsions : ['pspace', 'ps', 'ts'],
+			wasm : 'tree-sitter-policyspace.wasm'
+		},
+		{ 
+			fileExtentsions :  ['vi'],
+			wasm : 'tree-sitter-valueinference.wasm'
+		}
+	]
+
 	const fileExtension = getFileExtension(uri)
 	const wasm = parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
 	//const absolute = path.join(context.extensionPath, 'parsers', wasm)
@@ -183,11 +210,14 @@ function getParser(uri : DocumentUri) : Parser {
 
 function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[]) {
 	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
-		for (const { start, end } of visibleRanges) {
-			const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
-			if (overlap) return true
+		if(visibleRanges) {
+			for (const { start, end } of visibleRanges) {
+				const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
+				if (overlap) return true
+			}
+			return false
 		}
-		return false
+		return true
 	}
 
 	let visitedChildren = false
@@ -227,5 +257,31 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 	}
 }
 
+
+
+/*************DEMO*********/
+demoDecisionGraph()
+
+async function demoDecisionGraph() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+		
+	//Then you can parse some source code,
+	const sourceCode = `
+	[>bb< ask:
+	{>asd< text: Do the data contain health information?}
+	{answers:
+	  {yes: [ >yo< call: healthSection]}}]
+	`;
+	const tree = parser.parse(sourceCode);
+
+
+	//and inspect the syntax tree.
+	let result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree)
+	console.log(result)
+}
 
 
