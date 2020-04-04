@@ -130,10 +130,7 @@ class DecisionGraphServices {
 					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName))
 			}	
 		)
-		return relevantReferences.map(
-			ref => 
-				newRange(point2Position(ref.startPosition), point2Position(ref.endPosition))
-		)
+		return getRangesOfSyntaxNodes(relevantReferences)
 	}
 
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
@@ -145,16 +142,19 @@ class DecisionGraphServices {
 			.map(id => id.descendantsOfType("node_id_value")[0])
 			.filter(id => id.text === name)
 
-		return relevantIds.map(
-			id => {
-				return newRange(point2Position(id.startPosition), point2Position(id.endPosition))
-			}
-		)
+		return getRangesOfSyntaxNodes(relevantIds)
 	}
 
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let importedGraphName
+
+		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_reference")
+		let relevantRefs = slotRefs
+			.map(id => id.descendantsOfType("node_id_value")[0])
+			.filter(id => id.text === name)
+
+		return getRangesOfSyntaxNodes(relevantRefs)
 	}
 	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
@@ -269,7 +269,13 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 	}
 }
 
-
+function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
+	return nodes.map(
+		id => {
+			return newRange(point2Position(id.startPosition), point2Position(id.endPosition))
+		}
+	)
+}
 
 /*************DEMO*********/
 //demoDecisionGraphAllReferencesOfNodeInDocument()
