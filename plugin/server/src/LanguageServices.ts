@@ -116,8 +116,6 @@ class DecisionGraphServices {
 						return node.descendantsOfType("file_path")[0].text.trim() === decisiongraphSource
 					}
 				)
-			//console.log(imports)
-			//console.log(importSource)
 			if(importSource){
 				importedGraphName = importSource.descendantsOfType("decision_graph_name")[0].text
 			}
@@ -127,9 +125,6 @@ class DecisionGraphServices {
 		let relevantReferences = references.filter(
 			ref => 
 			{
-				//console.log(!(importedGraphName))
-				//console.log(importedGraphName)
-				//console.log(ref.descendantsOfType("node_id_value")[0].text)
 				return ref.descendantsOfType("node_id_value")[0].text === name &&
 					(!(importedGraphName) || (importedGraphName &&
 					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName))
@@ -141,18 +136,28 @@ class DecisionGraphServices {
 		)
 	}
 
+	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let importedGraphName
 
-	getDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
+		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
+		let relevantIds = nodeIds
+			.map(id => id.descendantsOfType("node_id_value")[0])
+			.filter(id => id.text === name)
+
+		return relevantIds.map(
+			id => {
+				return newRange(point2Position(id.startPosition), point2Position(id.endPosition))
+			}
+		)
 	}
 
-	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
+	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 	
-	getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
@@ -160,17 +165,17 @@ class DecisionGraphServices {
 
 
 class PolicySpaceServices {
-	getDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
+	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 
-	getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
+	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
 	
-	getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		//TODO:
 		return null
 	}
@@ -267,7 +272,8 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 
 
 /*************DEMO*********/
-demoDecisionGraphAllReferencesOfNodeInDocument()
+//demoDecisionGraphAllReferencesOfNodeInDocument()
+demoDecisionGraphAllDefinitionsOfNodeInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -310,6 +316,30 @@ async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree, "file.dg")
 	console.log(result)
+}
+
+async function demoDecisionGraphAllDefinitionsOfNodeInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = ` [#import dg : file.dg]
+	[>asd< ask:
+	{text: Do the data contain health information?}
+	{answers:
+	  {yes: [ >yo< call: dg>asd]}}]
+	`;
+	tree = parser.parse(sourceCode);
+	result = DecisionGraphServices.getAllDefinitionsOfNodeInDocument("asd", tree)
+	console.log(result)
+	result = DecisionGraphServices.getAllDefinitionsOfNodeInDocument("yo", tree)
+	console.log(result)
+
 }
 
 
