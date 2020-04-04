@@ -156,8 +156,12 @@ class DecisionGraphServices {
 	}
 	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let importedGraphName
+
+		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
+		let relevant = slotRefs.filter(id => id.text === name)
+		return getRangesOfSyntaxNodes(relevant)
 	}
 }
 
@@ -278,7 +282,8 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 /*************DEMO*********/
 //demoDecisionGraphAllReferencesOfNodeInDocument()
 //demoDecisionGraphAllDefinitionsOfNodeInDocument()
-demoDecisionGraphAllReferencesOfSlotInDocument()
+//demoDecisionGraphAllReferencesOfSlotInDocument()
+demoDecisionGraphAllReferencesOfSlotValueInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -362,5 +367,25 @@ async function demoDecisionGraphAllReferencesOfSlotInDocument() {
 			{b2b, b2c}]`;
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfSlotInDocument("Mid1", tree)
+	console.log(result)
+}
+
+
+async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `[set: 
+		DataTags/Mid1/Bottom1=b1a; 
+		DataTags/Mid2/Mid1+=
+			{b2b, b1a}]`;
+	tree = parser.parse(sourceCode);
+	result = DecisionGraphServices.getAllReferencesOfSlotValueInDocument("b1a", tree)
 	console.log(result)
 }
