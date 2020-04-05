@@ -190,7 +190,21 @@ class PolicySpaceServices {
 }
 
 class ValueInferenceServices {
-	//TODO:
+	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let identifiers : Parser.SyntaxNode[] = flatten(root.descendantsOfType("slot_reference")
+			.map(id => id.descendantsOfType("slot_identifier")))
+		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
+	}
+	
+	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
+			.map(id => id.descendantsOfType("slot_identifier")[0])
+		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
+	}
 }
 
 enum LanguageName {
@@ -290,9 +304,10 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 //demoDecisionGraphAllDefinitionsOfNodeInDocument()
 //demoDecisionGraphAllReferencesOfSlotInDocument()
 //demoDecisionGraphAllReferencesOfSlotValueInDocument()
-//demoDecisionGraphGetAllDefinitionsOfSlotInDocument()
-//demoDecisionGraphGetAllReferencesOfSlotInDocument()
-demoDecisionGraphGetAllDefinitionsOfSlotValueInDocument()
+//demoPolicySpaceGetAllDefinitionsOfSlotInDocument()
+//demoPolicySpaceGetAllReferencesOfSlotInDocument()
+//demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument()
+demoValueInferenceAllReferencesOfSlotValueInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -397,7 +412,7 @@ async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
 	console.log(result)
 }
 
-async function demoDecisionGraphGetAllDefinitionsOfSlotInDocument() {
+async function demoPolicySpaceGetAllDefinitionsOfSlotInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-policyspace.wasm'
@@ -417,7 +432,7 @@ async function demoDecisionGraphGetAllDefinitionsOfSlotInDocument() {
 	console.log(result)
 }
 
-async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
+async function demoPolicySpaceGetAllReferencesOfSlotInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-policyspace.wasm'
@@ -437,8 +452,7 @@ async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
 	console.log(result)
 }
 
-
-async function demoDecisionGraphGetAllDefinitionsOfSlotValueInDocument() {
+async function demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-policyspace.wasm'
@@ -458,6 +472,35 @@ async function demoDecisionGraphGetAllDefinitionsOfSlotValueInDocument() {
 	console.log(result)
 }
 
+async function demoValueInferenceAllReferencesOfSlotValueInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-valueinference.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
 
+	sourceCode = `[DataTag: support
+		[ Encrypt=None;   DUA_AM=Implied -> Blue    ]
+		[ Encrypt=Quick;  DUA_AM=Click   -> Yellow  ]
+		[ Encrypt=Hard;   DUA_AM=Click   -> DUA_AM   ]
+		[ Encrypt=Double; DUA_AM=Type    -> Red     ]
+		[ Encrypt=Double; DUA_AM=Sign    -> DUA_AM ]
+	  ]
+	  `;
+	tree = parser.parse(sourceCode);
+	result = ValueInferenceServices.getAllReferencesOfSlotInDocument("DUA_AM", tree)
+	console.log(result)
+
+	tree = parser.parse(sourceCode);
+	result = ValueInferenceServices.getAllDefinitionsOfSlotValueInDocument("Click", tree)
+	console.log(result)
+
+	tree = parser.parse(sourceCode);
+	result = ValueInferenceServices.getAllDefinitionsOfSlotValueInDocument("DUA_AM", tree)
+	console.log(result)
+}
 
 
