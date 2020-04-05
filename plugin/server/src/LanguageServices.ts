@@ -104,6 +104,16 @@ class LanguageServices extends Analyzer{
 }
 
 class DecisionGraphServices {
+	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
+		let relevantIds = nodeIds
+			.map(id => id.descendantsOfType("node_id_value")[0])
+			.filter(id => id.text === name)
+
+		return getRangesOfSyntaxNodes(relevantIds)
+	}
+
 	static getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, decisiongraphSource : DocumentUri = undefined /*if the node is from another file*/) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let importedGraphName
@@ -133,22 +143,8 @@ class DecisionGraphServices {
 		return getRangesOfSyntaxNodes(relevantReferences)
 	}
 
-	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
-		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let importedGraphName
-
-		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
-		let relevantIds = nodeIds
-			.map(id => id.descendantsOfType("node_id_value")[0])
-			.filter(id => id.text === name)
-
-		return getRangesOfSyntaxNodes(relevantIds)
-	}
-
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let importedGraphName
-
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_reference")
 		let slotIdentifiers : Parser.SyntaxNode[] = flatten(slotRefs.map(ref => ref.descendantsOfType("slot_identifier")))
 		let relevant = slotIdentifiers.filter(id => id.text === name)
@@ -157,8 +153,6 @@ class DecisionGraphServices {
 	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let importedGraphName
-
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
 		let relevant = slotRefs.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevant)
@@ -168,19 +162,27 @@ class DecisionGraphServices {
 
 class PolicySpaceServices {
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
+		let relevantSlots = slots
+			.map(slot => slot.children.find(child => child.type === "identifier"))
+			.filter(id => id && id.descendantsOfType("idetifier_value")[0].text === name)
+		return getRangesOfSyntaxNodes(relevantSlots)
 	}
 
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("identifier_value")
+		let relevantIdentifiers = identifiers
+			.filter(id => !(id.parent.type === "slot"))
+			.filter(id => id.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
 	
-	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
-	}
+	// static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+	// 	//TODO:
+	// 	return null
+	// }
 }
 
 class ValueInferenceServices {
