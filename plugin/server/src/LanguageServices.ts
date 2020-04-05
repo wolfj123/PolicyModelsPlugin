@@ -174,15 +174,15 @@ class PolicySpaceServices {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("identifier_value")
 		let relevantIdentifiers = identifiers
-			.filter(id => !(id.parent.type === "slot"))
+			.filter(id => !(id.parent.type === "slot") && !(id.parent.type === "slot_value"))
 			.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
 	
-	// static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
-	// 	//TODO:
-	// 	return null
-	// }
+	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+		//TODO:
+		return null
+	}
 }
 
 class ValueInferenceServices {
@@ -284,8 +284,8 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 /*************DEMO*********/
 //demoDecisionGraphAllReferencesOfNodeInDocument()
 //demoDecisionGraphAllDefinitionsOfNodeInDocument()
-//demoDecisionGraphAllReferencesOfSlotInDocument()
-demoDecisionGraphAllReferencesOfSlotValueInDocument()
+demoDecisionGraphAllReferencesOfSlotInDocument()
+//demoDecisionGraphAllReferencesOfSlotValueInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -364,9 +364,9 @@ async function demoDecisionGraphAllReferencesOfSlotInDocument() {
 	let result
 
 	sourceCode = `[set: 
-		DataTags/Mid1/Bottom1=b1a; 
-		DataTags/Mid2/Mid1+=
-			{b2b, b2c}]`;
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+=
+	{b2b, b2c}]`;
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfSlotInDocument("Mid1", tree)
 	console.log(result)
