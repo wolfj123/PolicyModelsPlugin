@@ -143,7 +143,7 @@
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.12.32",
 		"tree-sitter-cli": "^0.16.5",
-		"tree-sitter-valueinference": "^0.0.2",
+		"tree-sitter-valueinference": "^0.1.0",
 		"tree-sitter-policyspace": "^0.1.0",
 		"tree-sitter-decisiongraph": "^0.1.1",
 		"tslint": "^5.20.1",
