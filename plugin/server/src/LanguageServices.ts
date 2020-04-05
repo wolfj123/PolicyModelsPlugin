@@ -180,8 +180,12 @@ class PolicySpaceServices {
 	}
 	
 	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
-		//TODO:
-		return null
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let values : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
+		let relevantIdentifiers = values
+			.map(val => val.descendantsOfType("identifier_value")[0])
+			.filter(id => id.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
 }
 
@@ -287,7 +291,8 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 //demoDecisionGraphAllReferencesOfSlotInDocument()
 //demoDecisionGraphAllReferencesOfSlotValueInDocument()
 //demoDecisionGraphGetAllDefinitionsOfSlotInDocument()
-demoDecisionGraphGetAllReferencesOfSlotInDocument()
+//demoDecisionGraphGetAllReferencesOfSlotInDocument()
+demoDecisionGraphGetAllDefinitionsOfSlotValueInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -422,7 +427,7 @@ async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
 	let sourceCode
 	let result
 
-	sourceCode = `Storage: one of clear, serverEncrypt, clientEncrypt, doubleEncrypt.
+	sourceCode = `Storage: one of clear, serverEncrypt, Authentication, doubleEncrypt.
 	Handling: consists of Storage, Transit, Authentication.
 	IntellecualProperty: TODO.
 	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
@@ -432,6 +437,26 @@ async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
 	console.log(result)
 }
 
+
+async function demoDecisionGraphGetAllDefinitionsOfSlotValueInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `Storage: one of clear, serverEncrypt, Authentication, doubleEncrypt.
+	Handling: consists of Storage, Transit, Authentication.
+	IntellecualProperty: TODO.
+	myslot[descriptions1] : some of something [description2], Authentication [else thingy!], evenMoreSomething [much else?].
+	`;
+	tree = parser.parse(sourceCode);
+	result = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument("Authentication", tree)
+	console.log(result)
+}
 
 
 
