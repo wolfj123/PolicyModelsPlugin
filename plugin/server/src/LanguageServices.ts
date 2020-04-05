@@ -166,7 +166,7 @@ class PolicySpaceServices {
 		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
 		let relevantSlots = slots
 			.map(slot => slot.children.find(child => child.type === "identifier"))
-			.filter(id => id && id.descendantsOfType("idetifier_value")[0].text === name)
+			.filter(id => id && id.descendantsOfType("identifier_value")[0].text === name)
 		return getRangesOfSyntaxNodes(relevantSlots)
 	}
 
@@ -174,7 +174,7 @@ class PolicySpaceServices {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("identifier_value")
 		let relevantIdentifiers = identifiers
-			.filter(id => !(id.parent.type === "slot") && !(id.parent.type === "slot_value"))
+			.filter(id => !(id.parent.type === "identifier") && !(id.parent.type === "slot_value"))
 			.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
@@ -284,8 +284,10 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 /*************DEMO*********/
 //demoDecisionGraphAllReferencesOfNodeInDocument()
 //demoDecisionGraphAllDefinitionsOfNodeInDocument()
-demoDecisionGraphAllReferencesOfSlotInDocument()
+//demoDecisionGraphAllReferencesOfSlotInDocument()
 //demoDecisionGraphAllReferencesOfSlotValueInDocument()
+//demoDecisionGraphGetAllDefinitionsOfSlotInDocument()
+demoDecisionGraphGetAllReferencesOfSlotInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -372,7 +374,6 @@ async function demoDecisionGraphAllReferencesOfSlotInDocument() {
 	console.log(result)
 }
 
-
 async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
 	await Parser.init()
 	const parser = new Parser()
@@ -384,10 +385,54 @@ async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
 	let result
 
 	sourceCode = `[set: 
-		DataTags/Mid1/Bottom1=b1a; 
-		DataTags/Mid2/Mid1+=
-			{b2b, b1a}]`;
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+= {b2b, b1a}]`;
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfSlotValueInDocument("b1a", tree)
 	console.log(result)
 }
+
+async function demoDecisionGraphGetAllDefinitionsOfSlotInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `Storage: one of clear, serverEncrypt, clientEncrypt, doubleEncrypt.
+	Handling: consists of Storage, Transit, Authentication.
+	IntellecualProperty: TODO.
+	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
+	`;
+	tree = parser.parse(sourceCode);
+	result = PolicySpaceServices.getAllDefinitionsOfSlotInDocument("IntellecualProperty", tree)
+	console.log(result)
+}
+
+async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `Storage: one of clear, serverEncrypt, clientEncrypt, doubleEncrypt.
+	Handling: consists of Storage, Transit, Authentication.
+	IntellecualProperty: TODO.
+	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
+	`;
+	tree = parser.parse(sourceCode);
+	result = PolicySpaceServices.getAllReferencesOfSlotInDocument("Storage", tree)
+	console.log(result)
+}
+
+
+
+
+
