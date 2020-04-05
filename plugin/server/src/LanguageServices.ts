@@ -166,7 +166,7 @@ class PolicySpaceServices {
 		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
 		let relevantSlots = slots
 			.map(slot => slot.children.find(child => child.type === "identifier"))
-			.filter(id => id && id.descendantsOfType("idetifier_value")[0].text === name)
+			.filter(id => id && id.descendantsOfType("identifier_value")[0].text === name)
 		return getRangesOfSyntaxNodes(relevantSlots)
 	}
 
@@ -174,19 +174,37 @@ class PolicySpaceServices {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("identifier_value")
 		let relevantIdentifiers = identifiers
-			.filter(id => !(id.parent.type === "slot"))
+			.filter(id => !(id.parent.type === "identifier") && !(id.parent.type === "slot_value"))
 			.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
 	
-	// static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
-	// 	//TODO:
-	// 	return null
-	// }
+	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let values : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
+		let relevantIdentifiers = values
+			.map(val => val.descendantsOfType("identifier_value")[0])
+			.filter(id => id.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
+	}
 }
 
 class ValueInferenceServices {
-	//TODO:
+	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let identifiers : Parser.SyntaxNode[] = flatten(root.descendantsOfType("slot_reference")
+			.map(id => id.descendantsOfType("slot_identifier")))
+		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
+	}
+	
+	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
+			.map(id => id.descendantsOfType("slot_identifier")[0])
+		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
+		return getRangesOfSyntaxNodes(relevantIdentifiers)
+	}
 }
 
 enum LanguageName {
@@ -285,7 +303,11 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 //demoDecisionGraphAllReferencesOfNodeInDocument()
 //demoDecisionGraphAllDefinitionsOfNodeInDocument()
 //demoDecisionGraphAllReferencesOfSlotInDocument()
-demoDecisionGraphAllReferencesOfSlotValueInDocument()
+//demoDecisionGraphAllReferencesOfSlotValueInDocument()
+//demoPolicySpaceGetAllDefinitionsOfSlotInDocument()
+//demoPolicySpaceGetAllReferencesOfSlotInDocument()
+//demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument()
+demoValueInferenceAllReferencesOfSlotValueInDocument()
 
 async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	await Parser.init()
@@ -364,14 +386,13 @@ async function demoDecisionGraphAllReferencesOfSlotInDocument() {
 	let result
 
 	sourceCode = `[set: 
-		DataTags/Mid1/Bottom1=b1a; 
-		DataTags/Mid2/Mid1+=
-			{b2b, b2c}]`;
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+=
+	{b2b, b2c}]`;
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfSlotInDocument("Mid1", tree)
 	console.log(result)
 }
-
 
 async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
 	await Parser.init()
@@ -384,10 +405,102 @@ async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
 	let result
 
 	sourceCode = `[set: 
-		DataTags/Mid1/Bottom1=b1a; 
-		DataTags/Mid2/Mid1+=
-			{b2b, b1a}]`;
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+= {b2b, b1a}]`;
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfSlotValueInDocument("b1a", tree)
 	console.log(result)
 }
+
+async function demoPolicySpaceGetAllDefinitionsOfSlotInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `Storage: one of clear, serverEncrypt, clientEncrypt, doubleEncrypt.
+	Handling: consists of Storage, Transit, Authentication.
+	IntellecualProperty: TODO.
+	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
+	`;
+	tree = parser.parse(sourceCode);
+	result = PolicySpaceServices.getAllDefinitionsOfSlotInDocument("IntellecualProperty", tree)
+	console.log(result)
+}
+
+async function demoPolicySpaceGetAllReferencesOfSlotInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `Storage: one of clear, serverEncrypt, Authentication, doubleEncrypt.
+	Handling: consists of Storage, Transit, Authentication.
+	IntellecualProperty: TODO.
+	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
+	`;
+	tree = parser.parse(sourceCode);
+	result = PolicySpaceServices.getAllReferencesOfSlotInDocument("Storage", tree)
+	console.log(result)
+}
+
+async function demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-policyspace.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `Storage: one of clear, serverEncrypt, Authentication, doubleEncrypt.
+	Handling: consists of Storage, Transit, Authentication.
+	IntellecualProperty: TODO.
+	myslot[descriptions1] : some of something [description2], Authentication [else thingy!], evenMoreSomething [much else?].
+	`;
+	tree = parser.parse(sourceCode);
+	result = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument("Authentication", tree)
+	console.log(result)
+}
+
+async function demoValueInferenceAllReferencesOfSlotValueInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-valueinference.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `[DataTag: support
+		[ Encrypt=None;   DUA_AM=Implied -> Blue    ]
+		[ Encrypt=Quick;  DUA_AM=Click   -> Yellow  ]
+		[ Encrypt=Hard;   DUA_AM=Click   -> DUA_AM   ]
+		[ Encrypt=Double; DUA_AM=Type    -> Red     ]
+		[ Encrypt=Double; DUA_AM=Sign    -> DUA_AM ]
+	  ]
+	  `;
+	tree = parser.parse(sourceCode);
+	result = ValueInferenceServices.getAllReferencesOfSlotInDocument("DUA_AM", tree)
+	console.log(result)
+
+	tree = parser.parse(sourceCode);
+	result = ValueInferenceServices.getAllDefinitionsOfSlotValueInDocument("Click", tree)
+	console.log(result)
+
+	tree = parser.parse(sourceCode);
+	result = ValueInferenceServices.getAllDefinitionsOfSlotValueInDocument("DUA_AM", tree)
+	console.log(result)
+}
+
+
