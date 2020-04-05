@@ -166,11 +166,12 @@ export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: numbe
 		const grandparent = parents[parents.length - 2]
 		switch (cursor.nodeType) {
 			case 'identifier_value':
-				if (grandparent == 'identifier') {
+				if (parent == 'identifier' || parent === 'compound_values') {
 					slots.push({start: cursor.startPosition, end: cursor.endPosition})
 				}
-			case 'slot_value':
-				slotValues.push({start: cursor.startPosition, end: cursor.endPosition})
+				else if(parent == 'slot_value'){
+					slotValues.push({start: cursor.startPosition, end: cursor.endPosition})
+				}
 			break
 		}
 	}
