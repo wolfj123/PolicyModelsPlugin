@@ -36,20 +36,20 @@ import * as path from 'path';
 
 
 
-class LanguageServices extends Analyzer{
+class LanguageServicesFacade {
 	//protected textDocument:TextDocWithChanges;
-	parser : Parser
-	tree : Parser.Tree
+	// parser : Parser
+	// tree : Parser.Tree
 
-	constructor(textDocument : TextDocWithChanges){
-		super(textDocument)
-		this.parser = getParser(textDocument.textDocument.uri)
-		this.tree = parser.parse(textDocument.textDocument.getText());
-	}
+	// constructor(textDocument : TextDocWithChanges){
+	// 	super(textDocument)
+	// 	this.parser = getParser(textDocument.textDocument.uri)
+	// 	this.tree = parser.parse(textDocument.textDocument.getText());
+	// }
 
-	getNodeFromPosition(position : Position) : Parser.SyntaxNode {
-		return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
-	}
+	// getNodeFromPosition(position : Position) : Parser.SyntaxNode {
+	// 	return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
+	// }
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		//TODO:
@@ -59,8 +59,6 @@ class LanguageServices extends Analyzer{
 	onReferences(params : ReferenceParams):  Location[] {
 		let uri : DocumentUri = params.textDocument.uri
 		let position : Position = params.position
-
-
 		//TODO:
 		return null
 	}
@@ -84,24 +82,56 @@ class LanguageServices extends Analyzer{
 		//TODO:
 		return null
 	}
-
-
-
-
-
-
-
-
-	//update (); // Still not sure about the signature but this will be called when there is an update in the file text
-
-	//TODO: what is this...
-
- 	// //this functions are needed to complete the info of a request made by server to another file
-	// referncesFromOtherFiles (params): Location [];
-	// findDefintionForOtherFile (params): LocationLink [];
-	// doRenameFromOtherFile (params);
-	// findCompletionsForOtherFile (params): CompletionList;
 }
+
+enum PolicyModelsLanguage {
+	PolicySpace,
+	DecisionGraph,
+	ValueInference
+}
+
+class LanguageServices {
+	//Workspace
+	policySpace : Map<DocumentUri, Parser.Tree>
+	decisionGraph : Map<DocumentUri, Parser.Tree>
+	valueInference : Map<DocumentUri, Parser.Tree>
+	parsers : Map<PolicyModelsLanguage, Parser>
+
+	//config
+	parsersInfo = 	//TODO: maybe extract this info from package.json
+	[ 
+		{ 
+			fileExtentsions : ['dg'],
+			language : PolicyModelsLanguage.DecisionGraph,
+			wasm : 'tree-sitter-decisiongraph.wasm'
+		},
+		{ 
+			fileExtentsions : ['pspace', 'ps', 'ts'],
+			language : PolicyModelsLanguage.PolicySpace,
+			wasm : 'tree-sitter-policyspace.wasm'
+		},
+		{ 
+			fileExtentsions :  ['vi'],
+			language : PolicyModelsLanguage.ValueInference,
+			wasm : 'tree-sitter-valueinference.wasm'
+		}
+	]
+
+
+	getParser(uri : DocumentUri) : Parser {
+		const fileExtension = getFileExtension(uri)
+		const wasm = this.parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
+		//const absolute = path.join(context.extensionPath, 'parsers', wasm)
+		Parser.init()
+		const parser = new Parser()
+		const lang = Parser.Language.load(wasm)
+		parser.setLanguage(lang)
+		return parser
+	}
+}
+
+
+
 
 class DecisionGraphServices {
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
@@ -157,8 +187,44 @@ class DecisionGraphServices {
 		let relevant = slotRefs.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevant)
 	}
-}
 
+	static getAllNodesInDocument(tree : Parser.Tree) : Range[] {
+		const nodeTypes : string[] = [
+			'ask_node',
+			'continue_node',
+			'todo_node',
+			'call_node',
+			'reject_node',
+			'set_node',
+			'section_node',
+			'part_node',
+			'consider_node',
+			'when_node',
+			'import_node',
+			'end_node',
+			'text_sub_node',
+			'terms_sub_node',
+			'term_sub_node',
+			'answers_sub_node',
+			'answer_sub_node',
+			'slot_sub_node',
+			'consider_options_sub_node',
+			'consider_option_sub_node',
+			'else_sub_node',
+			'when_answer_sub_node',
+			'info_sub_node',
+			'continue_node',
+		]
+		//let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let result : Parser.SyntaxNode[] = []
+		for (let node of nextNode(tree)) {
+			if(nodeTypes.indexOf(node.type) > -1){
+				result.push(node)
+			}
+		}
+		return getRangesOfSyntaxNodes(result)
+	}
+}
 
 class PolicySpaceServices {
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
@@ -207,42 +273,7 @@ class ValueInferenceServices {
 	}
 }
 
-enum LanguageName {
-	PolicySpace,
-	DecisionGraph,
-	ValueInference
-}
-
-
-function getParser(uri : DocumentUri) : Parser {
-	//TODO: maybe extract this info from package.json
-	let parsersInfo =
-	[ 
-		{ 
-			fileExtentsions : ['dg'],
-			wasm : 'tree-sitter-decisiongraph.wasm'
-		},
-		{ 
-			fileExtentsions : ['pspace', 'ps', 'ts'],
-			wasm : 'tree-sitter-policyspace.wasm'
-		},
-		{ 
-			fileExtentsions :  ['vi'],
-			wasm : 'tree-sitter-valueinference.wasm'
-		}
-	]
-
-	const fileExtension = getFileExtension(uri)
-	const wasm = parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
-	//const absolute = path.join(context.extensionPath, 'parsers', wasm)
-	Parser.init()
-	const parser = new Parser()
-	const lang = Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	return parser
-}
-
-function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[]) {
+function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[] = undefined) {
 	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
 		if(visibleRanges) {
 			for (const { start, end } of visibleRanges) {
@@ -299,17 +330,45 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 	)
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*************DEMO*********/
-//demoDecisionGraphAllReferencesOfNodeInDocument()
-//demoDecisionGraphAllDefinitionsOfNodeInDocument()
-//demoDecisionGraphAllReferencesOfSlotInDocument()
-//demoDecisionGraphAllReferencesOfSlotValueInDocument()
+//demoDecisionGraphGetAllReferencesOfNodeInDocument()
+//demoDecisionGraphGetAllDefinitionsOfNodeInDocument()
+//demoDecisionGraphGetAllReferencesOfSlotInDocument()
+//demoDecisionGraphGetAllReferencesOfSlotValueInDocument()
+//demoDecisionGraphGetAllNodesInDocument()
 //demoPolicySpaceGetAllDefinitionsOfSlotInDocument()
 //demoPolicySpaceGetAllReferencesOfSlotInDocument()
 //demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument()
-demoValueInferenceAllReferencesOfSlotValueInDocument()
+//demoValueInferenceAllReferencesOfSlotValueInDocument()
 
-async function demoDecisionGraphAllReferencesOfNodeInDocument() {
+async function demoDecisionGraphGetAllReferencesOfNodeInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
@@ -352,7 +411,7 @@ async function demoDecisionGraphAllReferencesOfNodeInDocument() {
 	console.log(result)
 }
 
-async function demoDecisionGraphAllDefinitionsOfNodeInDocument() {
+async function demoDecisionGraphGetAllDefinitionsOfNodeInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
@@ -375,7 +434,7 @@ async function demoDecisionGraphAllDefinitionsOfNodeInDocument() {
 	console.log(result)
 }
 
-async function demoDecisionGraphAllReferencesOfSlotInDocument() {
+async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
@@ -394,7 +453,7 @@ async function demoDecisionGraphAllReferencesOfSlotInDocument() {
 	console.log(result)
 }
 
-async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
+async function demoDecisionGraphGetAllReferencesOfSlotValueInDocument() {
 	await Parser.init()
 	const parser = new Parser()
 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
@@ -409,6 +468,31 @@ async function demoDecisionGraphAllReferencesOfSlotValueInDocument() {
 	DataTags/Mid2/Mid1+= {b2b, b1a}]`;
 	tree = parser.parse(sourceCode);
 	result = DecisionGraphServices.getAllReferencesOfSlotValueInDocument("b1a", tree)
+	console.log(result)
+}
+
+async function demoDecisionGraphGetAllNodesInDocument() {
+	await Parser.init()
+	const parser = new Parser()
+	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+	const lang = await Parser.Language.load(wasm)
+	parser.setLanguage(lang)
+	let tree
+	let sourceCode
+	let result
+
+	sourceCode = `[section:
+		{title: Health Data}
+		[ask:
+		  {text: Are there any related health issues?}
+		  {answers:
+			{no: [continue]}
+		  }
+		]
+	  
+	  ]`;
+	tree = parser.parse(sourceCode);
+	result = DecisionGraphServices.getAllNodesInDocument(tree)
 	console.log(result)
 }
 
