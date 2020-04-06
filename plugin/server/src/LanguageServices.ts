@@ -39,6 +39,8 @@ import * as path from 'path';
 import { isNullOrUndefined } from 'util';
 
 
+//https://www.npmjs.com/package/web-tree-sitter
+
 //https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
@@ -143,7 +145,12 @@ class LanguageServices {
 		let fileManager : FileManager = this.fileManagers.get(doc.textDocument.uri)
 		if(isNullOrUndefined(fileManager)) return
 		let parser : Parser = this.getParserByExtension(getFileExtension(doc.textDocument.uri))
-		//parser.
+		const edits : Parser.Edit[] = doc.changes.map(change => docChange2Edit(change))
+		let tree : Parser.Tree = fileManager.tree
+		edits.forEach((edit : Parser.Edit) => {
+			tree.edit(edit)
+			fileManager.updateTree(parser.parse(doc.textDocument.getText())) //TODO: hopefully passing whole text with several changes doesnt break it
+		});
 	}
 
 	//maybe this map should be global singleton?
@@ -200,6 +207,9 @@ class LanguageServices {
 	}
 }
 
+
+
+//****Entities****/
 enum PolicyModelEntityType {
 	DGNode,
 	Slot,
@@ -233,6 +243,8 @@ class PolicyModelEntity {
 	}
 }
 
+
+//****File Managers****/
 abstract class FileManager {
 	tree : Parser.Tree
 	uri : DocumentUri
@@ -411,6 +423,7 @@ class ValueInferenceFileManager extends FileManager {
 
 
 
+//****Language Specific Services****/
 class DecisionGraphServices {
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()

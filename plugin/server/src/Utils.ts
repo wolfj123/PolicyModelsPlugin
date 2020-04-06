@@ -60,17 +60,25 @@ export function getFileExtension(filename : string) : string {
 }
 
 export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser.Edit {
-	//@ts-ignore
-	let range : Range = change.range
-	if(isNullOrUndefined(range)) return null
-	let result =  
+	if ("range" in change) {
+		const range : Range = change.range
+		//if(isNullOrUndefined(range)) return null
+		const newEndPosition = getEndRowAndColumnOfString(change.text)
+		const result =  
 		{
 			startIndex: range.start.character,
-			oldEndIndex: range.end.character, //TODO: this is wrong
-			newEndIndex: range.end.character,
+			oldEndIndex: range.end.character, 
+			newEndIndex: newEndPosition.column, //TODO: 
 			startPosition: {row: range.start.line, column: range.start.character},
-			oldEndPosition: {row: range.end.line, column: range.end.character}, //TODO: this is wrong
-			newEndPosition: {row: range.end.line, column: range.end.character}
+			oldEndPosition: {row: range.end.line, column: range.end.character}, 
+			newEndPosition: {row: newEndPosition.row, column: newEndPosition.column} //TODO: 
 		}
-	return result
+		return result
+	}
+	return null
+}
+
+function getEndRowAndColumnOfString(str : string) : {row: number, column: number} {
+	TODO:
+	return null
 }
