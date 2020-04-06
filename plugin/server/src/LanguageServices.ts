@@ -27,7 +27,7 @@ import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { getFileExtension, point2Position, position2Point , newRange ,flatten} from './Utils';
+import { getFileExtension, point2Position, position2Point, newRange, flatten } from './Utils';
 import * as path from 'path';
 
 
@@ -120,8 +120,21 @@ class LanguageServices {
 		}
 	]
 
-	constructor(uris : DocumentUri[]) {
+	constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
 		this.initParsers()
+
+		this.decisionGraph = new Map()
+		this.policySpace = new Map()
+		this.valueInference = new Map()	
+		this.populateMaps(docs)
+	}
+
+	addDocs(docs : TextDocWithChanges[]) {
+		this.populateMaps(docs)
+	}
+
+	updateDoc(doc : TextDocWithChanges){
+
 	}
 
 	//maybe this map should be global singleton?
@@ -138,12 +151,90 @@ class LanguageServices {
 		}
 	}
 
+	populateMaps(docs : TextDocWithChanges[]){
+		for (let doc of docs){
+			const uri = doc.textDocument.uri
+			const extension : string = getFileExtension(uri)
+			const correspondingInfo = this.parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
+			if(!(correspondingInfo) || correspondingInfo.length == 0){
+				continue;
+			}
+			const language : PolicyModelsLanguage = correspondingInfo[0].language
+			let tree : Parser.Tree = this.parsers.get(language).parse(doc.textDocument.getText())
+			let map : Map<DocumentUri, Parser.Tree> = correspondingInfo[0].map
+			map.set(uri, tree)
+		}
+	}
 
+	getFoldingRanges() : Location[] {
+		//TODO:
+		return null
+	}
 
+	getFoldingRangesOfNodes() : Location[] {
+		//TODO:
+		return null
+	}
 
+	getFoldingRangesOfSlots() : Location[] {
+		//TODO:
+		return null
+	}
 
+	getFoldingRangesOfValueInferences() : Location[] {
+		//TODO:
+		return null
+	}
 
+	getDeclarations(location : Location) : Location[] {
+		//TODO:
+		return null
+	}
 
+	getDeclarationsOfNodes() : Location[] {
+		//TODO:
+		return null
+	}
+
+	getDeclarationsOfSlots() : Location[] {
+		//TODO:
+		return null
+	}
+
+	getReferences(location : Location) : Location[] {
+		//TODO:
+		return null
+	}
+
+	getReferencesOfNodes() : Location[] {
+		//TODO:
+		return null
+	}
+
+	getReferencesOfSlots() : Location[] {
+		//TODO:
+		return null
+	}
+
+	getReferencesOfSlotValues() : Location[] {
+		//TODO:
+		return null
+	}
+
+	getCompletion(location : Location) : Location[] {
+		//TODO:
+		return null
+	}
+
+	getCompletionOfDecisionGraphKeywords(location : Location) : Location[] {
+		//TODO:
+		return null
+	}
+
+	getCompletionOfPolicySpaceKeywords(location : Location) : Location[] {
+		//TODO:
+		return null
+	}
 
 	// getParser(uri : DocumentUri) : Parser {
 	// 	const fileExtension = getFileExtension(uri)
