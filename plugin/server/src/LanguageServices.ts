@@ -45,20 +45,6 @@ import { isNullOrUndefined } from 'util';
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
 class LanguageServicesFacade {
-	//protected textDocument:TextDocWithChanges;
-	// parser : Parser
-	// tree : Parser.Tree
-
-	// constructor(textDocument : TextDocWithChanges){
-	// 	super(textDocument)
-	// 	this.parser = getParser(textDocument.textDocument.uri)
-	// 	this.tree = parser.parse(textDocument.textDocument.getText());
-	// }
-
-	// getNodeFromPosition(position : Position) : Parser.SyntaxNode {
-	// 	return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
-	// }
-
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		//TODO:
 		return null
