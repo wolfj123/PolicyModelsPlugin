@@ -389,9 +389,19 @@ class DecisionGraphFileManager extends FileManager {
 }
 
 class PolicySpaceFileManager extends FileManager {
-	createPolicyModelEntity(node: Parser.SyntaxNode, source: string): PolicyModelEntity {
-		//TODO:
-		throw new Error("Method not implemented.");
+	createPolicyModelEntity(node: Parser.SyntaxNode): PolicyModelEntity {
+		let name : string
+		if(node.type === 'identifier_value') {
+			name = node.text
+			switch(node.parent.type) {
+				case 'identifier':
+				case 'compound_values':					
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, this.uri)					
+				case 'slot_value':
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, this.uri)	
+			}
+		}
+		return null
 	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		return []
@@ -426,9 +436,18 @@ class PolicySpaceFileManager extends FileManager {
 }
 
 class ValueInferenceFileManager extends FileManager {
-	createPolicyModelEntity(node: Parser.SyntaxNode, source: string): PolicyModelEntity {
-		//TODO:
-		throw new Error("Method not implemented.");
+	createPolicyModelEntity(node: Parser.SyntaxNode): PolicyModelEntity {
+		let name : string
+		if(node.type === 'slot_identifier') {
+			name = node.text
+			switch(node.parent.type) {
+				case 'slot_reference':				
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, this.uri)					
+				case 'slot_value':
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, this.uri)	
+			}
+		}
+		return null
 	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		return []
