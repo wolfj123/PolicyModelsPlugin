@@ -100,11 +100,6 @@ enum PolicyModelsLanguage {
 
 class LanguageServices {
 	//Workspace
-	// decisionGraph : Map<DocumentUri, Parser.Tree>
-	// policySpace : Map<DocumentUri, Parser.Tree>
-	// valueInference : Map<DocumentUri, Parser.Tree>
-	
-	//Workspace
 	fileManagers : Map<DocumentUri, FileManager>
 
 	//config
@@ -220,9 +215,9 @@ class PolicyModelEntity {
 	type : PolicyModelEntityType
 	name : string
 	source? : DocumentUri
-	//syntaxNode : Parser.SyntaxNode
+	syntaxNode : Parser.SyntaxNode
 
-	constructor(name : string , type : PolicyModelEntityType, source : string = undefined){
+	constructor(name : string , type : PolicyModelEntityType, source : DocumentUri = undefined){
 		this.name = name
 		this.type = type
 		if(source){
@@ -242,6 +237,7 @@ class PolicyModelEntity {
 		return this.source
 	}
 }
+
 
 
 //****File Managers****/
@@ -274,7 +270,10 @@ abstract class FileManager {
 		return ranges.map(range => newLocation(this.uri, range))
 	}
 
-	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
+	getAllDefinitions(location : Location) : Location[] {
+		let entity : PolicyModelEntity = this.createPolicyModelEntity(this.getNodeFromLocation(location), this.uri)
+		if(isNullOrUndefined(entity)) {return []}
+
 		let funcMap = {
 			DGNode: this.getAllDefinitionsDGNode,
 			Slot: this.getAllDefinitionsSlot,
@@ -283,7 +282,10 @@ abstract class FileManager {
 		return funcMap[entity.getType().toString()](entity.getName())
 	}
 
-	getAllReferences(entity : PolicyModelEntity) : Location[] {
+	getAllReferences(location : Location) : Location[] {
+		let entity : PolicyModelEntity = this.createPolicyModelEntity(this.getNodeFromLocation(location), this.uri)
+		if(isNullOrUndefined(entity)) {return []}
+
 		let funcMap = {
 			DGNode: this.getAllReferencesDGNode,
 			Slot: this.getAllReferencesSlot,
@@ -292,13 +294,18 @@ abstract class FileManager {
 		return funcMap[entity.getType().toString()](entity.getName(), entity.source)
 	}
 
+	abstract createPolicyModelEntity(node : Parser.SyntaxNode, source : DocumentUri) : PolicyModelEntity
+
 	abstract getAllDefinitionsDGNode(name : string) : Location[]
 	abstract getAllDefinitionsSlot(name : string) : Location[]
 	abstract getAllDefinitionsSlotValue(name : string) : Location[]
+
 	abstract getAllReferencesDGNode(name : string, source : DocumentUri) : Location[]
 	abstract getAllReferencesSlot(name : string, source : DocumentUri) : Location[]
 	abstract getAllReferencesSlotValue(name : string, source : DocumentUri) : Location[]
+
 	abstract getFoldingRanges() : Location[]
+
 	abstract getAutoComplete(location : Location)
 }
 
@@ -326,6 +333,29 @@ class FileManagerFactory {
 }
 
 class DecisionGraphFileManager extends FileManager {
+	createPolicyModelEntity(node: Parser.SyntaxNode): PolicyModelEntity {
+		let name : string
+		switch(node.type) {
+			case 'node_id':
+			case 'node_id_value':
+				//let name : string
+				if(node.type === 'node_id') {
+					name = node.descendantsOfType('node_id_value')[0].text
+				}
+				else { //node.type === 'node_id_value'
+					name = node.text
+				}
+				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, this.uri)
+			case 'slot_identifier':
+				name = node.text
+				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, this.uri)
+					
+			case 'slot_value':
+				name = node.text
+				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, this.uri)	
+		}
+		return null
+	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		let ranges : Range[] = DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
@@ -359,6 +389,10 @@ class DecisionGraphFileManager extends FileManager {
 }
 
 class PolicySpaceFileManager extends FileManager {
+	createPolicyModelEntity(node: Parser.SyntaxNode, source: string): PolicyModelEntity {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		return []
 	}
@@ -392,6 +426,10 @@ class PolicySpaceFileManager extends FileManager {
 }
 
 class ValueInferenceFileManager extends FileManager {
+	createPolicyModelEntity(node: Parser.SyntaxNode, source: string): PolicyModelEntity {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		return []
 	}
