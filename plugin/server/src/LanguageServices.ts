@@ -29,12 +29,11 @@ import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
 import { getFileExtension, point2Position, position2Point, newRange, newLocation, flatten } from './Utils';
 import * as path from 'path';
+import { isNullOrUndefined } from 'util';
 
 
 //https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
-
-
 
 class LanguageServicesFacade {
 	//protected textDocument:TextDocWithChanges;
@@ -92,49 +91,45 @@ enum PolicyModelsLanguage {
 
 class LanguageServices {
 	//Workspace
-	decisionGraph : Map<DocumentUri, Parser.Tree>
-	policySpace : Map<DocumentUri, Parser.Tree>
-	valueInference : Map<DocumentUri, Parser.Tree>
-	parsers : Map<PolicyModelsLanguage, Parser>
+	// decisionGraph : Map<DocumentUri, Parser.Tree>
+	// policySpace : Map<DocumentUri, Parser.Tree>
+	// valueInference : Map<DocumentUri, Parser.Tree>
+	
 
 	//config
+	parsers : Map<PolicyModelsLanguage, Parser>
 	parsersInfo = 	//TODO: maybe extract this info from package.json
 	[ 
 		{ 
 			fileExtentsions : ['dg'],
 			language : PolicyModelsLanguage.DecisionGraph,
 			wasm : 'tree-sitter-decisiongraph.wasm',
-			map : this.decisionGraph
+			//map : this.decisionGraph
 		},
 		{ 
 			fileExtentsions : ['pspace', 'ps', 'ts'],
 			language : PolicyModelsLanguage.PolicySpace,
 			wasm : 'tree-sitter-policyspace.wasm',
-			map : this.policySpace
+			//map : this.policySpace
 		},
 		{ 
 			fileExtentsions :  ['vi'],
 			language : PolicyModelsLanguage.ValueInference,
 			wasm : 'tree-sitter-valueinference.wasm',
-			map : this.valueInference
+			//map : this.valueInference
 		}
 	]
 
 	constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
 		this.initParsers()
-
-		this.decisionGraph = new Map()
-		this.policySpace = new Map()
-		this.valueInference = new Map()	
-		this.populateMaps(docs)
 	}
 
 	addDocs(docs : TextDocWithChanges[]) {
-		this.populateMaps(docs)
+		//TODO:
 	}
 
 	updateDoc(doc : TextDocWithChanges){
-
+		//TODO:
 	}
 
 	//maybe this map should be global singleton?
@@ -151,60 +146,30 @@ class LanguageServices {
 		}
 	}
 
-	populateMaps(docs : TextDocWithChanges[]){
-		for (let doc of docs){
-			const uri = doc.textDocument.uri
-			const extension : string = getFileExtension(uri)
-			const correspondingInfo = this.parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
-			if(!(correspondingInfo) || correspondingInfo.length == 0){
-				continue;
-			}
-			const language : PolicyModelsLanguage = correspondingInfo[0].language
-			let tree : Parser.Tree = this.parsers.get(language).parse(doc.textDocument.getText())
-			let map : Map<DocumentUri, Parser.Tree> = correspondingInfo[0].map
-			map.set(uri, tree)
-		}
+	getParserByExtension(extension : string) : Parser {
+		if(isNullOrUndefined(this.parsers)) return null
+		const correspondingInfo = this.parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
+		if(!(correspondingInfo) || correspondingInfo.length == 0) return null
+		const language : PolicyModelsLanguage = correspondingInfo[0].language
+		return this.parsers.get(language)
 	}
 
-	getFoldingRanges() : Location[] {
-		let result : Location[]
-		result.concat(this.getFoldingRangesOfSlots())
-		result.concat(this.getFoldingRangesOfSlots())
-		result.concat(this.getFoldingRangesOfSlots())
-		return result
-	}
-
-	getFoldingRangesOfNodes() : Location[] {
-		let result : Location[]
-		this.decisionGraph.forEach((tree: Parser.Tree, uri: DocumentUri) => {
-			let ranges : Range[] = DecisionGraphServices.getAllNodesInDocument(tree)
-			let locations : Location[] = ranges.map(range => newLocation(uri, range))
-			result.concat(locations)
-		});
-		return result;
-	}
-
-	getFoldingRangesOfSlots() : Location[] {
-		//TODO:
-		return []
-	}
-
-	getFoldingRangesOfValueInferences() : Location[] {
-		//TODO:
-		return []
-	}
+	// populateMaps(docs : TextDocWithChanges[]){
+	// 	for (let doc of docs){
+	// 		const uri = doc.textDocument.uri
+	// 		const extension : string = getFileExtension(uri)
+	// 		const correspondingInfo = this.parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
+	// 		if(!(correspondingInfo) || correspondingInfo.length == 0){
+	// 			continue;
+	// 		}
+	// 		const language : PolicyModelsLanguage = correspondingInfo[0].language
+	// 		let tree : Parser.Tree = this.parsers.get(language).parse(doc.textDocument.getText())
+	// 		let map : Map<DocumentUri, Parser.Tree> = correspondingInfo[0].map
+	// 		map.set(uri, tree)
+	// 	}
+	// }
 
 	getDeclarations(location : Location) : Location[] {
-		//TODO:
-		return []
-	}
-
-	getDeclarationsOfNodes() : Location[] {
-		//TODO:
-		return []
-	}
-
-	getDeclarationsOfSlots() : Location[] {
 		//TODO:
 		return []
 	}
@@ -214,17 +179,7 @@ class LanguageServices {
 		return []
 	}
 
-	getReferencesOfNodes() : Location[] {
-		//TODO:
-		return []
-	}
-
-	getReferencesOfSlots() : Location[] {
-		//TODO:
-		return []
-	}
-
-	getReferencesOfSlotValues() : Location[] {
+	getFoldingRanges() : Location[] {
 		//TODO:
 		return []
 	}
@@ -233,27 +188,6 @@ class LanguageServices {
 		//TODO:
 		return []
 	}
-
-	getCompletionOfDecisionGraphKeywords(location : Location) : Location[] {
-		//TODO:
-		return []
-	}
-
-	getCompletionOfPolicySpaceKeywords(location : Location) : Location[] {
-		//TODO:
-		return []
-	}
-
-	// getParser(uri : DocumentUri) : Parser {
-	// 	const fileExtension = getFileExtension(uri)
-	// 	const wasm = this.parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
-	// 	//const absolute = path.join(context.extensionPath, 'parsers', wasm)
-	// 	Parser.init()
-	// 	const parser = new Parser()
-	// 	const lang = Parser.Language.load(wasm)
-	// 	parser.setLanguage(lang)
-	// 	return parser
-	// }
 }
 
 enum PolicyModelEntityType {
@@ -290,9 +224,14 @@ class PolicyModelEntity {
 }
 
 abstract class FileManager {
-	uri : DocumentUri
 	tree : Parser.Tree
+	uri : DocumentUri
 	//TODO: maybe some sort of cache?
+
+	constructor(tree : Parser.Tree, uri : DocumentUri){
+		this.tree = tree
+		this.uri = uri
+	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = tree
@@ -339,6 +278,29 @@ abstract class FileManager {
 	abstract getAllReferencesSlotValue(name : string, source : DocumentUri) : Location[]
 	abstract getFoldingRanges() : Location[]
 	abstract getAutoComplete(location : Location)
+}
+
+class FileManagerFactory {
+	static create(doc : TextDocWithChanges, getParserByExtension : (string) => Parser, getLanguageByExtension : (string) => PolicyModelsLanguage) : FileManager {
+		const uri = doc.textDocument.uri
+		const extension = getFileExtension(uri)
+		let parser = getParserByExtension(extension)
+		let language = getLanguageByExtension(extension)
+		let tree : Parser.Tree = parser.parse(doc.textDocument.getText()) 
+		switch(language) {
+			case PolicyModelsLanguage.DecisionGraph:
+				return new DecisionGraphFileManager(tree, uri)
+
+			case PolicyModelsLanguage.PolicySpace:
+				return new PolicySpaceFileManager(tree, uri)	
+						
+			case PolicyModelsLanguage.ValueInference:
+				return new ValueInferenceFileManager(tree, uri)	
+				
+			default:
+				return null
+		}
+	}
 }
 
 
