@@ -22,12 +22,19 @@ import {
 	TextDocumentChangeEvent,
 	DidChangeWatchedFilesParams,
 } from 'vscode-languageserver';
-
 import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { getFileExtension, point2Position, position2Point, newRange, newLocation, flatten } from './Utils';
+import { 
+	getFileExtension, 
+	point2Position, 
+	position2Point, 
+	newRange, 
+	newLocation, 
+	flatten, 
+	docChange2Edit
+} from './Utils';
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
 
@@ -95,6 +102,8 @@ class LanguageServices {
 	// policySpace : Map<DocumentUri, Parser.Tree>
 	// valueInference : Map<DocumentUri, Parser.Tree>
 	
+	//Workspace
+	fileManagers : Map<DocumentUri, FileManager>
 
 	//config
 	parsers : Map<PolicyModelsLanguage, Parser>
@@ -122,14 +131,19 @@ class LanguageServices {
 
 	constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
 		this.initParsers()
+		this.fileManagers = new Map()
+		this.populateMaps(docs)
 	}
 
 	addDocs(docs : TextDocWithChanges[]) {
-		//TODO:
+		this.populateMaps(docs)
 	}
 
 	updateDoc(doc : TextDocWithChanges){
-		//TODO:
+		let fileManager : FileManager = this.fileManagers.get(doc.textDocument.uri)
+		if(isNullOrUndefined(fileManager)) return
+		let parser : Parser = this.getParserByExtension(getFileExtension(doc.textDocument.uri))
+		//parser.
 	}
 
 	//maybe this map should be global singleton?
@@ -146,28 +160,24 @@ class LanguageServices {
 		}
 	}
 
-	getParserByExtension(extension : string) : Parser {
+	getLanguageByExtension(extension : string) : PolicyModelsLanguage {
 		if(isNullOrUndefined(this.parsers)) return null
 		const correspondingInfo = this.parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 		if(!(correspondingInfo) || correspondingInfo.length == 0) return null
-		const language : PolicyModelsLanguage = correspondingInfo[0].language
+		return correspondingInfo[0].language
+	}
+
+	getParserByExtension(extension : string) : Parser {
+		const language = this.getLanguageByExtension(extension)
 		return this.parsers.get(language)
 	}
 
-	// populateMaps(docs : TextDocWithChanges[]){
-	// 	for (let doc of docs){
-	// 		const uri = doc.textDocument.uri
-	// 		const extension : string = getFileExtension(uri)
-	// 		const correspondingInfo = this.parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
-	// 		if(!(correspondingInfo) || correspondingInfo.length == 0){
-	// 			continue;
-	// 		}
-	// 		const language : PolicyModelsLanguage = correspondingInfo[0].language
-	// 		let tree : Parser.Tree = this.parsers.get(language).parse(doc.textDocument.getText())
-	// 		let map : Map<DocumentUri, Parser.Tree> = correspondingInfo[0].map
-	// 		map.set(uri, tree)
-	// 	}
-	// }
+	populateMaps(docs : TextDocWithChanges[]) {
+		for (let doc of docs){
+			let fileManager : FileManager = FileManagerFactory.create(doc, this.getParserByExtension, this.getLanguageByExtension)
+			this.fileManagers.set(doc.textDocument.uri, fileManager)
+		}
+	}
 
 	getDeclarations(location : Location) : Location[] {
 		//TODO:
@@ -302,7 +312,6 @@ class FileManagerFactory {
 		}
 	}
 }
-
 
 class DecisionGraphFileManager extends FileManager {
 	getAllDefinitionsDGNode(name: string): Location[] {
