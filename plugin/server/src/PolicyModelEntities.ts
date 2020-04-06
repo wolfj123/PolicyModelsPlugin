@@ -231,14 +231,16 @@ function analyzeParseTreeDecisionGraph(root : Parser.Tree, visibleRanges: {start
 			if(idNode) {
 				let id : string = idNode.descendantsOfType('node_id_value')[0].text
 				let text = node.text
-				let loc : Location = Utils.newLocation(uri, Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
+				let range : Range = Utils.newRange(Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
+				let loc : Location = Utils.newLocation(uri,range)
 				//let newNode : PolicyModelEntity = new PolicyModelEntity(id, PolicyModelEntityType.DecisionGraphNodeId, text, loc)
 				let newNode : DecisionGraphNode = DecisionGraphNode.createNode(id, text, loc)
 				result.push(newNode)
 			} 
 			else {
 				let text = node.text
-				let loc : Location = Utils.newLocation(uri, Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
+				let range : Range = Utils.newRange(Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
+				let loc : Location = Utils.newLocation(uri, range)
 				//let newNode : PolicyModelEntity = new PolicyModelEntity('foldingRange', PolicyModelEntityType.DecisionGraphNode, text, loc)
 				let newNode : DecisionGraphNode =  DecisionGraphNode.createNamelessNode(text, loc)
 				result.push(newNode)
@@ -259,7 +261,8 @@ function analyzeParseTreePolicySpace(root : Parser.Tree, visibleRanges: {start: 
 		}
 		let name : string = identifierNode.text
 		let text = slot.text
-		let loc : Location = Utils.newLocation(uri, Utils.point2Position(slot.startPosition), Utils.point2Position(slot.endPosition))
+		let range : Range = Utils.newRange(Utils.point2Position(slot.startPosition), Utils.point2Position(slot.endPosition))
+		let loc : Location = Utils.newLocation(uri, range)
 		//let newNode : PolicyModelEntity = new PolicyModelEntity(name, PolicyModelEntityType.Slot, text, loc)
 		//result.push(newNode)
 	}
