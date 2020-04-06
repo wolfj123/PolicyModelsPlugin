@@ -27,7 +27,7 @@ import * as Parser from 'web-tree-sitter'
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { getFileExtension, point2Position, position2Point, newRange, flatten } from './Utils';
+import { getFileExtension, point2Position, position2Point, newRange, newLocation, flatten } from './Utils';
 import * as path from 'path';
 
 
@@ -167,73 +167,81 @@ class LanguageServices {
 	}
 
 	getFoldingRanges() : Location[] {
-		//TODO:
-		return null
+		let result : Location[]
+		result.concat(this.getFoldingRangesOfSlots())
+		result.concat(this.getFoldingRangesOfSlots())
+		result.concat(this.getFoldingRangesOfSlots())
+		return result
 	}
 
 	getFoldingRangesOfNodes() : Location[] {
-		//TODO:
-		return null
+		let result : Location[]
+		this.decisionGraph.forEach((tree: Parser.Tree, uri: DocumentUri) => {
+			let ranges : Range[] = DecisionGraphServices.getAllNodesInDocument(tree)
+			let locations : Location[] = ranges.map(range => newLocation(uri, range))
+			result.concat(locations)
+		});
+		return result;
 	}
 
 	getFoldingRangesOfSlots() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getFoldingRangesOfValueInferences() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getDeclarations(location : Location) : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getDeclarationsOfNodes() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getDeclarationsOfSlots() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getReferences(location : Location) : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getReferencesOfNodes() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getReferencesOfSlots() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getReferencesOfSlotValues() : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getCompletion(location : Location) : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getCompletionOfDecisionGraphKeywords(location : Location) : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	getCompletionOfPolicySpaceKeywords(location : Location) : Location[] {
 		//TODO:
-		return null
+		return []
 	}
 
 	// getParser(uri : DocumentUri) : Parser {
@@ -248,6 +256,187 @@ class LanguageServices {
 	// }
 }
 
+enum PolicyModelEntityType {
+	DGNode,
+	Slot,
+	SlotValue
+}
+
+class PolicyModelEntity {
+	type : PolicyModelEntityType
+	name : string
+	source? : DocumentUri
+	//syntaxNode : Parser.SyntaxNode
+
+	constructor(name : string , type : PolicyModelEntityType, source : string = undefined){
+		this.name = name
+		this.type = type
+		if(source){
+			this.source = source
+		}
+	}
+
+	getType() : PolicyModelEntityType {
+		return this.type
+	}
+
+	getName() : string {
+		return this.name
+	}
+
+	getSource() : DocumentUri {
+		return this.source
+	}
+}
+
+abstract class FileManager {
+	uri : DocumentUri
+	tree : Parser.Tree
+	//TODO: maybe some sort of cache?
+
+	updateTree(newTree : Parser.Tree) {
+		this.tree = tree
+	}
+
+	isLocationInDoc(location : Location) : boolean {
+		if (!(location.uri === this.uri)) return false
+		return true
+	}
+
+	getNodeFromLocation(location : Location) : Parser.SyntaxNode {
+		if(!this.isLocationInDoc(location)) return null
+		const position : Position = location.range.start
+	 	return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
+	}
+
+	rangeArray2LocationArray(ranges : Range[]) : Location[] {
+		return ranges.map(range => newLocation(this.uri, range))
+	}
+
+	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
+		let funcMap = {
+			DGNode: this.getAllDefinitionsDGNode,
+			Slot: this.getAllDefinitionsSlot,
+			SlotValue: this.getAllDefinitionsSlotValue
+		}
+		return funcMap[entity.getType().toString()](entity.getName())
+	}
+
+	getAllReferences(entity : PolicyModelEntity) : Location[] {
+		let funcMap = {
+			DGNode: this.getAllReferencesDGNode,
+			Slot: this.getAllReferencesSlot,
+			SlotValue: this.getAllReferencesSlotValue
+		}
+		return funcMap[entity.getType().toString()](entity.getName(), entity.source)
+	}
+
+	abstract getAllDefinitionsDGNode(name : string) : Location[]
+	abstract getAllDefinitionsSlot(name : string) : Location[]
+	abstract getAllDefinitionsSlotValue(name : string) : Location[]
+	abstract getAllReferencesDGNode(name : string, source : DocumentUri) : Location[]
+	abstract getAllReferencesSlot(name : string, source : DocumentUri) : Location[]
+	abstract getAllReferencesSlotValue(name : string, source : DocumentUri) : Location[]
+	abstract getFoldingRanges() : Location[]
+	abstract getAutoComplete(location : Location)
+}
+
+
+class DecisionGraphFileManager extends FileManager {
+	getAllDefinitionsDGNode(name: string): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllDefinitionsSlot(name: string): Location[] {
+		return []
+	}
+	getAllDefinitionsSlotValue(name: string): Location[] {
+		return []
+	}
+	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfNodeInDocument(name, this.tree, source)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfSlotInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfSlotValueInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getFoldingRanges(): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllNodesInDocument(this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAutoComplete(location: Location) {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+}
+
+class PolicySpaceFileManager extends FileManager {
+	getAllDefinitionsDGNode(name: string): Location[] {
+		return []
+	}
+	getAllDefinitionsSlot(name: string): Location[] {
+		let ranges : Range[] = PolicySpaceServices.getAllDefinitionsOfSlotInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllDefinitionsSlotValue(name: string): Location[] {
+		let ranges : Range[] = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
+		return []
+	}
+	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+		let ranges : Range[] = PolicySpaceServices.getAllReferencesOfSlotInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+		//TODO:
+		return []
+	}
+	getFoldingRanges(): Location[] {
+		//TODO:
+		return []
+	}
+	getAutoComplete(location: Location) {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+}
+
+class ValueInferenceFileManager extends FileManager {
+	getAllDefinitionsDGNode(name: string): Location[] {
+		return []
+	}
+	getAllDefinitionsSlot(name: string): Location[] {
+		return []
+	}
+	getAllDefinitionsSlotValue(name: string): Location[] {
+		return []
+	}
+	getAllReferencesDGNode(name: string, source: string): Location[] {
+		return []
+	}
+	getAllReferencesSlot(name: string, source: string): Location[] {
+		let ranges : Range[] = ValueInferenceServices.getAllReferencesOfSlotInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getAllReferencesSlotValue(name: string, source: string): Location[] {
+		let ranges : Range[] = ValueInferenceServices.getAllReferencesOfSlotValueInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
+	}
+	getFoldingRanges(): Location[] {
+		//TODO:
+		return []
+	}
+	getAutoComplete(location: Location) {
+		throw new Error("Method not implemented.");
+	}
+}
 
 
 
@@ -382,7 +571,7 @@ class ValueInferenceServices {
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
 	
-	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
+	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let identifiers : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
 			.map(id => id.descendantsOfType("slot_identifier")[0])
@@ -470,6 +659,39 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 
 
 
+// //this is created to support overloading
+// abstract class SyntaxNodeWrapper {
+// 	node : Parser.SyntaxNode
+
+// 	constructor(node : Parser.SyntaxNode) {
+// 		this.node = node
+// 	}
+
+// 	getNode() : Parser.SyntaxNode{
+// 		return this.node
+// 	}
+
+// 	getName() : string {
+// 		return "" //TODO:
+// 	}
+// }
+
+// class DGNode extends SyntaxNodeWrapper{}
+// class SlotNode extends SyntaxNodeWrapper{}
+// class SlotValueNode extends SyntaxNodeWrapper{}
+
+// class SyntaxNodeWrapperFactory {
+// 	factoryMap = 
+// 	{
+// 		//TODO:		
+// 	}
+
+// 	static getSyntaxNodeWrapper(node : Parser.SyntaxNode) : SyntaxNodeWrapper {
+// 		//TODO:
+// 		return null
+// 	}
+
+// }
 
 
 
@@ -697,11 +919,11 @@ async function demoValueInferenceAllReferencesOfSlotValueInDocument() {
 	console.log(result)
 
 	tree = parser.parse(sourceCode);
-	result = ValueInferenceServices.getAllDefinitionsOfSlotValueInDocument("Click", tree)
+	result = ValueInferenceServices.getAllReferencesOfSlotValueInDocument("Click", tree)
 	console.log(result)
 
 	tree = parser.parse(sourceCode);
-	result = ValueInferenceServices.getAllDefinitionsOfSlotValueInDocument("DUA_AM", tree)
+	result = ValueInferenceServices.getAllReferencesOfSlotValueInDocument("DUA_AM", tree)
 	console.log(result)
 }
 

@@ -97,4 +97,3 @@ async function demo() {
 //   } while ((currentObj = Object.getPrototypeOf(currentObj)))
 //   return [...properties.keys()].filter(item => typeof obj[item] === 'function')
 // }
-

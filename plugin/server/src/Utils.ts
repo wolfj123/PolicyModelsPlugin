@@ -44,8 +44,8 @@ export function newRange(pos1 : Position, pos2 : Position) : Range {
 	return {start: pos1,end: pos2}
 }
 
-export function newLocation(uri : DocumentUri, pos1 : Position, pos2 : Position) : Location {
-	let range = newRange(pos1, pos2)
+export function newLocation(uri : DocumentUri, range : Range) : Location {
+	//let range = newRange(pos1, pos2)
 	return 	{
 		uri: uri,
 		range: range
