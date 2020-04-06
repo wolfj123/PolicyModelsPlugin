@@ -92,8 +92,8 @@ enum PolicyModelsLanguage {
 
 class LanguageServices {
 	//Workspace
-	policySpace : Map<DocumentUri, Parser.Tree>
 	decisionGraph : Map<DocumentUri, Parser.Tree>
+	policySpace : Map<DocumentUri, Parser.Tree>
 	valueInference : Map<DocumentUri, Parser.Tree>
 	parsers : Map<PolicyModelsLanguage, Parser>
 
@@ -103,31 +103,58 @@ class LanguageServices {
 		{ 
 			fileExtentsions : ['dg'],
 			language : PolicyModelsLanguage.DecisionGraph,
-			wasm : 'tree-sitter-decisiongraph.wasm'
+			wasm : 'tree-sitter-decisiongraph.wasm',
+			map : this.decisionGraph
 		},
 		{ 
 			fileExtentsions : ['pspace', 'ps', 'ts'],
 			language : PolicyModelsLanguage.PolicySpace,
-			wasm : 'tree-sitter-policyspace.wasm'
+			wasm : 'tree-sitter-policyspace.wasm',
+			map : this.policySpace
 		},
 		{ 
 			fileExtentsions :  ['vi'],
 			language : PolicyModelsLanguage.ValueInference,
-			wasm : 'tree-sitter-valueinference.wasm'
+			wasm : 'tree-sitter-valueinference.wasm',
+			map : this.valueInference
 		}
 	]
 
-
-	getParser(uri : DocumentUri) : Parser {
-		const fileExtension = getFileExtension(uri)
-		const wasm = this.parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
-		//const absolute = path.join(context.extensionPath, 'parsers', wasm)
-		Parser.init()
-		const parser = new Parser()
-		const lang = Parser.Language.load(wasm)
-		parser.setLanguage(lang)
-		return parser
+	constructor(uris : DocumentUri[]) {
+		this.initParsers()
 	}
+
+	//maybe this map should be global singleton?
+	async initParsers() {
+		this.parsers = new Map()
+		for(let info of this.parsersInfo) {
+			const wasm = info.wasm
+			//const absolute = path.join(context.extensionPath, 'parsers', wasm
+			await Parser.init()
+			const parser = new Parser()
+			const lang = await Parser.Language.load(wasm)
+			parser.setLanguage(lang)
+			this.parsers.set(info.language,parser)
+		}
+	}
+
+
+
+
+
+
+
+
+	// getParser(uri : DocumentUri) : Parser {
+	// 	const fileExtension = getFileExtension(uri)
+	// 	const wasm = this.parsersInfo.find(info => info.fileExtentsions.indexOf(fileExtension) != -1).wasm
+	// 	//const absolute = path.join(context.extensionPath, 'parsers', wasm)
+	// 	Parser.init()
+	// 	const parser = new Parser()
+	// 	const lang = Parser.Language.load(wasm)
+	// 	parser.setLanguage(lang)
+	// 	return parser
+	// }
 }
 
 
