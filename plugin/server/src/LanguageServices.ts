@@ -45,6 +45,24 @@ import { isNullOrUndefined } from 'util';
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
 class LanguageServicesFacade {
+	services : LanguageServices
+
+	constructor(docs : TextDocWithChanges[]) {
+		//TODO:
+	}
+
+	addDocs(docs : TextDocWithChanges[]) {
+		//TODO:
+	}
+
+	updateDoc(doc : TextDocWithChanges){
+		//TODO:
+	}
+
+	removeDoc(doc : DocumentUri) {
+		//TODO:
+	}
+
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		//TODO:
 		return null
@@ -96,19 +114,16 @@ class LanguageServices {
 			fileExtentsions : ['dg'],
 			language : PolicyModelsLanguage.DecisionGraph,
 			wasm : 'tree-sitter-decisiongraph.wasm',
-			//map : this.decisionGraph
 		},
 		{ 
 			fileExtentsions : ['pspace', 'ps', 'ts'],
 			language : PolicyModelsLanguage.PolicySpace,
 			wasm : 'tree-sitter-policyspace.wasm',
-			//map : this.policySpace
 		},
 		{ 
 			fileExtentsions :  ['vi'],
 			language : PolicyModelsLanguage.ValueInference,
 			wasm : 'tree-sitter-valueinference.wasm',
-			//map : this.valueInference
 		}
 	]
 
@@ -132,6 +147,10 @@ class LanguageServices {
 			tree.edit(edit)
 			fileManager.updateTree(parser.parse(doc.textDocument.getText())) //TODO: hopefully passing whole text with several changes doesn't break it
 		});
+	}
+
+	removeDoc(doc : DocumentUri) {
+		//TODO:
 	}
 
 	//maybe this map should be global singleton?
