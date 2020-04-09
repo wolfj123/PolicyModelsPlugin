@@ -130,7 +130,7 @@ class LanguageServices {
 		let tree : Parser.Tree = fileManager.tree
 		edits.forEach((edit : Parser.Edit) => {
 			tree.edit(edit)
-			fileManager.updateTree(parser.parse(doc.textDocument.getText())) //TODO: hopefully passing whole text with several changes doesnt break it
+			fileManager.updateTree(parser.parse(doc.textDocument.getText())) //TODO: hopefully passing whole text with several changes doesn't break it
 		});
 	}
 
@@ -167,24 +167,70 @@ class LanguageServices {
 		}
 	}
 
+	getFileManagerByLocation(location : Location) : FileManager {
+		return this.fileManagers.get(location.uri)
+	}
+
 	getDeclarations(location : Location) : Location[] {
-		//TODO:
-		return []
+		let fm : FileManager = this.getFileManagerByLocation(location)
+		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
+		if(isNullOrUndefined(entity)) return []
+		
+		let result : Location[] = []
+		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+			result.concat(fm.getAllDefinitions(entity))
+		});
+		return result
 	}
 
 	getReferences(location : Location) : Location[] {
-		//TODO:
-		return []
+		let result : Location[] = []
+		let declarations : Location[] = []
+		let docsWithDeclaration : DocumentUri[] = []
+		let references : Location[] = []
+
+		let fm : FileManager = this.getFileManagerByLocation(location)
+		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
+
+		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
+			let locs : Location[] = fm.getAllDefinitions(entity)
+			declarations.concat(locs)
+			if(locs.length > 0) {
+				docsWithDeclaration.push(fm.uri)
+			}
+		});
+		
+		if(docsWithDeclaration.length == 0){
+			this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+				references.concat(fm.getAllReferences(entity))
+			});
+		}
+		else {
+			docsWithDeclaration.forEach((uri: DocumentUri) => {	
+				entity.setSource(uri)
+				this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+					references.concat(fm.getAllReferences(entity))
+				});
+			});
+		}
+		
+		result.concat(declarations) //we include declarations in this query
+		result.concat(references)
+		return result
 	}
 
 	getFoldingRanges() : Location[] {
-		//TODO:
-		return []
+		let result : Location[] = []
+		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
+			result.concat(fm.getFoldingRanges())
+		});
+		return result
 	}
 
 	getCompletion(location : Location) : Location[] {
 		//TODO:
-		return []
+		//return []
+		throw new Error("Method not implemented.");
 	}
 }
 
@@ -222,6 +268,10 @@ class PolicyModelEntity {
 	getSource() : DocumentUri {
 		return this.source
 	}
+
+	setSource(uri : DocumentUri) {
+		this.source = uri
+	}
 }
 
 
@@ -256,8 +306,7 @@ abstract class FileManager {
 		return ranges.map(range => newLocation(this.uri, range))
 	}
 
-	getAllDefinitions(location : Location) : Location[] {
-		let entity : PolicyModelEntity = this.createPolicyModelEntity(this.getNodeFromLocation(location), this.uri)
+	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
 
 		let funcMap = {
@@ -268,8 +317,7 @@ abstract class FileManager {
 		return funcMap[entity.getType().toString()](entity.getName())
 	}
 
-	getAllReferences(location : Location) : Location[] {
-		let entity : PolicyModelEntity = this.createPolicyModelEntity(this.getNodeFromLocation(location), this.uri)
+	getAllReferences(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
 
 		let funcMap = {
@@ -280,7 +328,7 @@ abstract class FileManager {
 		return funcMap[entity.getType().toString()](entity.getName(), entity.source)
 	}
 
-	abstract createPolicyModelEntity(node : Parser.SyntaxNode, source : DocumentUri) : PolicyModelEntity
+	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
 
 	abstract getAllDefinitionsDGNode(name : string) : Location[]
 	abstract getAllDefinitionsSlot(name : string) : Location[]
@@ -319,26 +367,32 @@ class FileManagerFactory {
 }
 
 class DecisionGraphFileManager extends FileManager {
-	createPolicyModelEntity(node: Parser.SyntaxNode): PolicyModelEntity {
+	createPolicyModelEntity(location : Location): PolicyModelEntity {
+		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
+		if(isNullOrUndefined(node)) {return null}
 		let name : string
 		switch(node.type) {
 			case 'node_id':
 			case 'node_id_value':
 				//let name : string
+				let nodeWithText : Parser.SyntaxNode
 				if(node.type === 'node_id') {
-					name = node.descendantsOfType('node_id_value')[0].text
+					nodeWithText = node.descendantsOfType('node_id_value')[0]
 				}
 				else { //node.type === 'node_id_value'
-					name = node.text
+					nodeWithText = node
 				}
-				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, this.uri)
+				name = nodeWithText.text
+
+				let source : DocumentUri = (nodeWithText.parent.type === 'node_reference') ? undefined : this.uri ;
+				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, source)
 			case 'slot_identifier':
 				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, this.uri)
+				return new PolicyModelEntity(name, PolicyModelEntityType.Slot)
 					
 			case 'slot_value':
 				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, this.uri)	
+				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue)	
 		}
 		return null
 	}
@@ -375,16 +429,18 @@ class DecisionGraphFileManager extends FileManager {
 }
 
 class PolicySpaceFileManager extends FileManager {
-	createPolicyModelEntity(node: Parser.SyntaxNode): PolicyModelEntity {
+	createPolicyModelEntity(location : Location): PolicyModelEntity {
+		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
+		if(isNullOrUndefined(node)) {return null}
 		let name : string
 		if(node.type === 'identifier_value') {
 			name = node.text
 			switch(node.parent.type) {
 				case 'identifier':
 				case 'compound_values':					
-					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, this.uri)					
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot)					
 				case 'slot_value':
-					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, this.uri)	
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue)	
 			}
 		}
 		return null
@@ -422,15 +478,17 @@ class PolicySpaceFileManager extends FileManager {
 }
 
 class ValueInferenceFileManager extends FileManager {
-	createPolicyModelEntity(node: Parser.SyntaxNode): PolicyModelEntity {
+	createPolicyModelEntity(location : Location): PolicyModelEntity {
+		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
+		if(isNullOrUndefined(node)) {return null}
 		let name : string
 		if(node.type === 'slot_identifier') {
 			name = node.text
 			switch(node.parent.type) {
 				case 'slot_reference':				
-					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, this.uri)					
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot)					
 				case 'slot_value':
-					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, this.uri)	
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue)	
 			}
 		}
 		return null
