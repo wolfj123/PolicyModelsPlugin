@@ -178,7 +178,7 @@ class LanguageServices {
 		
 		let result : Location[] = []
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
-			result.concat(fm.getAllDefinitions(entity))
+			result = result.concat(fm.getAllDefinitions(entity))
 		});
 		return result
 	}
@@ -194,7 +194,7 @@ class LanguageServices {
 
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
 			let locs : Location[] = fm.getAllDefinitions(entity)
-			declarations.concat(locs)
+			declarations = declarations.concat(locs)
 			if(locs.length > 0) {
 				docsWithDeclaration.push(fm.uri)
 			}
@@ -202,7 +202,7 @@ class LanguageServices {
 		
 		if(docsWithDeclaration.length == 0){
 			this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
-				references.concat(fm.getAllReferences(entity))
+				references = references.concat(fm.getAllReferences(entity))
 			});
 		}
 		else {
@@ -214,15 +214,16 @@ class LanguageServices {
 			});
 		}
 		
-		result.concat(declarations) //we include declarations in this query
-		result.concat(references)
+		//TODO: we need to make sure the array contains unique values only
+		result = result.concat(declarations) //we include declarations in this query
+		result = result.concat(references)
 		return result
 	}
 
 	getFoldingRanges() : Location[] {
 		let result : Location[] = []
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
-			result.concat(fm.getFoldingRanges())
+			result = result.concat(fm.getFoldingRanges())
 		});
 		return result
 	}
@@ -464,12 +465,12 @@ class PolicySpaceFileManager extends FileManager {
 		return this.rangeArray2LocationArray(ranges)
 	}
 	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
-		//TODO:
-		return []
+		let ranges : Range[] = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument(name, this.tree)
+		return this.rangeArray2LocationArray(ranges)
 	}
 	getFoldingRanges(): Location[] {
-		//TODO:
-		return []
+		let ranges : Range[] = PolicySpaceServices.getAllSlotsInDocument(this.tree)
+		return this.rangeArray2LocationArray(ranges)
 	}
 	getAutoComplete(location: Location) {
 		//TODO:
@@ -514,8 +515,10 @@ class ValueInferenceFileManager extends FileManager {
 		return this.rangeArray2LocationArray(ranges)
 	}
 	getFoldingRanges(): Location[] {
-		//TODO:
-		return []
+		let ranges : Range[] = []
+		ranges = ranges.concat(ValueInferenceServices.getAllValueInferencesInDocument(this.tree))
+		ranges = ranges.concat(ValueInferenceServices.getAllInferencePairsInDocument(this.tree))
+		return this.rangeArray2LocationArray(ranges)
 	}
 	getAutoComplete(location: Location) {
 		throw new Error("Method not implemented.");
@@ -645,6 +648,13 @@ class PolicySpaceServices {
 			.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
 	}
+
+	static getAllSlotsInDocument(tree : Parser.Tree) : Range[] {
+		//TODO: this maybe can be made faster without using descendantsOfType
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let result : Parser.SyntaxNode[] = root.descendantsOfType("slot")
+		return getRangesOfSyntaxNodes(result)
+	}
 }
 
 class ValueInferenceServices {
@@ -662,6 +672,20 @@ class ValueInferenceServices {
 			.map(id => id.descendantsOfType("slot_identifier")[0])
 		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
+	}
+
+	static getAllValueInferencesInDocument(tree : Parser.Tree) : Range[] {
+		//TODO: this maybe can be made faster without using descendantsOfType
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let result : Parser.SyntaxNode[] = root.descendantsOfType("value_inference")
+		return getRangesOfSyntaxNodes(result)
+	}
+
+	static getAllInferencePairsInDocument(tree : Parser.Tree) : Range[] {
+		//TODO: this maybe can be made faster without using descendantsOfType
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let result : Parser.SyntaxNode[] = root.descendantsOfType("inference_pair")
+		return getRangesOfSyntaxNodes(result)
 	}
 }
 
@@ -735,48 +759,6 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 
 
 
-
-
-
-
-
-
-
-
-
-// //this is created to support overloading
-// abstract class SyntaxNodeWrapper {
-// 	node : Parser.SyntaxNode
-
-// 	constructor(node : Parser.SyntaxNode) {
-// 		this.node = node
-// 	}
-
-// 	getNode() : Parser.SyntaxNode{
-// 		return this.node
-// 	}
-
-// 	getName() : string {
-// 		return "" //TODO:
-// 	}
-// }
-
-// class DGNode extends SyntaxNodeWrapper{}
-// class SlotNode extends SyntaxNodeWrapper{}
-// class SlotValueNode extends SyntaxNodeWrapper{}
-
-// class SyntaxNodeWrapperFactory {
-// 	factoryMap = 
-// 	{
-// 		//TODO:		
-// 	}
-
-// 	static getSyntaxNodeWrapper(node : Parser.SyntaxNode) : SyntaxNodeWrapper {
-// 		//TODO:
-// 		return null
-// 	}
-
-// }
 
 
 
