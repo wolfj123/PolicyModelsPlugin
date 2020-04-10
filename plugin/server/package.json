@@ -17,7 +17,7 @@
 		"web-tree-sitter": "^0.16.2"
 	},
 	"scripts": {
-		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts"
+		"test": "mocha -r ts-node/register tests/unitTests/LanguageServices.test.ts && mocha -r ts-node/register tests/unitTests/server.spec.ts"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.11",

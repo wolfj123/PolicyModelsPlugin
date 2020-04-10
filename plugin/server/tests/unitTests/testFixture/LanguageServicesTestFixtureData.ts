@@ -1,4 +1,4 @@
-import * as TestTarget from "../../../src/LanguageServices"
+
 
 const decisinGraphDocs = 
 [
@@ -70,23 +70,3 @@ text :
 ]
 
 export { decisinGraphDocs, policySpaceDocs , policyValueInferenceDocs};
-
-const staticLanguageLibTestCases = 
-{
-	DecisionGraphServices:
-	{
-		class: TestTarget.DecisionGraphServices,
-		getAllDefinitionsOfNodeInDocument :
-		{	
-			method: TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument,
-			cases:
-			[
-				{
-					input: decisinGraphDocs[0],
-					output: [] //Range[]
-				}
-			]
-		}
-	}
-}
-

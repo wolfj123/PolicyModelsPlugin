@@ -22,7 +22,7 @@ import {
 	TextDocumentChangeEvent,
 	DidChangeWatchedFilesParams,
 } from 'vscode-languageserver';
-import * as Parser from 'web-tree-sitter'
+import * as Parser from 'web-tree-sitter';
 import { TextEdit } from 'vscode-languageserver-textdocument';
 import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
@@ -308,7 +308,7 @@ export abstract class FileManager {
 	}
 
 	updateTree(newTree : Parser.Tree) {
-		this.tree = tree
+		this.tree = newTree
 	}
 
 	isLocationInDoc(location : Location) : boolean {
