@@ -44,7 +44,7 @@ import { isNullOrUndefined } from 'util';
 //https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
-class LanguageServicesFacade {
+export class LanguageServicesFacade {
 	services : LanguageServices
 
 	constructor(docs : TextDocWithChanges[]) {
@@ -96,13 +96,13 @@ class LanguageServicesFacade {
 	}
 }
 
-enum PolicyModelsLanguage {
+export enum PolicyModelsLanguage {
 	PolicySpace,
 	DecisionGraph,
 	ValueInference
 }
 
-class LanguageServices {
+export class LanguageServices {
 	//Workspace
 	fileManagers : Map<DocumentUri, FileManager>
 
@@ -257,13 +257,13 @@ class LanguageServices {
 
 
 //****Entities****/
-enum PolicyModelEntityType {
+export enum PolicyModelEntityType {
 	DGNode,
 	Slot,
 	SlotValue
 }
 
-class PolicyModelEntity {
+export class PolicyModelEntity {
 	type : PolicyModelEntityType
 	name : string
 	source? : DocumentUri
@@ -297,7 +297,7 @@ class PolicyModelEntity {
 
 
 //****File Managers****/
-abstract class FileManager {
+export abstract class FileManager {
 	tree : Parser.Tree
 	uri : DocumentUri
 	//TODO: maybe some sort of cache?
@@ -363,7 +363,7 @@ abstract class FileManager {
 	abstract getAutoComplete(location : Location)
 }
 
-class FileManagerFactory {
+export class FileManagerFactory {
 	static create(doc : TextDocWithChanges, getParserByExtension : (string) => Parser, getLanguageByExtension : (string) => PolicyModelsLanguage) : FileManager {
 		const uri = doc.textDocument.uri
 		const extension = getFileExtension(uri)
@@ -386,7 +386,7 @@ class FileManagerFactory {
 	}
 }
 
-class DecisionGraphFileManager extends FileManager {
+export class DecisionGraphFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -448,7 +448,7 @@ class DecisionGraphFileManager extends FileManager {
 	}
 }
 
-class PolicySpaceFileManager extends FileManager {
+export class PolicySpaceFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -497,7 +497,7 @@ class PolicySpaceFileManager extends FileManager {
 	}
 }
 
-class ValueInferenceFileManager extends FileManager {
+export class ValueInferenceFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -547,7 +547,7 @@ class ValueInferenceFileManager extends FileManager {
 
 
 //****Language Specific Services****/
-class DecisionGraphServices {
+export class DecisionGraphServices {
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
