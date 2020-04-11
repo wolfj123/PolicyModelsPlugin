@@ -640,7 +640,7 @@ export class DecisionGraphServices {
 	}
 }
 
-class PolicySpaceServices {
+export class PolicySpaceServices {
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
@@ -676,7 +676,7 @@ class PolicySpaceServices {
 	}
 }
 
-class ValueInferenceServices {
+export class ValueInferenceServices {
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let identifiers : Parser.SyntaxNode[] = flatten(root.descendantsOfType("slot_reference")

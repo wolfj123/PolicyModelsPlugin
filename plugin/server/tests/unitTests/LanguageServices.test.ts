@@ -127,6 +127,776 @@ const staticLanguageLibTestCases =
 							output: [{end: {character: 9,line: 3},start: {character: 2,line: 3}}] //Range[]
 						}
 					]
+				},
+				{
+					method: TestTarget.DecisionGraphServices.getAllReferencesOfNodeInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotValueInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.DecisionGraphServices.getAllNodesInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			
+			]
+		},		
+		{
+			class: TestTarget.PolicySpaceServices,
+			run: function() {
+				this.methods.forEach(method => {
+					method.run()
+				});
+			},
+			methods:
+			[
+				{
+					method: TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.PolicySpaceServices.getAllSlotsInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			]
+		},		
+		{
+			class: TestTarget.ValueInferenceServices,
+			run: function() {
+				this.methods.forEach(method => {
+					method.run()
+				});
+			},
+			methods:
+			[
+				{
+					method: TestTarget.ValueInferenceServices.getAllReferencesOfSlotInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.ValueInferenceServices.getAllReferencesOfSlotValueInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.ValueInferenceServices.getAllValueInferencesInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				},
+				{
+					method: TestTarget.ValueInferenceServices.getAllInferencePairsInDocument,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			]
+		}
+	]
+}
+
+
+const FileManagerTestCases = {
+	classes : 
+	[
+		{
+			class: TestTarget.FileManagerFactory,
+			run: function() {
+				//TODO:
+			},
+			methods: 
+			[
+				{
+					method: TestTarget.FileManagerFactory.create,
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			]
+		}
+		,{
+			class: TestTarget.DecisionGraphFileManager,
+			run: function() {
+				//TODO:
+			},
+			methods:
+			[
+				{
+					method: "getAllDefinitions",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferences",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "createPolicyModelEntity",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsDGNode",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsSlot",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsSlotValue",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesDGNode",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesSlot",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesSlotValue",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getFoldingRanges",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAutoComplete",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			]
+		}
+		,{
+			class: TestTarget.PolicySpaceFileManager,
+			run: function() {
+				//TODO:
+			},
+			methods:
+			[
+				{
+					method: "createPolicyModelEntity",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsDGNode",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsSlot",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsSlotValue",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesDGNode",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesSlot",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesSlotValue",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getFoldingRanges",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAutoComplete",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			]
+		}
+		,{
+			class: TestTarget.ValueInferenceFileManager,
+			run: function() {
+				//TODO:
+			},
+			methods:
+			[
+				{
+					method: "createPolicyModelEntity",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsDGNode",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsSlot",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllDefinitionsSlotValue",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesDGNode",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesSlot",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAllReferencesSlotValue",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getFoldingRanges",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getAutoComplete",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+			]
+		}
+	]
+}
+
+
+const LanguageServicesTestCases = {
+	class : [
+		{
+			class: TestTarget.LanguageServices,
+			run: function() {
+				//TODO:
+			},
+			methods: 
+			[
+				{
+					method: "addDocs",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "updateDoc",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "removeDoc",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "initParsers",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getLanguageByExtension",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getParserByExtension",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "populateMaps",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getFileManagerByLocation",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getDeclarations",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getReferences",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getFoldingRanges",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
+				}
+				,{
+					method: "getCompletion",
+					run: function() {
+						//TODO:
+					},
+					cases:
+					[
+						{
+							input: [], //TODO:
+							output: [] //TODO:
+						}
+					]
 				}
 			]
 		}
