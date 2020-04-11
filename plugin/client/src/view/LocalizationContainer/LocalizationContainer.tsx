@@ -1,5 +1,7 @@
 import * as React from 'react';
 import Text from '../Text/Text';
+import FileContent from '../FileContent/FileContent';
+import CompareToPanel from '../CompareToPanel/CompareToPanel';
 import './LocalizationContainer.css';
 
 interface Props {
@@ -8,10 +10,14 @@ interface Props {
 }
 
 const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesData, onSave }) => {
-  console.log(onSave);
   const [selectedLanguage, setSelectedLanguage] = React.useState(languageFilesData[0]);
   const [selectedFile, setSelectedFile] = React.useState(languageFilesData[0].files[0]);
-  const languages = languageFilesData.map(data => {
+
+  const handleFileChange = (path,content)=>{
+    onSave(path,content);
+  }
+
+  const languagesMenu = languageFilesData.map(data => {
     const isSelected = selectedLanguage.language === data.language;
     return (
       <Text onClick={() => {setSelectedLanguage(data); setSelectedFile(data.files[0]);}} isSelected={isSelected}>
@@ -20,7 +26,8 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
     );
   });
 
-  const createFilesList = language =>  language.files.map(file => {
+
+  const filesList = selectedLanguage.files.map(file => {
     const isSelected = selectedFile.id === file.id;
     return (
       <Text onClick={() => setSelectedFile(file)} isSelected={isSelected}>
@@ -29,11 +36,13 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
     );
   });
 
+  const languagesNames = languageFilesData.map(languageData => languageData.language);
   return (
     <div className={'container'}>
-      <div className="panel">{languages}</div>
-      <div className="panel">{createFilesList(selectedLanguage)}</div>
-      <div className="panel">{'mark down'}</div>
+      <div className="panel">{languagesMenu}</div>
+      <div className="panel">{filesList}</div>
+      <div className="panel"><FileContent key={selectedFile.id} fileData={selectedFile} onFileChange={handleFileChange}/></div>
+      <div className="panel"><CompareToPanel key={selectedFile.id} languages={languagesNames} contentData={selectedFile} onSelectLanguage={language => console.log(`${language} is selected`)}/></div>
     </div>
   );
 };
