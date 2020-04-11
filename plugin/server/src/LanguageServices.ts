@@ -48,23 +48,25 @@ export class LanguageServicesFacade {
 	services : LanguageServices
 
 	constructor(docs : TextDocWithChanges[]) {
-		//TODO:
+		this.services = new LanguageServices(docs)
 	}
 
 	addDocs(docs : TextDocWithChanges[]) {
-		//TODO:
+		this.services.addDocs(docs)
 	}
 
 	updateDoc(doc : TextDocWithChanges){
-		//TODO:
+		this.services.updateDoc(doc)
 	}
 
 	removeDoc(doc : DocumentUri) {
-		//TODO:
+		this.services.removeDoc(doc)
 	}
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
-		//TODO:
+		let loc : Location //TODO:
+		let result : Location[] = this.services.getDeclarations(loc)
+
 		return null
 	}
 	// this fucntions are called when the request is first made from the server
