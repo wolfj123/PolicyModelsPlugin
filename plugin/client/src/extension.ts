@@ -14,8 +14,6 @@ import ViewLoader from './view/ViewLoader';
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
-var fs = require('fs');
-
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
