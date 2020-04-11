@@ -22,13 +22,9 @@ export function activate(context: ExtensionContext) {
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand('extension.viewconfig', () => {
-    const extensionPath = context.extensionPath;
-    const localization = new LocalizationController({ extensionPath });
-    localization.activateLocalization();
-  });
 
-  context.subscriptions.push(disposable);
+  addLocalizationCommand(context);
+
 
   activateSyntaxColoring(context);
 
@@ -89,7 +85,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
   );
 
   // create a new status bar item that we can now manage
-  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
   myStatusBarItem.command = myCommandId;
   subscriptions.push(myStatusBarItem);
 
@@ -105,6 +101,25 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
 function updateStatusBarItem(): void {
   myStatusBarItem.text = '$(play) Run Model';
   myStatusBarItem.show();
+}
+
+function addLocalizationCommand(context: vscode.ExtensionContext){
+  const localizationCommand = 'activateLocalization';
+  const {subscriptions} = context;
+  let disposable = vscode.commands.registerCommand(localizationCommand, () => {
+    const extensionPath = context.extensionPath;
+    const localization = new LocalizationController({ extensionPath });
+    localization.activateLocalization();
+  });
+  subscriptions.push(disposable);
+
+  let statusBarItem: vscode.StatusBarItem;
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100000);
+  statusBarItem.command = localizationCommand;
+  statusBarItem.text = '$(preserve-case) Localization ';
+  statusBarItem.show();
+  subscriptions.push(statusBarItem);
+
 }
 
 /**************************************/

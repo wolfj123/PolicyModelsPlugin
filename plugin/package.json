@@ -23,9 +23,8 @@
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
 		"onLanguage:localiztion",
-		"onLanguage:valueInference",
-		"onCommand:extension.viewconfig"
-	],
+		"onLanguage:valueInference"
+		],
 	"main": "./client/out/extension",
 	"contributes": {
 		"configuration": {
@@ -106,34 +105,18 @@
 					".vi"
 				],
 				"configuration": "./pspace-graph-language-configuration.json"
-			},
-			{
-				"id": "dummyconfig",
-				"aliases": [
-					"DummyConfig",
-					"dc"
-				],
-				"extensions": [
-					".json"
-				]
-			}
-		],
-		"commands": [
-			{
-				"command": "extension.viewconfig",
-				"title": "Display config JSON.",
-				"category": "Webview React"
 			}
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
 		"compile": "npm-run-all compile:*",
 		"watch": "npm-run-all -p watch:*",
 		"compile:extension": "tsc -b ./",
 		"compile:views": "webpack --mode development",
 		"watch:extension": "tsc -b -w ./",
 		"watch:views": "webpack --watch --mode development",
+
+		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test-server": "cd ./server && npm test && cd ../",
 		"test-client": "cd ./client && npm test && cd ../",
