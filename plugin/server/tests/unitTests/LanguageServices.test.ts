@@ -734,7 +734,7 @@ const FileManagerTestCases = {
 
 
 const LanguageServicesTestCases = {
-	class : [
+	classes : [
 		{
 			class: TestTarget.LanguageServices,
 			run: function() {
@@ -907,15 +907,30 @@ const LanguageServicesTestCases = {
 
 
 staticLanguageLibTestCases.classes.forEach(function(c) {
-  describe(c + ' suite', function() {
-    it('test1', function(done) {
-      c.run()
-      done();
-    });
-    // it('That thing should behave like that', function(done) {
-    //   foo.should.have.length(3);
-    //   done();
-    // });
-  });
+	describe(c.class.name + ' suite', function() {
+		it(c.class.name + ' tests', function(done) {
+		c.run()
+		done();
+		});
+	});
 });
 
+
+FileManagerTestCases.classes.forEach(function(c) {
+	describe(c.class.name + ' suite', function() {
+		it(c.class.name + ' tests', function(done) {
+		c.run()
+		done();
+		});
+	});
+});
+
+  
+LanguageServicesTestCases.classes.forEach(function(c) {
+	describe(c.class.name + ' suite', function() {
+		it(c.class.name + ' tests', function(done) {
+		c.run()
+		done();
+		});
+	});
+});
