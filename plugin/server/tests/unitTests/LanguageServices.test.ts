@@ -244,7 +244,7 @@ const staticLanguageLibTestCases =
 					cases:
 					[
 						{
-							input: ['dg1.dg', 'b1a'], //TODO:
+							input: ['dg1.dg', 'b1a'],
 							output: [
 								{
 								  end: {
@@ -293,7 +293,7 @@ const staticLanguageLibTestCases =
 					cases:
 					[
 						{
-							input: ['dg2.dg'], //TODO:
+							input: ['dg2.dg'],
 							output: [
 								{
 								  end: {
