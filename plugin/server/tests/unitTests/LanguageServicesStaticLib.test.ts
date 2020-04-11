@@ -171,7 +171,6 @@ const staticLanguageLibTestCases =
 						}
 					]
 				}
-				
 				,{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotInDocument,
 					title : "getAllReferencesOfSlotInDocument",
@@ -364,50 +363,200 @@ const staticLanguageLibTestCases =
 		},		
 		{
 			class: TestTarget.PolicySpaceServices,
-			getTests: function() : any[]{
-				return []
+			getTests: function() : any[] {
+				let result = []
+				this.methods.forEach(method => {
+					const getTree = function(testCase) : Promise<Parser.Tree> {
+						const input = testCase.input						
+						const uri : string = input[0]
+						let text = getTextFromUri(uri, TestData.policySpaceDocs)
+						return getParser(text, uri).then((parser) => {
+							return parser.parse(text)
+						})	
+					}
+					result.push(method.getTests(getTree))
+				});
+				return result
 			},
 			methods:
 			[
 				{
 					method: TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotInDocument,
+					title : "getAllDefinitionsOfSlotInDocument",
 					getTests: function(arg) {
-						//TODO:
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotInDocument(name, tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push({test: test , method: this})
+						})
+						return tests
 					},
 					cases:
 					[
 						{
-							input: [], //TODO:
-							output: [] //TODO:
+							input: ["ps1.pspace", "atomic_slot2"],
+							output: [
+								{
+								  end: {
+									character: 32,
+									line: 5
+								  },
+								  start: {
+									character: 0,
+									line: 5
+								  }
+								}
+							  ]
 						}
 					]
 				},
 				{
 					method: TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument,
+					title : "getAllDefinitionsOfSlotValueInDocument",
 					getTests: function(arg) {
-						//TODO:
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotInDocument(name, tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push({test: test , method: this})
+						})
+						return tests
 					},
 					cases:
 					[
 						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				},
-				{
-					method: TestTarget.PolicySpaceServices.getAllSlotsInDocument,
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
+							input: ["ps1.pspace", "slotval1"], 
+							output: [
+								{
+								  end: {
+									character: 17,
+									line: 3
+								  },
+								  start: {
+									character: 0,
+									line: 0
+								  }
+								},
+								{
+								  end: {
+									character: 17,
+									line: 8
+								  },
+								  start: {
+									character: 0,
+									line: 5
+								  }
+								},
+								{
+								  end: {
+									character: 17,
+									line: 13
+								  },
+								  start: {
+									character: 0,
+									line: 10
+								  }
+								},
+								{
+								  end: {
+									character: 90,
+									line: 15
+								  },
+								  start: {
+									character: 0,
+									line: 15
+								  }
+								}
+							  ]
 						}
 					]
 				}
+				,{
+					method: TestTarget.PolicySpaceServices.getAllSlotsInDocument,
+					title : "getAllSlotsInDocument",
+					getTests: function(arg) {
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									let result : Range[] = TestTarget.PolicySpaceServices.getAllSlotsInDocument(tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push({test: test , method: this})
+						})
+						return tests
+					},
+					cases:
+					[
+						{
+							input: ["ps1.pspace"], 
+							output: [
+								{
+								  end: {
+									character: 17,
+									line: 3
+								  },
+								  start: {
+									character: 0,
+									line: 0
+								  }
+								},
+								{
+								  end: {
+									character: 17,
+									line: 8
+								  },
+								  start: {
+									character: 0,
+									line: 5
+								  }
+								},
+								{
+								  end: {
+									character: 17,
+									line: 13
+								  },
+								  start: {
+									character: 0,
+									line: 10
+								  }
+								},
+								{
+								  end: {
+									character: 90,
+									line: 15
+								  },
+								  start: {
+									character: 0,
+									line: 15
+								  }
+								}
+							  ]
+						}
+					]
+				}
+
 			]
 		},		
 		{
@@ -475,612 +624,6 @@ const staticLanguageLibTestCases =
 }
 
 
-const FileManagerTestCases = {
-	classes : 
-	[
-		{
-			class: TestTarget.FileManagerFactory,
-			getTests: function() : any[]{
-				return [] //TODO:
-			},
-			methods: 
-			[
-				{
-					method: TestTarget.FileManagerFactory.create,
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-			]
-		}
-		,{
-			class: TestTarget.DecisionGraphFileManager,
-			getTests: function() : any[]{
-				return [] //TODO:
-			},
-			methods:
-			[
-				{
-					method: "getAllDefinitions",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferences",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "createPolicyModelEntity",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsDGNode",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsSlot",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsSlotValue",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesDGNode",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesSlot",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesSlotValue",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getFoldingRanges",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAutoComplete",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-			]
-		}
-		,{
-			class: TestTarget.PolicySpaceFileManager,
-			getTests: function() : any[]{
-				return [] //TODO:
-			},
-			methods:
-			[
-				{
-					method: "createPolicyModelEntity",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsDGNode",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsSlot",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsSlotValue",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesDGNode",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesSlot",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesSlotValue",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getFoldingRanges",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAutoComplete",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-			]
-		}
-		,{
-			class: TestTarget.ValueInferenceFileManager,
-			getTests: function() {
-				//TODO:
-			},
-			methods:
-			[
-				{
-					method: "createPolicyModelEntity",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsDGNode",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsSlot",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllDefinitionsSlotValue",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesDGNode",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesSlot",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAllReferencesSlotValue",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getFoldingRanges",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getAutoComplete",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-			]
-		}
-	]
-}
-
-
-const LanguageServicesTestCases = {
-	classes : [
-		{
-			class: TestTarget.LanguageServices,
-			getTests: function() {
-				//TODO:
-			},
-			methods: 
-			[
-				{
-					method: "addDocs",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "updateDoc",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "removeDoc",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "initParsers",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getLanguageByExtension",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getParserByExtension",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "populateMaps",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getFileManagerByLocation",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getDeclarations",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getReferences",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getFoldingRanges",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-				,{
-					method: "getCompletion",
-					getTests: function(arg) {
-						//TODO:
-					},
-					cases:
-					[
-						{
-							input: [], //TODO:
-							output: [] //TODO:
-						}
-					]
-				}
-			]
-		}
-	]
-}
-
-
-
-
 
 const stopOnError = true
 function runTestCasesWithMocha(TestGenerator) {
@@ -1121,25 +664,3 @@ function runTestCasesWithMocha(TestGenerator) {
 }
 
 runTestCasesWithMocha(staticLanguageLibTestCases)
-
-
-
-
-// FileManagerTestCases.classes.forEach(function(c) {
-// 	describe(c.class.name + ' suite', function() {
-// 		it('', function(done) {
-// 		c.run()
-// 		done();
-// 		});
-// 	});
-// });
-
-  
-// LanguageServicesTestCases.classes.forEach(function(c) {
-// 	describe(c.class.name + ' suite', function() {
-// 		it('', function(done) {
-// 		c.run()
-// 		done();
-// 		});
-// 	});
-// });

@@ -13,7 +13,7 @@
 				"--timeout",
 				"999999",
 				"--colors",
-				"${workspaceFolder}/server/tests/unitTests/LanguageServices.test.ts",
+				"${workspaceFolder}/server/tests/unitTests/StaticLanguageServices.test.ts",
 			],
 			"console": "integratedTerminal",
 			"internalConsoleOptions": "neverOpen",
