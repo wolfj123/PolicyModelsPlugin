@@ -18,8 +18,10 @@ text :
 [todo: specify mice]
 [>sec-frogs< section:
   {title: Add frogs}
-  [todo: Add frog 1]
-  [todo: Add frog 2]
+  [set: 
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+=
+	{b2b, b1a}]
 ]
 [set: Rice=Full]
 [end]		

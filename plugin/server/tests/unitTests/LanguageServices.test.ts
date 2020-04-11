@@ -64,7 +64,7 @@ const parsersInfo = 	//TODO: maybe extract this info from package.json
 
 function getTextFromUri(uri : string, data) : string {
 	let dataEntry = data.find(e => e.uri === uri)
-	//if(isNullOrUndefined(dataEntry)) { console.log(uri)}
+	if(isNullOrUndefined(dataEntry)) {return null}
 	return dataEntry.text
 }
 
@@ -98,7 +98,7 @@ const staticLanguageLibTestCases =
 	[
 		{
 			class: TestTarget.DecisionGraphServices,
-			getTests: function() {
+			getTests: function() : any[] {
 				let result = []
 				this.methods.forEach(method => {
 					const getTree = function(testCase) : Promise<Parser.Tree> {
@@ -111,7 +111,7 @@ const staticLanguageLibTestCases =
 					}
 					result.push(method.getTests(getTree))
 				});
-				return result 
+				return result
 			},
 			methods:
 			[
@@ -169,9 +169,7 @@ const staticLanguageLibTestCases =
 						}
 					]
 				}
-
-			]}]}
-				/*
+				
 				,{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotInDocument,
 					getTests: function(arg) {
@@ -194,8 +192,29 @@ const staticLanguageLibTestCases =
 					cases:
 					[
 						{
-							input: [], //TODO:
-							output: [] //TODO:
+							input: ['dg1.dg', 'Mid1'],
+							output: [
+								{
+								  end: {
+									character: 14,
+									line: 14
+								  },
+								  start: {
+									character: 10,
+									line: 14
+								  }
+								},
+								{
+								  end: {
+									character: 19,
+									line: 15
+								  },
+								  start: {
+									character: 15,
+									line: 15
+								  }
+								}
+							  ]
 						}
 					]
 				},
@@ -221,8 +240,29 @@ const staticLanguageLibTestCases =
 					cases:
 					[
 						{
-							input: [], //TODO:
-							output: [] //TODO:
+							input: ['dg1.dg', 'b1a'], //TODO:
+							output: [
+								{
+								  end: {
+									character: 26,
+									line: 14
+								  },
+								  start: {
+									character: 23,
+									line: 14
+								  }
+								},
+								{
+								  end: {
+									character: 10,
+									line: 16
+								  },
+								  start: {
+									character: 7,
+									line: 16
+								  }
+								}
+							]
 						}
 					]
 				},
@@ -248,8 +288,69 @@ const staticLanguageLibTestCases =
 					cases:
 					[
 						{
-							input: [], //TODO:
-							output: [] //TODO:
+							input: ['dg2.dg'], //TODO:
+							output: [
+								{
+								  end: {
+									character: 22,
+									line: 0
+								  },
+								  start: {
+									character: 0,
+									line: 0
+								  }
+								},
+								{
+								  end: {
+									character: 33,
+									line: 4
+								  },
+								  start: {
+									character: 0,
+									line: 1
+								  }
+								},
+								{
+								  end: {
+									character: 47,
+									line: 2
+								  },
+								  start: {
+									character: 0,
+									line: 2
+								  }
+								},
+								{
+								  end: {
+									character: 32,
+									line: 4
+								  },
+								  start: {
+									character: 0,
+									line: 3
+								  }
+								},
+								{
+									end: {
+									  character: 31,
+									  line: 4
+									},
+									start: {
+									  character: 1,
+									  line: 4
+									}
+								},
+								{
+									end: {
+									  character: 30,
+									  line: 4
+									},
+									start: {
+									  character: 7,
+									  line: 4
+									}
+								}
+							]
 						}
 					]
 				}
@@ -258,16 +359,14 @@ const staticLanguageLibTestCases =
 		},		
 		{
 			class: TestTarget.PolicySpaceServices,
-			run: function() {
-				this.methods.forEach(method => {
-					method.run()
-				});
+			getTests: function() : any[]{
+				return []
 			},
 			methods:
 			[
 				{
 					method: TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -280,7 +379,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -293,7 +392,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.PolicySpaceServices.getAllSlotsInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -308,16 +407,14 @@ const staticLanguageLibTestCases =
 		},		
 		{
 			class: TestTarget.ValueInferenceServices,
-			run: function() {
-				this.methods.forEach(method => {
-					method.run()
-				});
+			getTests: function() : any[]{
+				return []
 			},
 			methods:
 			[
 				{
 					method: TestTarget.ValueInferenceServices.getAllReferencesOfSlotInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -330,7 +427,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.ValueInferenceServices.getAllReferencesOfSlotValueInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -343,7 +440,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.ValueInferenceServices.getAllValueInferencesInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -356,7 +453,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.ValueInferenceServices.getAllInferencePairsInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -371,21 +468,21 @@ const staticLanguageLibTestCases =
 		}
 	]
 }
-*/
+
 
 const FileManagerTestCases = {
 	classes : 
 	[
 		{
 			class: TestTarget.FileManagerFactory,
-			run: function() {
-				//TODO:
+			getTests: function() : any[]{
+				return [] //TODO:
 			},
 			methods: 
 			[
 				{
 					method: TestTarget.FileManagerFactory.create,
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -400,14 +497,14 @@ const FileManagerTestCases = {
 		}
 		,{
 			class: TestTarget.DecisionGraphFileManager,
-			run: function() {
-				//TODO:
+			getTests: function() : any[]{
+				return [] //TODO:
 			},
 			methods:
 			[
 				{
 					method: "getAllDefinitions",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -420,7 +517,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferences",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -433,7 +530,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "createPolicyModelEntity",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -446,7 +543,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsDGNode",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -459,7 +556,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsSlot",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -472,7 +569,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsSlotValue",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -485,7 +582,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesDGNode",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -498,7 +595,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesSlot",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -511,7 +608,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesSlotValue",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -524,7 +621,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getFoldingRanges",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -537,7 +634,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAutoComplete",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -552,14 +649,14 @@ const FileManagerTestCases = {
 		}
 		,{
 			class: TestTarget.PolicySpaceFileManager,
-			run: function() {
-				//TODO:
+			getTests: function() : any[]{
+				return [] //TODO:
 			},
 			methods:
 			[
 				{
 					method: "createPolicyModelEntity",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -572,7 +669,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsDGNode",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -585,7 +682,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsSlot",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -598,7 +695,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsSlotValue",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -611,7 +708,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesDGNode",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -624,7 +721,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesSlot",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -637,7 +734,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesSlotValue",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -650,7 +747,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getFoldingRanges",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -663,7 +760,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAutoComplete",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -678,14 +775,14 @@ const FileManagerTestCases = {
 		}
 		,{
 			class: TestTarget.ValueInferenceFileManager,
-			run: function() {
+			getTests: function() {
 				//TODO:
 			},
 			methods:
 			[
 				{
 					method: "createPolicyModelEntity",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -698,7 +795,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsDGNode",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -711,7 +808,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsSlot",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -724,7 +821,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllDefinitionsSlotValue",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -737,7 +834,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesDGNode",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -750,7 +847,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesSlot",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -763,7 +860,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAllReferencesSlotValue",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -776,7 +873,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getFoldingRanges",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -789,7 +886,7 @@ const FileManagerTestCases = {
 				}
 				,{
 					method: "getAutoComplete",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -810,14 +907,14 @@ const LanguageServicesTestCases = {
 	classes : [
 		{
 			class: TestTarget.LanguageServices,
-			run: function() {
+			getTests: function() {
 				//TODO:
 			},
 			methods: 
 			[
 				{
 					method: "addDocs",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -830,7 +927,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "updateDoc",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -843,7 +940,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "removeDoc",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -856,7 +953,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "initParsers",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -869,7 +966,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getLanguageByExtension",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -882,7 +979,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getParserByExtension",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -895,7 +992,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "populateMaps",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -908,7 +1005,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getFileManagerByLocation",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -921,7 +1018,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getDeclarations",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -934,7 +1031,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getReferences",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -947,7 +1044,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getFoldingRanges",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -960,7 +1057,7 @@ const LanguageServicesTestCases = {
 				}
 				,{
 					method: "getCompletion",
-					run: function(arg) {
+					getTests: function(arg) {
 						//TODO:
 					},
 					cases:
@@ -978,20 +1075,40 @@ const LanguageServicesTestCases = {
 
 
 
-
+const stopOnError = true
 staticLanguageLibTestCases.classes.forEach(function(c) {
+	let errors : Error[] = []
 	const classMethodTests = c.getTests()
 	// @ts-ignore
 	classMethodTests.forEach(methodTests =>{
 		describe(c.class.name + ' suite', function() {
 			methodTests.forEach(test => {
 				it('', function(done) {
-					test()
-					done();
+					if(stopOnError) {
+						test()
+						done();
+					}
+					else {
+						try {
+							test()
+						} catch (error) {
+							errors.push(error)
+						}
+						done();
+					}
 				});
 			})
 		})
 	})
+
+	if(!stopOnError) {
+		errors.forEach(err => {
+			console.log((err as Error).message)
+		})
+		if(errors.length){
+			throw errors[0]
+		}
+	}
 });
 
 
