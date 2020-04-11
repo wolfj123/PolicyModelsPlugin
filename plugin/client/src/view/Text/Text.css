@@ -1,0 +1,12 @@
+.selectedText{
+	font-weight: bold;
+	color: #b89090;
+}
+
+.clickable:hover {
+	cursor:pointer;
+ }
+
+ .text{
+	 padding: 5px;
+ }

@@ -1,0 +1,16 @@
+.container{
+	padding-top: 30px;
+	display: flex;
+	flex-direction: row;
+	align-items: start;
+	align-items: start;
+}
+
+.panel{
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	align-items: left;
+	padding: 0 12px;
+}
+

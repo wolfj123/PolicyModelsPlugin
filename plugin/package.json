@@ -12,15 +12,6 @@
 	"categories": [
 		"Other"
 	],
-	"scripts": {
-		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test-server": "cd ./server && npm test && cd ../",
-		"test-client": "cd ./client && npm test && cd ../",
-		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh  "
-	},
 	"keywords": [
 		"multi-root ready"
 	],
@@ -139,15 +130,34 @@
 			}
 		]
 	},
+	"scripts": {
+		"compile": "npm-run-all compile:*",
+		"watch": "npm-run-all -p watch:*",
+		"compile:extension": "tsc -b ./",
+		"compile:views": "webpack --mode development",
+		"watch:extension": "tsc -b -w ./",
+		"watch:views": "webpack --watch --mode development",
+		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run compile",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test-server": "cd ./server && npm test && cd ../",
+		"test-client": "cd ./client && npm test && cd ../",
+		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh  "
+	},
 	"devDependencies": {
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.12.32",
+		"css-loader": "^3.4.2",
+		"npm-run-all": "^4.1.5",
+		"style-loader": "^1.1.3",
+		"ts-loader": "^6.2.2",
 		"tree-sitter-cli": "^0.16.5",
 		"tree-sitter-valueinference": "^0.1.0",
 		"tree-sitter-policyspace": "^0.1.1",
 		"tree-sitter-decisiongraph": "^0.1.1",
 		"tslint": "^5.20.1",
-		"typescript": "^3.8.3"
+		"typescript": "^3.8.3",
+		"webpack": "^4.42.1",
+		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
 		"tree-sitter": "^0.16.0",
