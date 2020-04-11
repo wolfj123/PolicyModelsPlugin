@@ -9,16 +9,17 @@ type TestCase = [string, ...Assert[]]
 const policyspaceTests: TestCase[] = [
     [
         `Storage : one of clear, serverEncrypt.`, 
-        ['Storage', 'entity.name.function'], ['clear', 'variable'], ['serverEncrypt', 'variable']
+        ['Storage', 'entity.name.type'], ['clear', 'constant.numeric'], ['serverEncrypt', 'constant.numeric']
     ],
 ]
 test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace)
 
 async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunction) {
     await Parser.init()
-    const parser = new Parser()
+    const parser = new Parser() 
+    console.log(__dirname)
     const lang = await Parser.Language.load(wasm)
-    parser.setLanguage(lang)
+    parser.setLanguage(lang) 
     for (const [src, ...expect] of testCases) {
         const tree = parser.parse(src)
         const scope2ranges = color(tree, [{start: 0, end: tree.rootNode.endPosition.row}])
