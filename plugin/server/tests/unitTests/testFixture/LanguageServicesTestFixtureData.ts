@@ -25,6 +25,17 @@ text :
 [end]		
 `
 	}
+	,{
+	
+		uri : "dg2.dg",
+		text : 
+`[#import dg : file.dg]
+[>findme< ask:
+{text: Do the data contain health information?}
+{answers:
+	{yes: [ >yo< call: dg>findme]}}]
+`		
+	}
 ]
 
 

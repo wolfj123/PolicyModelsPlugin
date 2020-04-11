@@ -64,6 +64,7 @@ const parsersInfo = 	//TODO: maybe extract this info from package.json
 
 function getTextFromUri(uri : string, data) : string {
 	let dataEntry = data.find(e => e.uri === uri)
+	//if(isNullOrUndefined(dataEntry)) { console.log(uri)}
 	return dataEntry.text
 }
 
@@ -83,7 +84,8 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 	await Parser.init()
 	const extension : string = getFileExtension(uri)
 	const parser = new Parser()
-	let path = "../parsers/"
+	//let path = "../parsers/"
+	let path = "./parsers/"
 	const wasm = path.concat(getParserWasmPathByExtension(extension))
 	const lang = await Parser.Language.load(wasm)
 	parser.setLanguage(lang)
@@ -96,9 +98,10 @@ const staticLanguageLibTestCases =
 	[
 		{
 			class: TestTarget.DecisionGraphServices,
-			run: function() {
+			getTests: function() {
+				let result = []
 				this.methods.forEach(method => {
-					 const getTree = function(testCase) : Promise<Parser.Tree> {
+					const getTree = function(testCase) : Promise<Parser.Tree> {
 						const input = testCase.input						
 						const uri : string = input[0]
 						let text = getTextFromUri(uri, TestData.decisinGraphDocs)
@@ -106,26 +109,30 @@ const staticLanguageLibTestCases =
 							return parser.parse(text)
 						})	
 					}
-					method.run(getTree)
+					result.push(method.getTests(getTree))
 				});
+				return result 
 			},
 			methods:
 			[
 				{
 					method: TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument,
-					run: function(arg) {
+					getTests: function(arg) {
+						let tests = []
 						this.cases.forEach(testCase => {
 							const treePromise : Promise<Parser.Tree> = arg(testCase)
-							treePromise.then((tree) => {
-								const input = testCase.input						
-								const output = testCase.output
-								const name : string = input[1]
-								let result : Range[] = TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, tree)
-								assert.deepEqual(result, output)
-								// console.log(result)
-								// console.log(output)
-							})
-						});		
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push(test)
+						})
+						return tests
 					},
 					cases:
 					[
@@ -137,21 +144,52 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfNodeInDocument,
-					run: function(arg) {
-						//TODO:
+					getTests: function(arg) {
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.DecisionGraphServices.getAllReferencesOfNodeInDocument(name, tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push(test)
+						})
+						return tests
 					},
 					cases:
 					[
 						{
-							input: [], //TODO:
-							output: [] //TODO:
+							input: ['dg2.dg', 'findme'], 
+							output: [{end: {character: 29,line: 4},start: {character: 20,line: 4}}] 
 						}
 					]
-				},
-				{
+				}
+
+			]}]}
+				/*
+				,{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotInDocument,
-					run: function(arg) {
-						//TODO:
+					getTests: function(arg) {
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.DecisionGraphServices.getAllReferencesOfSlotInDocument(name, tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push(test)
+						})
+						return tests
 					},
 					cases:
 					[
@@ -163,8 +201,22 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotValueInDocument,
-					run: function(arg) {
-						//TODO:
+					getTests: function(arg) {
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.DecisionGraphServices.getAllReferencesOfSlotValueInDocument(name, tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push(test)
+						})
+						return tests
 					},
 					cases:
 					[
@@ -176,8 +228,22 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.DecisionGraphServices.getAllNodesInDocument,
-					run: function(arg) {
-						//TODO:
+					getTests: function(arg) {
+						let tests = []
+						this.cases.forEach(testCase => {
+							const treePromise : Promise<Parser.Tree> = arg(testCase)
+							let test = function(){
+								treePromise.then((tree) => {
+									const input = testCase.input						
+									const output = testCase.output
+									const name : string = input[1]
+									let result : Range[] = TestTarget.DecisionGraphServices.getAllNodesInDocument(tree)
+									assert.deepEqual(result, output)
+								})
+							}
+							tests.push(test)
+						})
+						return tests
 					},
 					cases:
 					[
@@ -305,7 +371,7 @@ const staticLanguageLibTestCases =
 		}
 	]
 }
-
+*/
 
 const FileManagerTestCases = {
 	classes : 
@@ -914,30 +980,36 @@ const LanguageServicesTestCases = {
 
 
 staticLanguageLibTestCases.classes.forEach(function(c) {
-	describe(c.class.name + ' suite', function() {
-		it(c.class.name + ' tests', function(done) {
-		c.run()
-		done();
-		});
-	});
+	const classMethodTests = c.getTests()
+	// @ts-ignore
+	classMethodTests.forEach(methodTests =>{
+		describe(c.class.name + ' suite', function() {
+			methodTests.forEach(test => {
+				it('', function(done) {
+					test()
+					done();
+				});
+			})
+		})
+	})
 });
 
 
-FileManagerTestCases.classes.forEach(function(c) {
-	describe(c.class.name + ' suite', function() {
-		it(c.class.name + ' tests', function(done) {
-		c.run()
-		done();
-		});
-	});
-});
+// FileManagerTestCases.classes.forEach(function(c) {
+// 	describe(c.class.name + ' suite', function() {
+// 		it('', function(done) {
+// 		c.run()
+// 		done();
+// 		});
+// 	});
+// });
 
   
-LanguageServicesTestCases.classes.forEach(function(c) {
-	describe(c.class.name + ' suite', function() {
-		it(c.class.name + ' tests', function(done) {
-		c.run()
-		done();
-		});
-	});
-});
+// LanguageServicesTestCases.classes.forEach(function(c) {
+// 	describe(c.class.name + ' suite', function() {
+// 		it('', function(done) {
+// 		c.run()
+// 		done();
+// 		});
+// 	});
+// });

@@ -815,7 +815,7 @@ async function demoDecisionGraphGetAllReferencesOfNodeInDocument() {
 	// result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree)
 	// console.log(result)
 
-	sourceCode = ` [#import dg : file.dg]
+	sourceCode = `[#import dg : file.dg]
 	[>bb< ask:
 	{text: Do the data contain health information?}
 	{answers:
