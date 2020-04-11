@@ -12,3 +12,16 @@ export interface ICommand {
 export enum CommandAction {
   Save
 }
+
+export interface File {
+	name: string;
+	content: string;
+	extension: string;
+	path: string;
+	id: number;
+}
+
+export interface LanguageData {
+  files: File[];
+  language: string;
+}

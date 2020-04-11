@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import ViewLoader from '../view/ViewLoader';
+import {LanguageData,File} from '../view/Types/model';
 
 var fs = require('fs');
 var PATH = require('path');
-
 let id = 0;
 
 const systemFilesNameToFilter = ['.DS_Store'];
@@ -23,7 +23,6 @@ export default class LocalizationController {
   activateLocalization() {
 		vscode.window.showInformationMessage('Localization is active!');
 		const languagesFilesData = this.getLanguagesFilesData();
-
     const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile);
   }
 
@@ -31,12 +30,12 @@ export default class LocalizationController {
     return direntFiles.filter(file => !systemFilesNameToFilter.includes(file.name));
   }
 
-  createLanguageFilesData(languageDir) {
+  createLanguageFilesData(languageDir) :LanguageData {
     const allFiles = this.getAllFiles(this._localizationPath + '/' + languageDir.name);
     return { language: languageDir.name, files: allFiles };
   }
 
-  getAllFiles(path) {
+  getAllFiles(path: string) :File[] {
     let direntFiles;
     try {
       direntFiles = fs.readdirSync(path, { withFileTypes: true });
@@ -48,6 +47,7 @@ export default class LocalizationController {
     }
 
     const filteredFiles = this.filterSystemFiles(direntFiles);
+
     const filesData = filteredFiles.reduce((dataAcc, dirent) => {
       const { name } = dirent;
       const filePath = path + '/' + name;
@@ -85,7 +85,7 @@ export default class LocalizationController {
     return content;
 	}
 
-	getLanguagesFilesData(){
+	getLanguagesFilesData() : LanguageData[]{
 		let direntFiles;
     try {
       direntFiles = fs.readdirSync(this._localizationPath, { withFileTypes: true });

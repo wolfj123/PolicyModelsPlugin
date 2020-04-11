@@ -2,10 +2,11 @@ import * as React from 'react';
 import Text from '../Text/Text';
 import FileContent from '../FileContent/FileContent';
 import CompareToPanel from '../CompareToPanel/CompareToPanel';
+import {LanguageData} from '../Types/model';
 import './LocalizationContainer.css';
 
 interface Props {
-  languageFilesData: any;
+  languageFilesData: LanguageData[];
   onSave(path: string, content: string): void;
 }
 
