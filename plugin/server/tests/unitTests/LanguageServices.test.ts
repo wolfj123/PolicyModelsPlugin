@@ -117,6 +117,7 @@ const staticLanguageLibTestCases =
 			[
 				{
 					method: TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument,
+					title : "getAllDefinitionsOfNodeInDocument",
 					getTests: function(arg) {
 						let tests = []
 						this.cases.forEach(testCase => {
@@ -130,7 +131,7 @@ const staticLanguageLibTestCases =
 									assert.deepEqual(result, output)
 								})
 							}
-							tests.push(test)
+							tests.push({test: test , method: this})
 						})
 						return tests
 					},
@@ -144,6 +145,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfNodeInDocument,
+					title : "getAllReferencesOfNodeInDocument",
 					getTests: function(arg) {
 						let tests = []
 						this.cases.forEach(testCase => {
@@ -157,7 +159,7 @@ const staticLanguageLibTestCases =
 									assert.deepEqual(result, output)
 								})
 							}
-							tests.push(test)
+							tests.push({test: test , method: this})
 						})
 						return tests
 					},
@@ -172,6 +174,7 @@ const staticLanguageLibTestCases =
 				
 				,{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotInDocument,
+					title : "getAllReferencesOfSlotInDocument",
 					getTests: function(arg) {
 						let tests = []
 						this.cases.forEach(testCase => {
@@ -185,7 +188,7 @@ const staticLanguageLibTestCases =
 									assert.deepEqual(result, output)
 								})
 							}
-							tests.push(test)
+							tests.push({test: test , method: this})
 						})
 						return tests
 					},
@@ -220,6 +223,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.DecisionGraphServices.getAllReferencesOfSlotValueInDocument,
+					title : "getAllReferencesOfSlotValueInDocument",
 					getTests: function(arg) {
 						let tests = []
 						this.cases.forEach(testCase => {
@@ -233,7 +237,7 @@ const staticLanguageLibTestCases =
 									assert.deepEqual(result, output)
 								})
 							}
-							tests.push(test)
+							tests.push({test: test , method: this})
 						})
 						return tests
 					},
@@ -268,6 +272,7 @@ const staticLanguageLibTestCases =
 				},
 				{
 					method: TestTarget.DecisionGraphServices.getAllNodesInDocument,
+					title : "getAllNodesInDocument",
 					getTests: function(arg) {
 						let tests = []
 						this.cases.forEach(testCase => {
@@ -281,7 +286,7 @@ const staticLanguageLibTestCases =
 									assert.deepEqual(result, output)
 								})
 							}
-							tests.push(test)
+							tests.push({test: test , method: this})
 						})
 						return tests
 					},
@@ -1075,41 +1080,49 @@ const LanguageServicesTestCases = {
 
 
 
+
+
 const stopOnError = true
-staticLanguageLibTestCases.classes.forEach(function(c) {
-	let errors : Error[] = []
-	const classMethodTests = c.getTests()
-	// @ts-ignore
-	classMethodTests.forEach(methodTests =>{
-		describe(c.class.name + ' suite', function() {
-			methodTests.forEach(test => {
-				it('', function(done) {
-					if(stopOnError) {
-						test()
-						done();
-					}
-					else {
-						try {
-							test()
-						} catch (error) {
-							errors.push(error)
+function runTestCasesWithMocha(TestGenerator) {
+	TestGenerator.classes.forEach(function(c) {
+		let errors : Error[] = []
+		const classMethodTests = c.getTests()
+		// @ts-ignore
+		classMethodTests.forEach(methodTests =>{
+			describe(c.class.name + ' suite', function() {
+				methodTests.forEach(test => {
+					it(test.method.title, function(done) {
+						if(stopOnError) {
+							test.test()
+							done();
 						}
-						done();
-					}
-				});
+						else {
+							try {
+								test.test()
+							} catch (error) {
+								errors.push(error)
+							}
+							done();
+						}
+					});
+				})
 			})
 		})
-	})
-
-	if(!stopOnError) {
-		errors.forEach(err => {
-			console.log((err as Error).message)
-		})
-		if(errors.length){
-			throw errors[0]
+	
+		if(!stopOnError) {
+			errors.forEach(err => {
+				console.log((err as Error).message)
+			})
+			if(errors.length){
+				throw errors[0]
+			}
 		}
-	}
-});
+	});
+}
+
+runTestCasesWithMocha(staticLanguageLibTestCases)
+
+
 
 
 // FileManagerTestCases.classes.forEach(function(c) {
