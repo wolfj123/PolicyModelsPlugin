@@ -1,79 +1,76 @@
 import {
-	TextDocuments,
-	TextDocumentChangeEvent,
-	DidChangeWatchedFilesParams,
-	TextDocumentIdentifier,
+	CompletionItem,
+	CompletionList,
+	LocationLink,
+	WorkspaceEdit,
+	ReferenceParams,
+	DeclarationParams,
+	RenameParams,
+	FoldingRange,
+	FoldingRangeParams,
+	TextDocumentPositionParams,
+	PrepareRenameParams,
+	Location
 } from 'vscode-languageserver';
 
-import { Analyzer } from './Analyzer';
-import { allParamsTypes, allSolutionTypes, languagesIds } from './Utils';
-import { CreateAnalyzer } from './Factory';
-import { TextDocWithChanges } from './DocumentChangesManager';
+import { TextDocumentManager } from './DocumentManager';
 
-export interface SolverInt<T extends TextDocWithChanges> {
-	solve(params:any, requestName: string, textDocument): any;
-	onDidChangeContent(change: TextDocumentChangeEvent<T>): void;
-	onDidOpen(change: TextDocumentChangeEvent<T>): void;
-	onDidSave(change: TextDocumentChangeEvent<T>): void;
-	onDidClose(change: TextDocumentChangeEvent<T>): void;
-	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
+// export interface SolverInt<T extends TextDocWithChanges> {
+// 	solve(params:any, requestName: string, textDocument): any;
+// 	onDidChangeContent(change: TextDocumentChangeEvent<T>): void;
+// 	onDidOpen(change: TextDocumentChangeEvent<T>): void;
+// 	onDidSave(change: TextDocumentChangeEvent<T>): void;
+// 	onDidClose(change: TextDocumentChangeEvent<T>): void;
+// 	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
+// }
+
+export interface SolverInt {
+	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;
+	onCompletionResolve(params: CompletionItem, uri: string): CompletionItem;
+	onDefinition(params:DeclarationParams, uri: string): LocationLink [];
+	onPrepareRename(params:PrepareRenameParams, uri: string):  Range ;
+	onRenameRequest(params:RenameParams, uri: string): WorkspaceEdit;
+	onReferences(params: ReferenceParams, uri: string): Location[];
+	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange[];
 }
 
-interface analyzerHolder {
-	uri: string,
-	language: languagesIds,
-	analyzer: Analyzer
-}
 
-export class Solver<T  extends TextDocWithChanges> implements SolverInt<T> {
-	private documentsManager: TextDocuments<T>; // probalby will be extended 
-	private anlayzers: analyzerHolder[]
+export class PMSolver implements SolverInt{
 
-	constructor(documentsManager: TextDocuments<T>){
-		this.documentsManager = documentsManager;
-		this.anlayzers = [];
-		//TODO create analyzers for all files in folder
+	private _documentManager: TextDocumentManager;
+	private _languageFacade;
+
+	constructor(docManager: TextDocumentManager){
+		this._documentManager = docManager;
+		//TODO init language Facade
 	}
-
-	public solve(params:any, requestName: string, textDocument:TextDocumentIdentifier): allSolutionTypes {	
-				
-		let currAnalyzer = this.anlayzers.find(x => x.uri === textDocument.uri);
-
-		let toActivate: (params: allParamsTypes) => allSolutionTypes = currAnalyzer.analyzer[requestName];
-		if (toActivate === undefined) {
-			//TODO error
-			return null;
-		}
-
-		let partialAnswer =  toActivate(params);
-
-		return partialAnswer;
-	}
-
-	// TEMP functions until fix doc manager
-
-	onDidOpen(change: TextDocumentChangeEvent<T>): void {
-		let langId = languagesIds [change.document.textDocument.languageId];
-		let toAdd: analyzerHolder = {
-			uri: change.document.textDocument.uri,
-			language: langId,
-			analyzer: CreateAnalyzer(change.document)
-		}
-
-		this.anlayzers.push(toAdd);
-	}
-
-	onDidChangeContent(change: TextDocumentChangeEvent<T>): void {
-		//TODO
-	}
-
-	onDidChangeWatchedFiles(change:DidChangeWatchedFilesParams): void {
-		//TODO
-	}
-	onDidSave(change: TextDocumentChangeEvent<T>): void {
+	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList {
 		//throw new Error('Method not implemented.');
+		return null;
 	}
-	onDidClose(change: TextDocumentChangeEvent<T>): void {
+	onCompletionResolve(params: CompletionItem, uri: string): CompletionItem {
 		//throw new Error('Method not implemented.');
+		return null;
 	}
+	onDefinition(params: DeclarationParams, uri: string): LocationLink[] {
+		//throw new Error('Method not implemented.');
+		return null;
+	}
+	onPrepareRename(params: PrepareRenameParams, uri: string): Range {
+		//throw new Error('Method not implemented.');
+		return null;
+	}
+	onRenameRequest(params: RenameParams, uri: string): WorkspaceEdit {
+		//throw new Error('Method not implemented.');
+		return null;
+	}
+	onReferences(params: ReferenceParams, uri: string): Location[] {
+		//throw new Error('Method not implemented.');
+		return null;
+	}
+	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange[] {
+		//throw new Error('Method not implemented.');
+		return null;
+	}
+	
 }

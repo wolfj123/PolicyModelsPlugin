@@ -4,6 +4,9 @@ import { expect } from 'chai';
 
 describe('auto complete test', () => {
 
+  it ('what' , ()=>{
+    expect(1).equals(3);
+  });
 
   // it('should contain known policy langauge words', () => {
   //   const initalCompleteItems = getInitialCompleteItems();
