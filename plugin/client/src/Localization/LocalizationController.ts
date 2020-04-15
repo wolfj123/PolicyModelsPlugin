@@ -4,7 +4,7 @@ import {LanguageData,File} from '../view/Types/model';
 
 var fs = require('fs');
 var PATH = require('path');
-let id = 0;
+
 
 const systemFilesNameToFilter = ['.DS_Store'];
 const e = (message, functionName) => console.error(`Localization Error: ${message}. \n Function: ${functionName}`);
@@ -54,7 +54,7 @@ export default class LocalizationController {
       let currData;
       if (dirent.isFile()) {
 				const content = this.readFromFile(filePath);
-        currData = [{ id: id++, name,content, path: filePath, extension: PATH.extname(filePath) }];
+        currData = [{ id: filePath, name,content, path: filePath, extension: PATH.extname(filePath) }];
       } else if (dirent.isDirectory()) {
         currData = this.getAllFiles(filePath);
       } else {
@@ -66,7 +66,11 @@ export default class LocalizationController {
   }
 
   writeToFile(path, newData) {
+    try{
     fs.writeFileSync(path, newData);
+    }catch(err){
+      console.log(err);
+    }
 	}
 
 	onSaveFile = (path, newData) =>{

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import AnswersFileContent from './AnswersFileContent';
+import SpaceFileContnet from './SpaceFileContnet';
 import { File } from '../Types/model';
 const ReactMarkdown = require('react-markdown');
 
@@ -8,26 +9,27 @@ interface Props {
   onFileChange(path: string, content: string): void;
 }
 
-const FileContent: React.FunctionComponent<Props> = (props) => {
-  const { name, content, extension, path } = props.fileData;
+const FileContent: React.FunctionComponent<Props> = props => {
+  const { name, content, /* extension, */ path, id } = props.fileData;
 
-  const handleFileChange = (content) => {
+  const handleFileChange = content => {
     props.onFileChange(path, content);
   };
 
   let RendererComponent;
-  if (name == 'answers.txt') {
-    RendererComponent = <AnswersFileContent content={content} onFileChange={handleFileChange} />;
-  } else {
-    RendererComponent = <ReactMarkdown source={content} />;
+  switch (name) {
+    case 'answers.txt':
+      RendererComponent = <AnswersFileContent key={id} content={content} onFileChange={handleFileChange} />;
+      break;
+    case 'space.md':
+      RendererComponent = <SpaceFileContnet key={id} content={content} onFileChange={handleFileChange} />;
+      break;
+    default:
+      RendererComponent = <ReactMarkdown key={id} source={content} />;
+      break;
   }
-  return (
-    <div>
-      {name}
-      {extension}
-      {RendererComponent}
-    </div>
-  );
+
+  return RendererComponent;
 };
 
 export default FileContent;

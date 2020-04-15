@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { ICommand, CommandAction } from '../Types/model';
 import LocalizationContainer from '../LocalizationContainer/LocalizationContainer';
 
+
 declare global {
   interface Window {
     acquireVsCodeApi(): any;

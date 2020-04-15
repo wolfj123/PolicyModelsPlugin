@@ -18,10 +18,16 @@ export interface File {
 	content: string;
 	extension: string;
 	path: string;
-	id: number;
+	id: string;
 }
 
 export interface LanguageData {
   files: File[];
   language: string;
+}
+
+export interface ItemMenuData{
+  isSelected: boolean;
+  onClick(): void;
+  text:string
 }
