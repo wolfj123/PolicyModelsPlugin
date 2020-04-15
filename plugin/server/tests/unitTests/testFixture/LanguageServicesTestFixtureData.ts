@@ -1,4 +1,4 @@
-import * as TestTarget from "../../../src/LanguageServices"
+
 
 const decisinGraphDocs = 
 [
@@ -18,12 +18,25 @@ text :
 [todo: specify mice]
 [>sec-frogs< section:
   {title: Add frogs}
-  [todo: Add frog 1]
-  [todo: Add frog 2]
+  [set: 
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+=
+	{b2b, b1a}]
 ]
 [set: Rice=Full]
 [end]		
 `
+	}
+	,{
+	
+		uri : "dg2.dg",
+		text : 
+`[#import dg : file.dg]
+[>findme< ask:
+{text: Do the data contain health information?}
+{answers:
+	{yes: [ >yo< call: dg>findme]}}]
+`		
 	}
 ]
 
@@ -70,23 +83,3 @@ text :
 ]
 
 export { decisinGraphDocs, policySpaceDocs , policyValueInferenceDocs};
-
-const staticLanguageLibTestCases = 
-{
-	DecisionGraphServices:
-	{
-		class: TestTarget.DecisionGraphServices,
-		getAllDefinitionsOfNodeInDocument :
-		{	
-			method: TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument,
-			cases:
-			[
-				{
-					input: decisinGraphDocs[0],
-					output: [] //Range[]
-				}
-			]
-		}
-	}
-}
-

@@ -54,6 +54,11 @@ export function newLocation(uri : DocumentUri, range : Range) : Location {
 	}
 }
 
+export function position2Location(p : Position, uri : DocumentUri) : Location {
+	let range : Range = newRange(p, p)
+	return newLocation(uri, range)
+}
+
 export function getFileExtension(filename : string) : string {
 	let re = /(?:\.([^.]+))?$/;
 	return re.exec(filename)[1];   
