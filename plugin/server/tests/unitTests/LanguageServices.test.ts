@@ -4,6 +4,8 @@
 
 import * as assert from 'assert';
 import * as mocha from 'mocha';
+var expect = require('chai').expect;
+//import expect from 'chai';
 import * as TestTarget from "../../src/LanguageServices";
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
@@ -62,19 +64,19 @@ const parsersInfo = 	//TODO: maybe extract this info from package.json
 	}
 ]
 
-function getTextFromUri(uri : string, data) : string {
-	let dataEntry = data.find(e => e.uri === uri)
+function getTextFromUri(uri : string) : string | null {
+	let dataEntry = TestData.data.find(e => e.uri === uri)
 	if(isNullOrUndefined(dataEntry)) {return null}
 	return dataEntry.text
 }
 
-function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage {
+function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
 	return correspondingInfo[0].language
 }
 
-function getParserWasmPathByExtension(extension : string) : string {
+function getParserWasmPathByExtension(extension : string) : string | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
 	return correspondingInfo[0].wasm
@@ -92,6 +94,12 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 	return Promise.resolve(parser)
 }
 
+function getTree(uri) : Promise<Parser.Tree> {					
+	let text = getTextFromUri(uri)
+	return getParser(text, uri).then((parser) => {
+		return parser.parse(text)
+	})	
+}
 
 class TestRun {
 	className : string
@@ -101,47 +109,116 @@ class TestRun {
 }
 
 
-abstract class TestClass {
-	abstract runTests()
-}
+class DecisionGraphFileManager_Test {
+	static testTargetClass = TestTarget.DecisionGraphFileManager;
+	static instance : TestTarget.DecisionGraphFileManager;
 
-class DecisionGraphFileManager_Test extends TestClass {
-	testTargetClass = TestTarget.DecisionGraphFileManager
-
-	runTests() {
-		throw new Error("Method not implemented.");
+	static runTests() {
+		DecisionGraphFileManager_Test.getAllDefinitionsDGNode()
 	}
 
+	static create(filename : string) : Promise<TestTarget.DecisionGraphFileManager>{
+		return getTree(filename).then(tree => {
+			let text : string = getTextFromUri(filename)
+			return new TestTarget.DecisionGraphFileManager(tree, filename)
+		})
+	}
+
+	//Test
 	static createPolicyModelEntity() {
 		
 	}
+
+	//Test
 	static getAllDefinitionsDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg1.dg', nodeName: 'q-order'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<() => void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			return instancePromise.then(instance =>{
+				const run = function() {
+					const result = instance.getAllDefinitionsDGNode(nodeName)
+					assert.deepEqual(result, output)
+				}
+				return run
+			})
+		}
+
+		describe('getAllDefinitionsDGNode', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					// @ts-ignore
+					test(testCase).then(run => {
+						try {
+							run()
+							done()
+						}
+						catch(err){
+							done(err)
+						}
+					})
+					
+
+					// try {
+					// 	test(testCase)
+					// 	done()
+					// }
+					// catch(err){
+					// 	done(err)
+					// }
+				});
+			})
+		})
 	}
+
+	//Test
 	static getAllDefinitionsSlot(){
+
 	}
 
+	//Test
 	static getAllDefinitionsSlotValue(){
+
 	}
 
+	//Test
 	static getAllReferencesDGNode() {
+
 	}
 
+	//Test
 	static getAllReferencesSlot() {
+
 	}
 
+	//Test
 	static getAllReferencesSlotValue() {
+
 	}
 
+	//Test
 	static getFoldingRanges() {
+
 	}
 
+	//Test
 	static getAutoComplete() {
 
 	}
 }
 
-class PolicySpaceFileManager_Test extends TestClass {
+class PolicySpaceFileManager_Test {
 	testTargetClass = TestTarget.PolicySpaceFileManager
 
 	runTests() {
@@ -151,25 +228,33 @@ class PolicySpaceFileManager_Test extends TestClass {
 	createPolicyModelEntity() {
 		
 	}
+
 	getAllDefinitionsDGNode() {
 
 	}
+
 	getAllDefinitionsSlot(){
+
 	}
 
 	getAllDefinitionsSlotValue(){
+
 	}
 
 	getAllReferencesDGNode() {
+
 	}
 
 	getAllReferencesSlot() {
+
 	}
 
 	getAllReferencesSlotValue() {
+
 	}
 
 	getFoldingRanges() {
+
 	}
 
 	getAutoComplete() {
@@ -177,7 +262,7 @@ class PolicySpaceFileManager_Test extends TestClass {
 	}
 }
 
-class ValueInferenceFileManager_Test extends TestClass {
+class ValueInferenceFileManager_Test {
 	testTargetClass = TestTarget.PolicySpaceFileManager
 
 	runTests() {
@@ -187,25 +272,33 @@ class ValueInferenceFileManager_Test extends TestClass {
 	createPolicyModelEntity() {
 		
 	}
+
 	getAllDefinitionsDGNode() {
 
 	}
-	getAllDefinitionsSlot(){
+
+	getAllDefinitionsSlot() {
+
 	}
 
-	getAllDefinitionsSlotValue(){
+	getAllDefinitionsSlotValue() {
+
 	}
 
 	getAllReferencesDGNode() {
+
 	}
 
 	getAllReferencesSlot() {
+
 	}
 
 	getAllReferencesSlotValue() {
+
 	}
 
 	getFoldingRanges() {
+
 	}
 
 	getAutoComplete() {
@@ -213,3 +306,4 @@ class ValueInferenceFileManager_Test extends TestClass {
 	}
 }
 
+DecisionGraphFileManager_Test.runTests()

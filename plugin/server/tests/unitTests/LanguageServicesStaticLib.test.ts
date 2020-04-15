@@ -62,8 +62,8 @@ const parsersInfo = 	//TODO: maybe extract this info from package.json
 	}
 ]
 
-function getTextFromUri(uri : string, data) : string {
-	let dataEntry = data.find(e => e.uri === uri)
+function getTextFromUri(uri : string) : string {
+	let dataEntry = TestData.data.find(e => e.uri === uri)
 	if(isNullOrUndefined(dataEntry)) {return null}
 	return dataEntry.text
 }
@@ -104,7 +104,7 @@ const staticLanguageLibTestCases =
 					const getTree = function(testCase) : Promise<Parser.Tree> {
 						const input = testCase.input						
 						const uri : string = input[0]
-						let text = getTextFromUri(uri, TestData.decisinGraphDocs)
+						let text = getTextFromUri(uri)
 						return getParser(text, uri).then((parser) => {
 							return parser.parse(text)
 						})	
@@ -369,7 +369,7 @@ const staticLanguageLibTestCases =
 					const getTree = function(testCase) : Promise<Parser.Tree> {
 						const input = testCase.input						
 						const uri : string = input[0]
-						let text = getTextFromUri(uri, TestData.policySpaceDocs)
+						let text = getTextFromUri(uri)
 						return getParser(text, uri).then((parser) => {
 							return parser.parse(text)
 						})	
