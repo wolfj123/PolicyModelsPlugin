@@ -56,7 +56,7 @@ aggregate_slot [aggregate_slot_desc]: some of
 	slotval2 [desc],
 	slotval3 [desc].
 
-compound_slot [compound_slot_desc]: consists of atomic_slot, atomic_slot2, aggregate_slot.
+compound_slot [compound_slot_desc]: consists of atomic_slot1, atomic_slot2, aggregate_slot.
 `
 },
 //*****************VALUE INFERENCE *****************/

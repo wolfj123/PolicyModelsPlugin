@@ -108,18 +108,20 @@ class TestRun {
 
 
 class DecisionGraphFileManager_UnitTests {
-	static testTargetClass = TestTarget.DecisionGraphFileManager;
-	static instance : TestTarget.DecisionGraphFileManager;
+	static testTargetClass = TestTarget.DecisionGraphFileManager
 
 	static runTests() {
-		DecisionGraphFileManager_UnitTests.getAllDefinitionsDGNode()
-		DecisionGraphFileManager_UnitTests.getAllDefinitionsSlot()
-		DecisionGraphFileManager_UnitTests.getAllDefinitionsSlotValue()
-		DecisionGraphFileManager_UnitTests.getAllReferencesDGNode()
-		DecisionGraphFileManager_UnitTests.getAllReferencesSlot()
-		DecisionGraphFileManager_UnitTests.getAllReferencesSlotValue()
-		DecisionGraphFileManager_UnitTests.getFoldingRanges()
-		//DecisionGraphFileManager_UnitTests.getAutoComplete()
+		describe(DecisionGraphFileManager_UnitTests.testTargetClass.name, function() {
+			DecisionGraphFileManager_UnitTests.getAllDefinitionsDGNode()
+			DecisionGraphFileManager_UnitTests.getAllDefinitionsSlot()
+			DecisionGraphFileManager_UnitTests.getAllDefinitionsSlotValue()
+			DecisionGraphFileManager_UnitTests.getAllReferencesDGNode()
+			DecisionGraphFileManager_UnitTests.getAllReferencesSlot()
+			DecisionGraphFileManager_UnitTests.getAllReferencesSlotValue()
+			DecisionGraphFileManager_UnitTests.getFoldingRanges()
+			//DecisionGraphFileManager_UnitTests.getAutoComplete()
+			//DecisionGraphFileManager_UnitTests.createPolicyModelEntity()
+		})
 	}
 
 	static create(filename : string) : Promise<TestTarget.DecisionGraphFileManager>{
@@ -131,7 +133,8 @@ class DecisionGraphFileManager_UnitTests {
 
 	//Test
 	static createPolicyModelEntity() {
-		
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 
 	//Test
@@ -159,14 +162,15 @@ class DecisionGraphFileManager_UnitTests {
 				assert.deepEqual(result, output)
 			})
 		}
-
-		describe('getAllDefinitionsDGNode', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
+		//describe(DecisionGraphFileManager_UnitTests.testTargetClass.name, function() {
+			describe('getAllDefinitionsDGNode', function() {
+				testCases.forEach((testCase, index) => {
+					it(testCase.title , function(done) {
+						test(testCase).then(run => done()).catch(err => done(err))
+					});
+				})
 			})
-		})
+		//})
 	}
 
 	//Test
@@ -350,7 +354,6 @@ class DecisionGraphFileManager_UnitTests {
 					{range: {end: {character: 32,line: 4},start: {character: 0,line: 3}},uri: 'dg2.dg'},
 					{range: {end: {character: 31,line: 4},start: {character: 1,line: 4}},uri: 'dg2.dg'},
 					{range: {end: {character: 30,line: 4},start: {character: 7,line: 4}},uri: 'dg2.dg'},
-					//{range: {end: {character: 10,line: 17},start: {character: 7,line: 17}},uri: 'dg1.dg'}
 				]
 			}
 		]
@@ -382,52 +385,284 @@ class DecisionGraphFileManager_UnitTests {
 	}
 }
 
-class PolicySpaceFileManager_Test {
-	testTargetClass = TestTarget.PolicySpaceFileManager
+class PolicySpaceFileManager_UnitTests {
+	static testTargetClass = TestTarget.PolicySpaceFileManager
 
-	runTests() {
+	static runTests() {
+		describe(PolicySpaceFileManager_UnitTests.testTargetClass.name, function() {
+			PolicySpaceFileManager_UnitTests.getAllDefinitionsDGNode()
+			PolicySpaceFileManager_UnitTests.getAllDefinitionsSlot()
+			PolicySpaceFileManager_UnitTests.getAllDefinitionsSlotValue()
+			PolicySpaceFileManager_UnitTests.getAllReferencesDGNode()
+			PolicySpaceFileManager_UnitTests.getAllReferencesSlot()
+			PolicySpaceFileManager_UnitTests.getAllReferencesSlotValue()
+			PolicySpaceFileManager_UnitTests.getFoldingRanges()
+			//PolicySpaceFileManager_UnitTests.getAutoComplete()
+			//PolicySpaceFileManager_UnitTests.createPolicyModelEntity()
+		})
+	}
+
+	static create(filename : string) : Promise<TestTarget.PolicySpaceFileManager>{
+		return getTree(filename).then(tree => {
+			let text : string = getTextFromUri(filename)
+			return new TestTarget.PolicySpaceFileManager(tree, filename)
+		})
+	}
+
+	//Test
+	static createPolicyModelEntity() {
+		//TODO:
 		throw new Error("Method not implemented.");
 	}
 
-	createPolicyModelEntity() {
-		
+	//Test
+	static getAllDefinitionsDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace', nodeName: 'atomic_slot1'},
+				output: []
+			}
+		]
+
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsDGNode(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsDGNode', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllDefinitionsDGNode() {
+	//Test
+	static getAllDefinitionsSlot(){
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace', nodeName: 'atomic_slot1'},
+				output: [{range: {end: {character: 32,line: 0},start: {character: 0,line: 0}},uri: 'ps1.pspace'}]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsSlot(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsSlot', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllDefinitionsSlot(){
+	//Test
+	static getAllDefinitionsSlotValue(){
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace', nodeName: 'slotval1'},
+				output: [
+					{range: {end: {character: 9,line: 1},start: {character: 1,line: 1}},uri: 'ps1.pspace'},
+					{range: {end: {character: 9,line: 6},start: {character: 1,line: 6}},uri: 'ps1.pspace'},
+					{range: {end: {character: 9,line: 11},start: {character: 1,line: 11}},uri: 'ps1.pspace'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsSlotValue(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsSlotValue', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllDefinitionsSlotValue(){
+	//Test
+	static getAllReferencesDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace', nodeName: 'atomic_slot1'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			const source : string = input.source
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesDGNode(nodeName, source)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesDGNode', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllReferencesDGNode() {
+	//Test
+	static getAllReferencesSlot() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace', nodeName: 'atomic_slot1'},
+				output: [
+					{range: {end: {character: 60,line: 15},start: {character: 48,line: 15}},uri: 'ps1.pspace'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesSlot(nodeName, undefined)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesSlot', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllReferencesSlot() {
+	//Test
+	static getAllReferencesSlotValue() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace', nodeName: 'slotval1'},
+				output: [
+					{range: {end: {character: 9,line: 1},start: {character: 1,line: 1}},uri: 'ps1.pspace'},
+					{range: {end: {character: 9,line: 6},start: {character: 1,line: 6}},uri: 'ps1.pspace'},
+					{range: {end: {character: 9,line: 11},start: {character: 1,line: 11}},uri: 'ps1.pspace'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesSlotValue(nodeName, undefined)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesSlotValue', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllReferencesSlotValue() {
+	//Test
+	static getFoldingRanges() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace'},
+				output: [
+					{range: {end: {character: 17,line: 3},start: {character: 0,line: 0}},uri: 'ps1.pspace'},
+					{range: {end: {character: 17,line: 8},start: {character: 0,line: 5}},uri: 'ps1.pspace'},
+					{range: {end: {character: 17,line: 13},start: {character: 0,line: 10}},uri: 'ps1.pspace'},
+					{range: {end: {character: 91,line: 15},start: {character: 0,line: 15}},uri: 'ps1.pspace'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getFoldingRanges()
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getFoldingRanges() {
-
-	}
-
-	getAutoComplete() {
-
+	//Test
+	static getAutoComplete() {
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 }
 
 class ValueInferenceFileManager_Test {
-	testTargetClass = TestTarget.PolicySpaceFileManager
+	testTargetClass = TestTarget.ValueInferenceFileManager
 
 	runTests() {
 		throw new Error("Method not implemented.");
@@ -470,4 +705,7 @@ class ValueInferenceFileManager_Test {
 	}
 }
 
+
+
 DecisionGraphFileManager_UnitTests.runTests()
+PolicySpaceFileManager_UnitTests.runTests()
