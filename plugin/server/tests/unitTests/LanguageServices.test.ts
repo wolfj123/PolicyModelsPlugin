@@ -661,47 +661,277 @@ class PolicySpaceFileManager_UnitTests {
 	}
 }
 
-class ValueInferenceFileManager_Test {
-	testTargetClass = TestTarget.ValueInferenceFileManager
+class ValueInferenceFileManager_UnitTests {
+	static testTargetClass = TestTarget.ValueInferenceFileManager
 
-	runTests() {
+	static runTests() {
+		describe(ValueInferenceFileManager_UnitTests.testTargetClass.name, function() {
+			ValueInferenceFileManager_UnitTests.getAllDefinitionsDGNode()
+			ValueInferenceFileManager_UnitTests.getAllDefinitionsSlot()
+			ValueInferenceFileManager_UnitTests.getAllDefinitionsSlotValue()
+			ValueInferenceFileManager_UnitTests.getAllReferencesDGNode()
+			ValueInferenceFileManager_UnitTests.getAllReferencesSlot()
+			ValueInferenceFileManager_UnitTests.getAllReferencesSlotValue()
+			ValueInferenceFileManager_UnitTests.getFoldingRanges()
+			//ValueInferenceFileManager_UnitTests.getAutoComplete()
+			//ValueInferenceFileManager_UnitTests.createPolicyModelEntity()
+		})
+	}
+
+	static create(filename : string) : Promise<TestTarget.ValueInferenceFileManager>{
+		return getTree(filename).then(tree => {
+			let text : string = getTextFromUri(filename)
+			return new TestTarget.ValueInferenceFileManager(tree, filename)
+		})
+	}
+
+	//Test
+	static createPolicyModelEntity() {
+		//TODO:
 		throw new Error("Method not implemented.");
 	}
 
-	createPolicyModelEntity() {
-		
+	//Test
+	static getAllDefinitionsDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'vi1.vi', nodeName: 'Encrypt'},
+				output: []
+			}
+		]
+
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsDGNode(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsDGNode', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllDefinitionsDGNode() {
+	//Test
+	static getAllDefinitionsSlot(){
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'vi1.vi', nodeName: 'Encrypt'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsSlot(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsSlot', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllDefinitionsSlot() {
+	//Test
+	static getAllDefinitionsSlotValue(){
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'vi1.vi', nodeName: 'Blue'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsSlotValue(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsSlotValue', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllDefinitionsSlotValue() {
+	//Test
+	static getAllReferencesDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'vi1.vi', nodeName: 'Encrypt'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			const source : string = input.source
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesDGNode(nodeName, source)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesDGNode', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllReferencesDGNode() {
+	//Test
+	static getAllReferencesSlot() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'vi1.vi', nodeName: 'Encrypt'},
+				output: [
+					{range: {end: {character: 10,line: 1},start: {character: 3,line: 1}},uri: 'vi1.vi'},
+					{range: {end: {character: 10,line: 2},start: {character: 3,line: 2}},uri: 'vi1.vi'},
+					{range: {end: {character: 10,line: 3},start: {character: 3,line: 3}},uri: 'vi1.vi'},
+					{range: {end: {character: 10,line: 4},start: {character: 3,line: 4}},uri: 'vi1.vi'},
+					{range: {end: {character: 10,line: 5},start: {character: 3,line: 5}},uri: 'vi1.vi'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesSlot(nodeName, undefined)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesSlot', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllReferencesSlot() {
+	//Test
+	static getAllReferencesSlotValue() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'vi1.vi', nodeName: 'Blue'},
+				output: [
+					{range: {end: {character: 41,line: 1},start: {character: 37,line: 1}},uri: 'vi1.vi'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesSlotValue(nodeName, undefined)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesSlotValue', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getAllReferencesSlotValue() {
+	//Test
+	static getFoldingRanges() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'ps1.pspace'},
+				output: [
+					// {range: {end: {character: 17,line: 3},start: {character: 0,line: 0}},uri: 'ps1.pspace'},
+					// {range: {end: {character: 17,line: 8},start: {character: 0,line: 5}},uri: 'ps1.pspace'},
+					// {range: {end: {character: 17,line: 13},start: {character: 0,line: 10}},uri: 'ps1.pspace'},
+					// {range: {end: {character: 91,line: 15},start: {character: 0,line: 15}},uri: 'ps1.pspace'},
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getFoldingRanges()
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	getFoldingRanges() {
-
-	}
-
-	getAutoComplete() {
-
+	//Test
+	static getAutoComplete() {
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 }
 
@@ -709,3 +939,4 @@ class ValueInferenceFileManager_Test {
 
 DecisionGraphFileManager_UnitTests.runTests()
 PolicySpaceFileManager_UnitTests.runTests()
+ValueInferenceFileManager_UnitTests.runTests()
