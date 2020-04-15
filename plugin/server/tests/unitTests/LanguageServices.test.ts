@@ -115,6 +115,15 @@ class DecisionGraphFileManager_Test {
 
 	static runTests() {
 		DecisionGraphFileManager_Test.getAllDefinitionsDGNode()
+		DecisionGraphFileManager_Test.getAllDefinitionsSlot()
+		DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
+		DecisionGraphFileManager_Test.getAllReferencesDGNode()
+		DecisionGraphFileManager_Test.getAllReferencesSlot()
+		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
+		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
+		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
+		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
+		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
 	}
 
 	static create(filename : string) : Promise<TestTarget.DecisionGraphFileManager>{
@@ -135,48 +144,30 @@ class DecisionGraphFileManager_Test {
 		[
 			{
 				title: 'sanity',
-				input: {fileName: 'dg1.dg', nodeName: 'q-order'},
-				output: []
+				input: {fileName: 'dg1.dg', nodeName: 'findme'},
+				output: 
+					[
+						{range: {start: {character: 2,line: 3},end: {character: 8,line: 3}},uri: 'dg1.dg'}
+					]
 			}
 		]
 
-		function test(testCase) : Promise<() => void> {
+		function test(testCase) : Promise<void> {
 			const input = testCase.input
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
 			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
 			return instancePromise.then(instance =>{
-				const run = function() {
-					const result = instance.getAllDefinitionsDGNode(nodeName)
-					assert.deepEqual(result, output)
-				}
-				return run
+				const result = instance.getAllDefinitionsDGNode(nodeName)
+				assert.deepEqual(result, output)
 			})
 		}
 
 		describe('getAllDefinitionsDGNode', function() {
 			testCases.forEach((testCase, index) => {
 				it(testCase.title , function(done) {
-					// @ts-ignore
-					test(testCase).then(run => {
-						try {
-							run()
-							done()
-						}
-						catch(err){
-							done(err)
-						}
-					})
-					
-
-					// try {
-					// 	test(testCase)
-					// 	done()
-					// }
-					// catch(err){
-					// 	done(err)
-					// }
+					test(testCase).then(run => done()).catch(err => done(err))
 				});
 			})
 		})
@@ -184,22 +175,134 @@ class DecisionGraphFileManager_Test {
 
 	//Test
 	static getAllDefinitionsSlot(){
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg1.dg', nodeName: 'Bottom1'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsSlot(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsSlot', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getAllDefinitionsSlotValue(){
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg1.dg', nodeName: 'b1a'},
+				output: []
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllDefinitionsSlotValue(nodeName)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllDefinitionsSlotValue', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getAllReferencesDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg1.dg', nodeName: 'findme', source : undefined},
+				output: [{range: {end: {character: 13,line: 10},start: {character: 7,line: 10}},uri: 'dg1.dg'}]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			const source : string = input.source
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesDGNode(nodeName, source)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesDGNode', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getAllReferencesSlot() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg1.dg', nodeName: 'Mid1'},
+				output: [
+					{range: {end: {character: 14,line: 15},start: {character: 10,line: 15}},uri: 'dg1.dg'},
+					{range: {end: {character: 19,line: 16},start: {character: 15,line: 16}},uri: 'dg1.dg'}
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesSlot(nodeName, undefined)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesSlot', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test

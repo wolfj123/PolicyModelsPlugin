@@ -7,13 +7,14 @@ text :
 `[#import dogs: dogs.dg]
 [#import cats: cats.dg]
 
-[>q-order< ask:
+[>findme< ask:
   {text: Do the dogs first?}
   {answers:
       {yes: [call: dogs>dog][call: cats>cat]}
-      {no:  [call: cats>cat][call:dogs>dog]}
+	  {no:  [call: cats>cat][call:dogs>dog]}
   }
 ]
+[call: findme]
 [todo: specify mice]
 [>sec-frogs< section:
   {title: Add frogs}
