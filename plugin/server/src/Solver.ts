@@ -48,27 +48,33 @@ export class PMSolver implements SolverInt{
 		//throw new Error('Method not implemented.');
 		return null;
 	}
+
 	onCompletionResolve(params: CompletionItem, uri: string): CompletionItem {
 		//throw new Error('Method not implemented.');
 		return null;
 	}
+
 	onDefinition(params: DeclarationParams, uri: string): LocationLink[] {
 		//throw new Error('Method not implemented.');
 		return null;
 	}
-	onPrepareRename(params: PrepareRenameParams, uri: string): Range {
+
+	onPrepareRename(params: PrepareRenameParams, uri: string): Range | null {
 		//throw new Error('Method not implemented.');
 		return null;
 	}
+
 	onRenameRequest(params: RenameParams, uri: string): WorkspaceEdit {
 		//throw new Error('Method not implemented.');
 		return null;
 	}
-	onReferences(params: ReferenceParams, uri: string): Location[] {
+
+	onReferences(params: ReferenceParams, uri: string): Location [] {
 		//throw new Error('Method not implemented.');
 		return null;
 	}
-	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange[] {
+	
+	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {
 		//throw new Error('Method not implemented.');
 		return null;
 	}

@@ -181,7 +181,7 @@ connection.onInitialized(() => {
 	}
 	
 	let textDocumnetNotificationOptions: TextDocumentChangeRegistrationOptions = {
-		syncKind: TextDocumentSyncKind.Full,
+		syncKind: TextDocumentSyncKind.Incremental,
 		documentSelector: 
 		[
 			{

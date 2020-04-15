@@ -2,6 +2,7 @@ import { DidChangeTextDocumentParams,
 		 TextDocumentItem,
 		 TextDocumentIdentifier,
 		 DocumentUri,
+		 Range
 	} from 'vscode-languageserver';
 import {URI} from 'vscode-uri';
 import * as fs from 'fs';
@@ -10,12 +11,12 @@ import * as fs from 'fs';
 import { languagesIds } from './Utils';
 import { PMTextDocument, createFromTextDocumentItem, createNewTextDocument } from './Documents';
 
-interface documentManagerResult {
+export interface documentManagerResult {
 	type: documentManagerResultTypes,
 	result?: any;
 }
 
-enum documentManagerResultTypes {
+export enum documentManagerResultTypes {
 	noChange,
 	newFile,
 	removeFile,
@@ -33,6 +34,18 @@ export class TextDocumentManager {
 		this._noOpenFolderMode = false;
 	}
 
+	public get folderMode(): boolean{
+		return ! this._noOpenFolderMode
+	}
+
+	public get allDocumnets(): PMTextDocument[] {
+		return this._allDocuments.map(x=>x);
+	}
+
+	public getFileLastCharPosition(){
+		
+	}
+
 	/**
 	 * when the user opens a new files syncs severt document to client and updates AST if needed
 	 * @param params 
@@ -42,11 +55,6 @@ export class TextDocumentManager {
 			return new Promise(resolve =>
 				setTimeout(() => resolve(this.openedDocumentInClient(opendDocParam)) , 0)
 			);
-
-			// setTimeout(() => {
-			// 	this.openedDocumentInClient(opendDocParam);
-			// }, 0);
-			// return;
 		}
 
 		let openedTextDocument: PMTextDocument = this._allDocuments.find(currDoc => currDoc.uri === opendDocParam.uri);
@@ -89,10 +97,6 @@ export class TextDocumentManager {
 			return new Promise(resolve =>
 				setTimeout(() => resolve(this.closedDocumentInClient(closedDcoumentParams)) , 0)
 			);
-			// setTimeout(() => {
-			// 	this.closedDocumentInClient(closedDcoumentParams);
-			// }, 0);
-			// return;
 		}
 
 		let closedDocmentIdx: number = this._allDocuments.findIndex(currDoc => currDoc.uri === closedDcoumentParams.uri);
@@ -115,17 +119,24 @@ export class TextDocumentManager {
 	}
 
 
-	public changeTextDocument(params: DidChangeTextDocumentParams): Promise<documentManagerResult []>{
+	public changeTextDocument(params: DidChangeTextDocumentParams): Promise<documentManagerResult>{
 		if (! this._finishedReadingFolder){
 			return new Promise(resolve =>
 					setTimeout(() => resolve(this.changeTextDocument(params)), 0)
 				);
-			// setTimeout(() => {
-			// 	this.changeTextDocument(params);
-			// }, 0);
-			// return;
 		}
-		//TODO maybe not array
+		let documentToUpdate: PMTextDocument = this._allDocuments.find(curr=> curr.uri === params.textDocument.uri);
+		if (documentToUpdate === undefined){
+			//Log erro
+			return Promise.resolve({type: documentManagerResultTypes.noChange});
+		}
+
+		let changesRanges: Range []= documentToUpdate.update(params.contentChanges,params.textDocument.version);
+		let ans:documentManagerResult = {
+			type: documentManagerResultTypes.updateFile,
+			result: changesRanges
+		}
+		return Promise.resolve(ans);
 	}
 
 	/**
@@ -163,10 +174,6 @@ export class TextDocumentManager {
 			return new Promise(resolve =>
 					setTimeout(()=> resolve(this.clientCreatedNewFile(newFileUri)) , 0)
 				);
-			// setTimeout(() => {
-			// 	this.clientCreatedNewFile(newFileUri);
-			// }, 0);
-			// return;
 		}
 
 		// if the user changes the name of a file when it is opened in the client than openedDocumentInClient
@@ -198,6 +205,11 @@ export class TextDocumentManager {
 	}
 
 	public openedFolder(pathUri){
+		if (pathUri === null){
+			this._noOpenFolderMode = true;
+			this._finishedReadingFolder = true;
+			return;
+		}
 		let path = URI.parse(pathUri).fsPath;
 		let filesToParse: {name: string, languageId: languagesIds} []= [];
 		console.log(path);

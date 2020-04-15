@@ -65,20 +65,10 @@ export interface PMTextDocument {
      */
 	readonly lineCount: number;
 
-	isEqual(other:PMTextDocument): boolean
+	isEqual(other:PMTextDocument): boolean;
+
+	update(changes: TextDocumentContentChangeEvent[], version: number): Range[];
 }
-
-/*/////////
-
-what is important:
-	1) version number is changable because we need a way to contorl opened and closed versions
-
-
-	TODO:
-		create file
-		update
-		add create file when has content
-/////////*/
 
 class FullTextDocument implements PMTextDocument {
 
@@ -121,7 +111,8 @@ class FullTextDocument implements PMTextDocument {
 		return this._content;
 	}
 
-	public update(changes: TextDocumentContentChangeEvent[], version: number): void {
+	public update(changes: TextDocumentContentChangeEvent[], version: number): Range[] {
+		let changesRange: Range[] = [];
 		for (let change of changes) {
 			if (FullTextDocument.isIncremental(change)) {
 				// makes sure start is before end
@@ -137,31 +128,45 @@ class FullTextDocument implements PMTextDocument {
 				const endLine = Math.max(range.end.line, 0);
 				let lineOffsets = this._lineOffsets!;
 				const addedLineOffsets = computeLineOffsets(change.text, false, startOffset);
-				if (endLine - startLine === addedLineOffsets.length) {
-					for (let i = 0, len = addedLineOffsets.length; i < len; i++) {
+				if (endLine - startLine === addedLineOffsets.length) { //this updates the _linesOffset array with the new values
+					for (let i = 0, len = addedLineOffsets.length; i < len; i++) { // this updates in case no new lines were added and only existing lines end offset was changed
 						lineOffsets[i + startLine + 1] = addedLineOffsets[i];
 					}
-				} else {
-					if (addedLineOffsets.length < 10000) {
+				} else { //this is in case new lines were added or lines were removed
+					if (addedLineOffsets.length < 10000) { 
 						lineOffsets.splice(startLine + 1, endLine - startLine, ...addedLineOffsets);
 					} else { // avoid too many arguments for splice
 						this._lineOffsets = lineOffsets = lineOffsets.slice(0, startLine + 1).concat(addedLineOffsets, lineOffsets.slice(endLine + 1));
 					}
 				}
 				const diff = change.text.length - (endOffset - startOffset);
-				if (diff !== 0) {
+				if (diff !== 0) { //this updates all the lines offset after the change lines
 					for (let i = startLine + 1 + addedLineOffsets.length, len = lineOffsets.length; i < len; i++) {
 						lineOffsets[i] = lineOffsets[i] + diff;
 					}
 				}
+				//change.text.length + startOffset = offset of the end of change
+				//addedLineOffsets this can give the new offset of lines if needed this represent all the lines that were changed
+				// made longer/ shorter / added/ removed
+				let newChangePosition: Range = {
+					start: change.range.start,
+					end: this.positionAt(change.text.length + startOffset)
+				}
+				changesRange.push(newChangePosition);
 			} else if (FullTextDocument.isFull(change)) {
 				this._content = change.text;
 				this._lineOffsets = undefined;
+				changesRange.push({
+					start: this.positionAt(0),
+					end: this.positionAt(change.text.length)
+				});
+
 			} else {
 				throw new Error('Unknown change event received');
 			}
 		}
 		this._version = version;
+		return changesRange;
 	}
 
 	private getLineOffsets(): number[] {
