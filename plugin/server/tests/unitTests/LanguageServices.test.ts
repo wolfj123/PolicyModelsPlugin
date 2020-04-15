@@ -4,8 +4,6 @@
 
 import * as assert from 'assert';
 import * as mocha from 'mocha';
-var expect = require('chai').expect;
-//import expect from 'chai';
 import * as TestTarget from "../../src/LanguageServices";
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
@@ -109,21 +107,19 @@ class TestRun {
 }
 
 
-class DecisionGraphFileManager_Test {
+class DecisionGraphFileManager_UnitTests {
 	static testTargetClass = TestTarget.DecisionGraphFileManager;
 	static instance : TestTarget.DecisionGraphFileManager;
 
 	static runTests() {
-		DecisionGraphFileManager_Test.getAllDefinitionsDGNode()
-		DecisionGraphFileManager_Test.getAllDefinitionsSlot()
-		DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
-		DecisionGraphFileManager_Test.getAllReferencesDGNode()
-		DecisionGraphFileManager_Test.getAllReferencesSlot()
-		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
-		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
-		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
-		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
-		// DecisionGraphFileManager_Test.getAllDefinitionsSlotValue()
+		DecisionGraphFileManager_UnitTests.getAllDefinitionsDGNode()
+		DecisionGraphFileManager_UnitTests.getAllDefinitionsSlot()
+		DecisionGraphFileManager_UnitTests.getAllDefinitionsSlotValue()
+		DecisionGraphFileManager_UnitTests.getAllReferencesDGNode()
+		DecisionGraphFileManager_UnitTests.getAllReferencesSlot()
+		DecisionGraphFileManager_UnitTests.getAllReferencesSlotValue()
+		DecisionGraphFileManager_UnitTests.getFoldingRanges()
+		//DecisionGraphFileManager_UnitTests.getAutoComplete()
 	}
 
 	static create(filename : string) : Promise<TestTarget.DecisionGraphFileManager>{
@@ -157,7 +153,7 @@ class DecisionGraphFileManager_Test {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsDGNode(nodeName)
 				assert.deepEqual(result, output)
@@ -189,7 +185,7 @@ class DecisionGraphFileManager_Test {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlot(nodeName)
 				assert.deepEqual(result, output)
@@ -221,7 +217,7 @@ class DecisionGraphFileManager_Test {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlotValue(nodeName)
 				assert.deepEqual(result, output)
@@ -254,7 +250,7 @@ class DecisionGraphFileManager_Test {
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
 			const source : string = input.source
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesDGNode(nodeName, source)
 				assert.deepEqual(result, output)
@@ -289,7 +285,7 @@ class DecisionGraphFileManager_Test {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_Test.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlot(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -307,17 +303,82 @@ class DecisionGraphFileManager_Test {
 
 	//Test
 	static getAllReferencesSlotValue() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg1.dg', nodeName: 'b1a'},
+				output: [
+					{range: {end: {character: 26,line: 15},start: {character: 23,line: 15}},uri: 'dg1.dg'},
+					{range: {end: {character: 10,line: 17},start: {character: 7,line: 17}},uri: 'dg1.dg'}
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			const nodeName : string = input.nodeName
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getAllReferencesSlotValue(nodeName, undefined)
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getAllReferencesSlotValue', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getFoldingRanges() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {fileName: 'dg2.dg'},
+				output: [
+					{range: {end: {character: 22,line: 0},start: {character: 0,line: 0}},uri: 'dg2.dg'},
+					{range: {end: {character: 33,line: 4},start: {character: 0,line: 1}},uri: 'dg2.dg'},
+					{range: {end: {character: 47,line: 2},start: {character: 0,line: 2}},uri: 'dg2.dg'},
+					{range: {end: {character: 32,line: 4},start: {character: 0,line: 3}},uri: 'dg2.dg'},
+					{range: {end: {character: 31,line: 4},start: {character: 1,line: 4}},uri: 'dg2.dg'},
+					{range: {end: {character: 30,line: 4},start: {character: 7,line: 4}},uri: 'dg2.dg'},
+					//{range: {end: {character: 10,line: 17},start: {character: 7,line: 17}},uri: 'dg1.dg'}
+				]
+			}
+		]
 
+		function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filename : string = input.fileName
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			return instancePromise.then(instance =>{
+				const result = instance.getFoldingRanges()
+				assert.deepEqual(result, output)
+			})
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getAutoComplete() {
-
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 }
 
@@ -409,4 +470,4 @@ class ValueInferenceFileManager_Test {
 	}
 }
 
-DecisionGraphFileManager_Test.runTests()
+DecisionGraphFileManager_UnitTests.runTests()
