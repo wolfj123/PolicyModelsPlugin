@@ -30,6 +30,7 @@ import {
 	getFileExtension, 
 	point2Position, 
 	position2Point, 
+	position2Location,
 	newRange, 
 	newLocation, 
 	flatten, 
@@ -64,17 +65,14 @@ export class LanguageServicesFacade {
 	}
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
-		let loc : Location //TODO:
-		let result : Location[] = this.services.getDeclarations(loc)
-
+		let location : Location = position2Location(params.position, params.textDocument.uri)
+		//return this.services.getDeclarations(location)
 		return null
 	}
 	// this fucntions are called when the request is first made from the server
 	onReferences(params : ReferenceParams):  Location[] {
-		let uri : DocumentUri = params.textDocument.uri
-		let position : Position = params.position
-		//TODO:
-		return null
+		let location : Location = position2Location(params.position, params.textDocument.uri)
+		return this.services.getReferences(location)
 	}
 	onPrepareRename(params : RenameParams): Range | null {
 		//TODO:
@@ -93,8 +91,7 @@ export class LanguageServicesFacade {
 		return null
 	}
 	onFoldingRanges(params : FoldingRangeParams): FoldingRange[] {
-		//TODO:
-		return null
+		return this.services.getFoldingRanges(params.textDocument.uri)
 	}
 }
 
@@ -241,12 +238,15 @@ export class LanguageServices {
 		return result
 	}
 
-	getFoldingRanges() : Location[] {
+	getFoldingRanges(uri : DocumentUri) : Location[] {
 		let result : Location[] = []
-		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
-			result = result.concat(fm.getFoldingRanges())
-		});
-		return result
+		let fm : FileManager = this.fileManagers.get(uri)
+		if(isNullOrUndefined(fm)) {return null}
+		return fm.getFoldingRanges()
+		// this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
+		// 	result = result.concat(fm.getFoldingRanges())
+		// });
+		// return result
 	}
 
 	getCompletion(location : Location) : Location[] {
