@@ -1,36 +1,44 @@
-import * as TestTarget from "../../../src/LanguageServices"
-
-const decisinGraphDocs = 
+const data = 
 [
-	{
+
+{
 uri : "dg1.dg",
 text : 
 `[#import dogs: dogs.dg]
 [#import cats: cats.dg]
 
-[>q-order< ask:
+[>findme< ask:
   {text: Do the dogs first?}
   {answers:
       {yes: [call: dogs>dog][call: cats>cat]}
-      {no:  [call: cats>cat][call:dogs>dog]}
+	  {no:  [call: cats>cat][call:dogs>dog]}
   }
 ]
+[call: findme]
 [todo: specify mice]
 [>sec-frogs< section:
   {title: Add frogs}
-  [todo: Add frog 1]
-  [todo: Add frog 2]
+  [set: 
+	DataTags/Mid1/Bottom1=b1a; 
+	DataTags/Mid2/Mid1+=
+	{b2b, b1a}]
 ]
 [set: Rice=Full]
 [end]		
 `
-	}
-]
-
-
-const policySpaceDocs = 
-[
-	{
+}
+,{
+uri : "dg2.dg",
+text : 
+`[#import dg : file.dg]
+[>findme< ask:
+{text: Do the data contain health information?}
+{answers:
+	{yes: [ >yo< call: dg>findme]}}]
+`		
+},
+//***************** POLICYSPACE *****************/
+{
 uri : "ps1.pspace",
 text : 
 `atomic_slot1 [atomic_slot_desc.]: one of
@@ -48,14 +56,11 @@ aggregate_slot [aggregate_slot_desc]: some of
 	slotval2 [desc],
 	slotval3 [desc].
 
-compound_slot [compound_slot_desc]: consists of atomic_slot, atomic_slot2, aggregate_slot.
+compound_slot [compound_slot_desc]: consists of atomic_slot1, atomic_slot2, aggregate_slot.
 `
-	}
-]
-
-const policyValueInferenceDocs = 
-[
-	{
+},
+//*****************VALUE INFERENCE *****************/
+{
 uri : "vi1.vi",
 text : 
 `[DataTag: support
@@ -66,27 +71,8 @@ text :
 	[ Encrypt=Double; DUA_AM=Sign    -> Crimson ]
   ]
 `
-	}
-]
-
-export { decisinGraphDocs, policySpaceDocs , policyValueInferenceDocs};
-
-const staticLanguageLibTestCases = 
-{
-	DecisionGraphServices:
-	{
-		class: TestTarget.DecisionGraphServices,
-		getAllDefinitionsOfNodeInDocument :
-		{	
-			method: TestTarget.DecisionGraphServices.getAllDefinitionsOfNodeInDocument,
-			cases:
-			[
-				{
-					input: decisinGraphDocs[0],
-					output: [] //Range[]
-				}
-			]
-		}
-	}
 }
 
+]
+
+export { data };
