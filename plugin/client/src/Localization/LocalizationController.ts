@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import ViewLoader from '../view/ViewLoader';
-import {LanguageData,File} from '../view/Types/model';
+import { LanguageData, File } from '../view/Types/model';
 
 var fs = require('fs');
 var PATH = require('path');
 
-
 const systemFilesNameToFilter = ['.DS_Store'];
+const supportedExtensions = ['.md', '.txt'];
 const e = (message, functionName) => console.error(`Localization Error: ${message}. \n Function: ${functionName}`);
 
 export default class LocalizationController {
@@ -17,12 +17,11 @@ export default class LocalizationController {
     this._extensionProps = extensionProps;
     const rootPath = vscode.workspace.rootPath;
     this._localizationPath = rootPath + '/languages';
-
   }
 
   activateLocalization() {
-		vscode.window.showInformationMessage('Localization is active!');
-		const languagesFilesData = this.getLanguagesFilesData();
+    vscode.window.showInformationMessage('Localization is active!');
+    const languagesFilesData = this.getLanguagesFilesData();
     const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile);
   }
 
@@ -30,12 +29,16 @@ export default class LocalizationController {
     return direntFiles.filter(file => !systemFilesNameToFilter.includes(file.name));
   }
 
-  createLanguageFilesData(languageDir) :LanguageData {
+  isSupportedFile(path) {
+    return supportedExtensions.includes(PATH.extname(path));
+  }
+
+  createLanguageFilesData(languageDir): LanguageData {
     const allFiles = this.getAllFiles(this._localizationPath + '/' + languageDir.name);
     return { language: languageDir.name, files: allFiles };
   }
 
-  getAllFiles(path: string) :File[] {
+  getAllFiles(path: string): File[] {
     let direntFiles;
     try {
       direntFiles = fs.readdirSync(path, { withFileTypes: true });
@@ -46,15 +49,19 @@ export default class LocalizationController {
       }
     }
 
-    const filteredFiles = this.filterSystemFiles(direntFiles);
+    let filteredFiles = this.filterSystemFiles(direntFiles);
 
     const filesData = filteredFiles.reduce((dataAcc, dirent) => {
       const { name } = dirent;
       const filePath = path + '/' + name;
       let currData;
       if (dirent.isFile()) {
-				const content = this.readFromFile(filePath);
-        currData = [{ id: filePath, name,content, path: filePath, extension: PATH.extname(filePath) }];
+        if (this.isSupportedFile(filePath)) {
+          const content = this.readFromFile(filePath);
+          currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath) }];
+        } else {
+          currData = [];
+        }
       } else if (dirent.isDirectory()) {
         currData = this.getAllFiles(filePath);
       } else {
@@ -62,22 +69,22 @@ export default class LocalizationController {
       }
       return dataAcc.concat(currData);
     }, []);
-    return filesData;
+    return filesData || [];
   }
 
   writeToFile(path, newData) {
-    try{
-    fs.writeFileSync(path, newData);
-    }catch(err){
+    try {
+      fs.writeFileSync(path, newData);
+    } catch (err) {
       console.log(err);
     }
-	}
+  }
 
-	onSaveFile = (path, newData) =>{
-		this.writeToFile(path, newData);
-		const newLanguagesFilesData = this.getLanguagesFilesData();
-		return newLanguagesFilesData;
-	}
+  onSaveFile = (path, newData) => {
+    this.writeToFile(path, newData);
+    const newLanguagesFilesData = this.getLanguagesFilesData();
+    return newLanguagesFilesData;
+  };
 
   readFromFile(path) {
     let content = null;
@@ -87,10 +94,10 @@ export default class LocalizationController {
       e(error, 'readFromFile');
     }
     return content;
-	}
+  }
 
-	getLanguagesFilesData() : LanguageData[]{
-		let direntFiles;
+  getLanguagesFilesData(): LanguageData[] {
+    let direntFiles;
     try {
       direntFiles = fs.readdirSync(this._localizationPath, { withFileTypes: true });
     } catch (err) {
@@ -102,7 +109,7 @@ export default class LocalizationController {
     const languages_dirent = this.filterSystemFiles(direntFiles);
     const languagesFilesData = languages_dirent.map(language =>
       language.isDirectory() ? this.createLanguageFilesData(language) : e(`Expected ${language.name} to be language folder`, 'activateLocalization')
-		);
-		return languagesFilesData;
-	}
+    );
+    return languagesFilesData;
+  }
 }
