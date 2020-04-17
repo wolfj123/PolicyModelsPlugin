@@ -13,7 +13,8 @@ export default class ViewLoader {
     this._extensionPath = extensionPath;
     this._panel = vscode.window.createWebviewPanel('Localization', 'Localization', vscode.ViewColumn.One, {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'configViewer'))]
+      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'configViewer'))],
+      retainContextWhenHidden: true
     });
 
     this._panel.webview.html = this.getWebviewContent(languageFilesData);

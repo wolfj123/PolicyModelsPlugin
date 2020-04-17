@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { SetStateAction, Dispatch } from 'react';
 
 interface Props {
   content: string;
@@ -12,31 +13,31 @@ interface spaceDataSection {
   longNote: string;
 }
 
-interface spaceData {
-  spaceData: spaceDataSection[];
-}
-
 const SpaceFileContnet: React.FunctionComponent<Props> = props => {
-  const { content  /* ,onFileChange */  } = props;
-  const [spaceData,  setFileData] = React.useState(parseContentToAnswers(content));
+  const { content, onFileChange } = props;
+  const [spaceData, setFileData]: [spaceDataSection[], Dispatch<SetStateAction<spaceDataSection[]>>] = React.useState(
+    parseContentToSpaceData(content)
+  );
 
-  function parseContentToAnswers(content): spaceData[] {
+  function parseContentToSpaceData(content): spaceDataSection[] {
     const slotsBlocks = cleanArrayFromSpaces(content.split('#'));
     return slotsBlocks.map(block => {
-      const singleSlot = {};
+      const singleSlot: spaceDataSection = {
+        slot: '',
+        name: '',
+        shortNote: '',
+        longNote: '',
+      };
       const reg = /[^\r\n]+/g;
       const linesWithoutSpaces = block.match(reg);
       const originalStr = linesWithoutSpaces.join('\n');
       let separatedBlocks = originalStr.split('\n---\n');
-      if (separatedBlocks.length > 2) {
-        throw new Error('Cannot parse File');
-      }
 
-      if (separatedBlocks.length === 2) {
-        singleSlot['longNote'] = separatedBlocks.pop();
+      while (separatedBlocks.length > 1) {
+        singleSlot['longNote'] = separatedBlocks.pop() + singleSlot['longNote'];
       }
       separatedBlocks = separatedBlocks.pop().split('\n');
-      if (separatedBlocks.length > 3) {
+      if (separatedBlocks.length > 3 && separatedBlocks[3] !== '---') {
         throw new Error('Cannot parse File');
       }
 
@@ -47,24 +48,29 @@ const SpaceFileContnet: React.FunctionComponent<Props> = props => {
     });
   }
 
-  // React.useEffect(() => onFileChange(parseAnswerDataToContent()), [answersData]);
+  React.useEffect(() => onFileChange(parseSpaceDataToContent()), [spaceData]);
 
-  // function parseAnswerDataToContent() {
-  // return '';
-  // }
+  function parseSpaceDataToContent() {
+    let newContent = '';
+    spaceData.forEach(data => {
+      const { slot, name, shortNote, longNote } = data;
+      newContent += `# ${slot}\n`;
+      name && (newContent += `${name}\n`);
+      shortNote && (newContent += `${shortNote}\n`);
+      longNote && (newContent += `---\n`);
+      longNote && (newContent += `${longNote}\n`);
+    });
+    return newContent;
+  }
 
-  // function onChangeInput(text, newValue) {
-
-	// }
-
-	const onChangeInput = (event: any,i,field) => {
-		const newValue = event.target.value;
-		const newSpaceData=[...spaceData];
-		newSpaceData[i][field] = newValue;;
-		setFileData(newSpaceData);
+  const onChangeInput = (event: any, i, field) => {
+    const newValue = event.target.value;
+    const newSpaceData = [...spaceData];
+    newSpaceData[i][field] = newValue;
+    setFileData(newSpaceData);
   };
 
-  const createSlotComponent = (slotData,i) => {
+  const createSlotComponent = (slotData, i) => {
     const { slot, name, shortNote, longNote } = slotData;
     return (
       <div className="slot">
@@ -73,21 +79,21 @@ const SpaceFileContnet: React.FunctionComponent<Props> = props => {
           <label>
             Name
             <br />
-            <input type="text" value={name} onChange={e => onChangeInput(e,i,'name')}/>
+            <input type="text" value={name} onChange={e => onChangeInput(e, i, 'name')} />
           </label>
         </form>
         <form>
           <label>
             Short Note
             <br />
-            <input type="text" value={shortNote} onChange={e => onChangeInput(e,i,'shortNote')} />
+            <input type="text" value={shortNote} onChange={e => onChangeInput(e, i, 'shortNote')} />
           </label>
         </form>
         <form>
           <label>
             Long Note
             <p>
-              <textarea style={{ width: '100%', height: '150px' }} value={longNote} onChange={e => onChangeInput(e,i,'longNote')} />
+              <textarea style={{ width: '100%', height: '150px' }} value={longNote} onChange={e => onChangeInput(e, i, 'longNote')} />
             </p>
           </label>
         </form>

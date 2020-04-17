@@ -15,9 +15,31 @@ interface Props {
 const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesData, onSave }) => {
   const [selectedLanguageId, setSelectedLanguageId] = React.useState(languageFilesData[0].language);
   const [selectedFileId, setSelectedFileId] = React.useState(languageFilesData[0].files[0].id);
+  const [previewFileId, setPreviewFileId] = React.useState(languageFilesData[0].files[0].id);
+  const [previewLanguageName, setPreviewLanguageName] = React.useState(languageFilesData[0].language);
+
   const selectedLanguage = languageFilesData.find(data => data.language=== selectedLanguageId);
   const selectedFile = selectedLanguage.files.find(file => file.id===selectedFileId);
-  /**need to change the state here to ids */
+
+
+  const getFileFromId = id =>{
+    const allFiles = languageFilesData.reduce((filesAcc,languages) => filesAcc.concat(languages.files),[]);
+    return allFiles.find(file => file.id===id)
+  }
+
+  const getFileByNameAndLanguageName = (fileName,languageName) =>{
+    const langaugeData = languageFilesData.find(language => language.language===languageName);
+    const langaugeFiles = langaugeData.files;
+    const file = langaugeFiles.find(file => file.name===fileName);
+    return file;
+  }
+
+  const setPreviewFileFromSelectedLanguage = language => {
+    const currentFileName = selectedFile.name;
+    const newPreviewFile = getFileByNameAndLanguageName(currentFileName,language);
+    setPreviewFileId(newPreviewFile.id);
+    setPreviewLanguageName(language);
+  }
 
   const handleFileChange = (path, content) => {
     onSave(path, content);
@@ -34,6 +56,8 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
     };
   });
 
+
+
    const filesMenuData: ItemMenuData[] = selectedLanguage.files.map((file) => {
     return {
       isSelected: selectedFile.id === file.id,
@@ -42,10 +66,14 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
     };
   });
 
+  React.useEffect(()=>setPreviewFileFromSelectedLanguage(previewLanguageName),[selectedFileId]);
+
+  const previewFile = getFileFromId(previewFileId);
   const languagesNames = languageFilesData.map((languageData) => languageData.language);
   return (
-    <div className={'container'}>
-      <div className="panel" style={{flex: '0 0 105px'}}>
+    <div className={'App'}>
+      <div className={'container'}>
+      <div className="panel" style={{flex: '0 0 115px'}}>
         <SideBarMenu filesMenuData={filesMenuData} languagesMenuData={languagesMenuData} />
       </div>
       <div className="panel" style={{flex: '1 1 0'}}>
@@ -55,9 +83,11 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
         <CompareToPanel
           key={selectedFile.id}
           languages={languagesNames}
-          contentData={selectedFile}
-          onSelectLanguage={(language) => console.log(`${language} is selected`)}
+          previewFile={previewFile}
+          previewLanguageName={previewLanguageName}
+          onSelectLanguage={language => setPreviewFileFromSelectedLanguage(language)}
         />
+      </div>
       </div>
     </div>
   );

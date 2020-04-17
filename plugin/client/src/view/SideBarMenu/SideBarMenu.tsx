@@ -65,7 +65,7 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
     menu = [backButton,getHeader('Files',selectedLanguageName), menu];
   }
 
-  return <>{menu}</>;
+  return <div style={{position: 'fixed', height: '100vh', borderRight: '1px solid rgba(194, 199, 202, 0.6)',width: '115px'}}>{menu}</div>;
 };
 
 export default SideBarMenu;
