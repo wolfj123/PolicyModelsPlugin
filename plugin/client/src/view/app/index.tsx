@@ -36,8 +36,10 @@ const App: FunctionComponent<AppProps> = ({ initialLanguageFilesData }) => {
 
   React.useEffect(() => {
     window.addEventListener('message', event => {
-      const newLanguageFiles = event.data;
-      setStore(newLanguageFiles);
+      const response = event.data;
+      if(response.action === CommandAction.Respone){
+        setStore(response.content);
+      }
     });
   }, []);
 
