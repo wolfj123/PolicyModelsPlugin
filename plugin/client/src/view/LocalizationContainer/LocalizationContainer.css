@@ -1,16 +1,20 @@
-.container{
-	padding-top: 30px;
-	display: flex;
-	flex-direction: row;
-	align-items: start;
-	align-items: start;
+.App {
+  display: flex;
+  justify-content: center;
+}
+.container {
+  padding-top: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  width: 1000px;
+  margin-top: 100px;
 }
 
-.panel{
-	display: flex;
-	flex-direction: column;
-	justify-content: start;
-	align-items: left;
-	padding: 0 12px;
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: left;
+  padding: 0 13px;
 }
-
