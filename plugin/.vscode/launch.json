@@ -13,6 +13,7 @@
 				"--timeout",
 				"999999",
 				"--colors",
+				"${workspaceFolder}/server/tests/unitTests/FileManager.test.ts",
 				"${workspaceFolder}/server/tests/unitTests/LanguageServices.test.ts",
 			],
 			"console": "integratedTerminal",

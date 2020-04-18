@@ -179,7 +179,10 @@ export class LanguageServices {
 	async initParsers() {
 		this.parsers = new Map()
 		for(let info of this.parsersInfo) {
-			const wasm = info.wasm
+			//const wasm = info.wasm
+			let path = "./parsers/"
+			const wasm = path.concat(info.wasm)
+
 			//const absolute = path.join(context.extensionPath, 'parsers', wasm
 			await Parser.init()
 			const parser = new Parser()
