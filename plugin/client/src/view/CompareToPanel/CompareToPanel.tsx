@@ -1,33 +1,22 @@
 import * as React from 'react';
+import Select from '../Select';
+import { File } from '../Types/model';
 const ReactMarkdown = require('react-markdown');
-import Select from 'react-select';
-
-interface ContentData {
-  name: string;
-  content: string;
-  extension: string;
-}
 
 interface Props {
-  contentData: ContentData;
+  previewFile: File;
   languages: string[];
   onSelectLanguage: any;
+  previewLanguageName: string;
 }
 
-const CompareToPanel: React.FunctionComponent<Props> = (props) => {
-  const { contentData, languages } = props;
-  const { name, content, extension } = contentData;
+const CompareToPanel: React.FunctionComponent<Props> = props => {
+  const { previewFile, languages, onSelectLanguage, previewLanguageName } = props;
+  const {content } = previewFile;
 
-  const languagesOptions = languages.map((language) => {
-    return { value: language, label: language };
-  });
   return (
     <>
-      <div style={{ minWidth: '225px', color: 'black' }}>
-        <Select options={languagesOptions} value={languages[0]} />
-      </div>
-      {name}
-      {extension}
+      <Select options={languages} selected={previewLanguageName} onSelect={onSelectLanguage} />
       <ReactMarkdown source={content} />
     </>
   );

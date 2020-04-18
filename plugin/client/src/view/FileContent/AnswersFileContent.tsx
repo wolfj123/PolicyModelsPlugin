@@ -1,5 +1,5 @@
 import * as React from 'react';
-
+import './SingleAnswer.css';
 interface Props {
 	content: string;
 	onFileChange(content: string): void;
@@ -25,7 +25,7 @@ const AnswersFileContent: React.FunctionComponent<Props> = (props) => {
   function parseAnswerDataToContent() {
     return Object.entries(answersData).reduce((acc, answerData) => {
       const [originalAnswer, value] = answerData;
-      return acc + `${originalAnswer}: ${value}\n`;
+      return acc + `${originalAnswer}:${value}\n`;
     }, '');
   }
 
@@ -38,7 +38,7 @@ const AnswersFileContent: React.FunctionComponent<Props> = (props) => {
   return (
     <>
       {answersData
-        ? Object.entries(answersData).map(([originalAnswer, value]) => <SingleAnswer key={`${originalAnswer}: ${value}`} text={originalAnswer} value={value} onChange={onChangeInput} />)
+        ? Object.entries(answersData).map(([originalAnswer, value]) => <SingleAnswer text={originalAnswer} value={value} onChange={onChangeInput} />)
         : 'Cannot parse this file.'}
     </>
   );
@@ -52,9 +52,9 @@ function SingleAnswer(props) {
     onChange(text, newValue);
   };
   return (
-    <div style={{ display: 'flex' }}>
-      <div>{text} :</div>
-      <div>
+    <div style={{ display: 'flex', margin: '9px 3px' }}>
+      <div style={{flex: '1 1 50%'}}>{text} :</div>
+      <div style={{flex: '1 1 50%'}}>
         <input type="text" placeholder={text} value={value} onChange={onChangeInput} />
       </div>
     </div>

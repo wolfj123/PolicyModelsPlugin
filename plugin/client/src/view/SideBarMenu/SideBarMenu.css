@@ -1,0 +1,10 @@
+.hr{
+	height: 1px;
+	 background-color: rgba(194, 199, 202, 0.6);
+}
+
+.menuContainer{
+	position: fixed;
+	height: 100vh;
+	width: 115px;
+}

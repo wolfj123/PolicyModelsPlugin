@@ -10,5 +10,25 @@ export interface ICommand {
 }
 
 export enum CommandAction {
-  Save
+  Save,
+  Respone
+}
+
+export interface File {
+	name: string;
+	content: string;
+	extension: string;
+	path: string;
+	id: string;
+}
+
+export interface LanguageData {
+  files: File[];
+  language: string;
+}
+
+export interface ItemMenuData{
+  isSelected: boolean;
+  onClick(): void;
+  text:string
 }
