@@ -17,9 +17,9 @@
 		"web-tree-sitter": "^0.16.2"
 	},
 	"scripts": {
-		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts && cd ../ && npm run test-filemanager && npm run test-languageservices",
 		"test-filemanager": "mocha -r ts-node/register server/tests/unitTests/FileManager.test.ts",
-		"test-languageservices": "mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts"
+		"test-languageservices": "mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts",
+		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts && cd ../ && mocha -r ts-node/register server/tests/unitTests/FileManager.test.ts && mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.11",
