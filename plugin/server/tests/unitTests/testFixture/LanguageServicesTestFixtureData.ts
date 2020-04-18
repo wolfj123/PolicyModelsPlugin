@@ -1,6 +1,6 @@
-const data = 
-[
 
+const data : {uri : string, text : string}[] = 
+[
 {
 uri : "dg1.dg",
 text : 

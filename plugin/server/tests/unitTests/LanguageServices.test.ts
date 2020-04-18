@@ -111,7 +111,7 @@ class LanguageServices_UnitTests {
 		})
 	}
 
-	static create(filenames : string[]) : TestTarget.LanguageServices {
+	static async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
 		//let text : string = getTextFromUri(filename)
 		let docs : TextDocWithChanges[]
 		docs = filenames.map(fn => {
@@ -121,7 +121,7 @@ class LanguageServices_UnitTests {
 					uri: fn,
 					languageId: null,
 					version : null,
-					getText : null,
+					getText : function() {return text},
 					positionAt : null,
 					offsetAt : null,
 					lineCount : null
@@ -129,7 +129,7 @@ class LanguageServices_UnitTests {
 				changes : [{text : text}]
 			}
 		})
-		return new TestTarget.LanguageServices(docs)
+		return await TestTarget.LanguageServices.init(docs)
 	}
 
 	//Test
@@ -140,26 +140,35 @@ class LanguageServices_UnitTests {
 				title: 'sanity',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 2,line: 4},end: {character: 2,line: 4}},uri: 'dg1_ws_1.dg'}
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
 				},
-				output: []
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
 			}
 		]
 
-		function test(testCase) : Promise<void> {
+		async function test(testCase) : Promise<void> {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const location : Location = input.nodeName
+			const location : Location = input.location
 			//let instancePromise : Promise<TestTarget.LanguageServices> = LanguageServices_UnitTests.create(filenames)
 			//return instancePromise.then(instance =>{
-			let promise : Promise<void> = new Promise(nul => {
-				let instance = LanguageServices_UnitTests.create(filenames)
-					const result = instance.getDeclarations(location)
-					assert.deepEqual(result, output)
-				})
-			return promise
 			//})
+
+			// let promise : Promise<void> = new Promise(nul => {
+			// 	let instance = LanguageServices_UnitTests.create(filenames)
+			// 		const result = instance.getDeclarations(location)
+			// 		assert.deepEqual(result, output)
+			// 	})
+			// return promise
+
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getDeclarations(location)
+			assert.deepEqual(result, output)
 		}
 
 		describe('getAllDefinitionsDGNode', function() {
