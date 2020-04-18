@@ -393,7 +393,6 @@ export abstract class FileManager {
 
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
-
 		// let funcMap /*: {DGNode : (string) => Location[], } */ = {
 		// 	DGNode: this.getAllDefinitionsDGNode,
 		// 	Slot: this.getAllDefinitionsSlot,
@@ -418,13 +417,16 @@ export abstract class FileManager {
 
 	getAllReferences(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
-
-		let funcMap = {
-			DGNode: this.getAllReferencesDGNode,
-			Slot: this.getAllReferencesSlot,
-			SlotValue: this.getAllReferencesSlotValue
+		switch(entity.getType()){
+			case PolicyModelEntityType.DGNode: 
+				return this.getAllReferencesDGNode(entity.getName(), entity.source)
+			case PolicyModelEntityType.Slot: 
+				return this.getAllReferencesSlot(entity.getName(), entity.source)
+			case PolicyModelEntityType.SlotValue: 
+				return this.getAllReferencesSlotValue(entity.getName(), entity.source)
+			default:
+				return undefined
 		}
-		return funcMap[entity.getType().toString()](entity.getName(), entity.source)
 	}
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity

@@ -108,6 +108,11 @@ class LanguageServices_UnitTests {
 	static runTests() {
 		describe(LanguageServices_UnitTests.testTargetClass.name + " unit tests", function() {
 			LanguageServices_UnitTests.getDeclarations()
+			LanguageServices_UnitTests.getReferences()
+			LanguageServices_UnitTests.getRangeOfDoc()
+			LanguageServices_UnitTests.createPolicyModelEntity()
+			LanguageServices_UnitTests.getFoldingRanges()
+			//LanguageServices_UnitTests.getCompletion()
 		})
 	}
 
@@ -137,7 +142,7 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'sanity',
+				title: 'node sanity',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
@@ -155,23 +160,12 @@ class LanguageServices_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const location : Location = input.location
-			//let instancePromise : Promise<TestTarget.LanguageServices> = LanguageServices_UnitTests.create(filenames)
-			//return instancePromise.then(instance =>{
-			//})
-
-			// let promise : Promise<void> = new Promise(nul => {
-			// 	let instance = LanguageServices_UnitTests.create(filenames)
-			// 		const result = instance.getDeclarations(location)
-			// 		assert.deepEqual(result, output)
-			// 	})
-			// return promise
-
 			let instance = await LanguageServices_UnitTests.create(filenames)
 			const result = instance.getDeclarations(location)
 			assert.deepEqual(result, output)
 		}
 
-		describe('getAllDefinitionsDGNode', function() {
+		describe('getDeclarations', function() {
 			testCases.forEach((testCase, index) => {
 				it(testCase.title , function(done) {
 					test(testCase).then(run => done()).catch(err => done(err))
@@ -182,22 +176,146 @@ class LanguageServices_UnitTests {
 
 	//Test
 	static getReferences() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			}
+		]
 
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : Location = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getReferences(location)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getReferences', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getRangeOfDoc() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: 'dg1_ws_1.dg'
+				},
+				output: {start: {character: 0, line: 1},end: {character: 0, line: 12}}
+			}
+		]
 
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const filename : string = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getRangeOfDoc(filename)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getRangeOfDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static createPolicyModelEntity() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+				},
+				output: {name : 'n1', type : TestTarget.PolicyModelEntityType.DGNode}
+			}
+		]
 
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : Location = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.createPolicyModelEntity(location)
+			assert.deepEqual({name : result.name, type : result.type}, output)
+		}
+
+		describe('createPolicyModelEntity', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
 	static getFoldingRanges() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: 'dg1_ws_1.dg'
+				},
+				output: [
+					{range: {start: {character: 0, line: 1},end: {character: 27, line: 1}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 2},end: {character: 27, line: 2}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 4},end: {character: 17, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 5},end: {character: 21, line: 5}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 6},end: {character: 21, line: 6}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
+				]
+			}
+		]
 
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : string = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getFoldingRanges(location)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	//Test
