@@ -11,7 +11,7 @@ import { languagesIds } from '../../src/Utils';
 mocha.suite('document Manager test suite', ()=>{
 
 	let testFolder: string;
-	let testFolderSuffix: string = "\\server\\tests\\sample directory";
+	let testFolderSuffix: string = "/server/tests/sample directory";
 
 	let allPMFiles: {folderUri:string ,folder:string, files:string []}[] = 
 	[
