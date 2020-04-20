@@ -384,7 +384,7 @@ mocha.suite('document Manager test suite', ()=>{
 
 		mocha.before( ()=>{
 			documentManager = new TextDocumentManager();
-			fakeFileUri = pathToURI(testFolder + "//fake-file.ps");
+			fakeFileUri = pathToURI(testFolder + "/fake-file.ps");
 		});
 		
 		it ('test open folder worked',()=>{
