@@ -2,17 +2,16 @@ import * as mocha from 'mocha';
 import {TextDocumentManager, documentManagerResult, documentManagerResultTypes} from '../../src/DocumentManager'
 import { expect, assert } from 'chai';
 import { URI } from 'vscode-uri';
-import { TextDocumentItem, VersionedTextDocumentIdentifier, TextDocumentContentChangeEvent, DidChangeTextDocumentParams, Range, Position } from 'vscode-languageserver';
+import { TextDocumentItem, DidChangeTextDocumentParams, Range, Position } from 'vscode-languageserver';
 import * as fs from 'fs';
 import { PMTextDocument } from '../../src/Documents';
 import { languagesIds } from '../../src/Utils';
-import { resolve } from 'dns';
-import { rejects } from 'assert';
+
 
 mocha.suite('document Manager test suite', ()=>{
 
 	let testFolder: string;
-	let testFolderSuffix: string = "\\tests\\sample directory";
+	let testFolderSuffix: string = "\\server\\tests\\sample directory";
 
 	let allPMFiles: {folderUri:string ,folder:string, files:string []}[] = 
 	[
