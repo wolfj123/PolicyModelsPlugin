@@ -18,7 +18,9 @@
 		"vscode-uri": "^2.1.1"
 	},
 	"scripts": {
-		"test": "mocha -r ts-node/register tests/unitTests/documentManager.test.ts"
+		"test-filemanager": "mocha -r ts-node/register server/tests/unitTests/FileManager.test.ts",
+		"test-languageservices": "mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts",
+		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts && cd ../ && mocha -r ts-node/register server/tests/unitTests/FileManager.test.ts && mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts && mocha -r ts-node/register server/tests/unitTests/documentManager.test.ts"
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.11",

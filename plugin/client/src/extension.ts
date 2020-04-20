@@ -10,7 +10,6 @@ import * as Parser from 'web-tree-sitter';
 import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
-import ViewLoader from './view/ViewLoader';
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
@@ -22,7 +21,6 @@ export function activate(context: ExtensionContext) {
   // The commandId parameter must match the command field in package.json
 
   addLocalizationCommand(context);
-
 
   activateSyntaxColoring(context);
 

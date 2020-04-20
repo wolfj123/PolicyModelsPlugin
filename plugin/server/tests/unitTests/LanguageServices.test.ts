@@ -41,6 +41,7 @@ import {
 	flatten, 
 	docChange2Edit
 } from '../../src/Utils';
+import { TextDocWithChanges } from '../../src/DocumentChangesManager';
 
 //TODO: this is duplicate code - need to move it to some library
 const parsersInfo = 	//TODO: maybe extract this info from package.json
@@ -62,19 +63,19 @@ const parsersInfo = 	//TODO: maybe extract this info from package.json
 	}
 ]
 
-function getTextFromUri(uri : string, data) : string {
-	let dataEntry = data.find(e => e.uri === uri)
+function getTextFromUri(uri : string) : string | null {
+	let dataEntry = TestData.data.find(e => e.uri === uri)
 	if(isNullOrUndefined(dataEntry)) {return null}
 	return dataEntry.text
 }
 
-function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage {
+function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
 	return correspondingInfo[0].language
 }
 
-function getParserWasmPathByExtension(extension : string) : string {
+function getParserWasmPathByExtension(extension : string) : string | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
 	return correspondingInfo[0].wasm
@@ -92,124 +93,238 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 	return Promise.resolve(parser)
 }
 
+// function getTree(uri) : Promise<Parser.Tree> {					
+// 	let text = getTextFromUri(uri)
+// 	return getParser(text, uri).then((parser) => {
+// 		return parser.parse(text)
+// 	})	
+// }
 
-class TestRun {
-	className : string
-	methodName : string
-	run : () => void
-	enabled : boolean = true
-}
 
 
-abstract class TestClass {
-	abstract runTests()
-}
+class LanguageServices_UnitTests {
+	static testTargetClass = TestTarget.LanguageServices
 
-class DecisionGraphFileManager_Test extends TestClass {
-	testTargetClass = TestTarget.DecisionGraphFileManager
-
-	runTests() {
-		throw new Error("Method not implemented.");
+	static runTests() {
+		describe(LanguageServices_UnitTests.testTargetClass.name + " unit tests", function() {
+			LanguageServices_UnitTests.getDeclarations()
+			LanguageServices_UnitTests.getReferences()
+			LanguageServices_UnitTests.getRangeOfDoc()
+			LanguageServices_UnitTests.createPolicyModelEntity()
+			LanguageServices_UnitTests.getFoldingRanges()
+			//LanguageServices_UnitTests.getCompletion()
+		})
 	}
 
+	static async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
+		//let text : string = getTextFromUri(filename)
+		let docs : TextDocWithChanges[]
+		docs = filenames.map(fn => {
+			let text : string = getTextFromUri(fn)	
+			return {
+				textDocument : {
+					uri: fn,
+					languageId: null,
+					version : null,
+					getText : function() {return text},
+					positionAt : null,
+					offsetAt : null,
+					lineCount : null
+				},
+				changes : [{text : text}]
+			}
+		})
+		return await TestTarget.LanguageServices.init(docs)
+	}
+
+	//Test
+	static getDeclarations() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : Location = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getDeclarations(location)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getDeclarations', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	//Test
+	static getReferences() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : Location = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getReferences(location)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getReferences', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	//Test
+	static getRangeOfDoc() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: 'dg1_ws_1.dg'
+				},
+				output: {start: {character: 0, line: 1},end: {character: 0, line: 12}}
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const filename : string = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getRangeOfDoc(filename)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getRangeOfDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	//Test
 	static createPolicyModelEntity() {
-		
-	}
-	static getAllDefinitionsDGNode() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+				},
+				output: {name : 'n1', type : TestTarget.PolicyModelEntityType.DGNode}
+			}
+		]
 
-	}
-	static getAllDefinitionsSlot(){
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : Location = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.createPolicyModelEntity(location)
+			assert.deepEqual({name : result.name, type : result.type}, output)
+		}
+
+		describe('createPolicyModelEntity', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	static getAllDefinitionsSlotValue(){
-	}
-
-	static getAllReferencesDGNode() {
-	}
-
-	static getAllReferencesSlot() {
-	}
-
-	static getAllReferencesSlotValue() {
-	}
-
+	//Test
 	static getFoldingRanges() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: 'dg1_ws_1.dg'
+				},
+				output: [
+					{range: {start: {character: 0, line: 1},end: {character: 27, line: 1}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 2},end: {character: 27, line: 2}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 4},end: {character: 17, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 5},end: {character: 21, line: 5}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 6},end: {character: 21, line: 6}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const location : string = input.location
+			let instance = await LanguageServices_UnitTests.create(filenames)
+			const result = instance.getFoldingRanges(location)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
-	static getAutoComplete() {
-
-	}
-}
-
-class PolicySpaceFileManager_Test extends TestClass {
-	testTargetClass = TestTarget.PolicySpaceFileManager
-
-	runTests() {
+	//Test
+	static getCompletion() {
+		//TODO:
 		throw new Error("Method not implemented.");
 	}
-
-	createPolicyModelEntity() {
-		
-	}
-	getAllDefinitionsDGNode() {
-
-	}
-	getAllDefinitionsSlot(){
-	}
-
-	getAllDefinitionsSlotValue(){
-	}
-
-	getAllReferencesDGNode() {
-	}
-
-	getAllReferencesSlot() {
-	}
-
-	getAllReferencesSlotValue() {
-	}
-
-	getFoldingRanges() {
-	}
-
-	getAutoComplete() {
-
-	}
 }
 
-class ValueInferenceFileManager_Test extends TestClass {
-	testTargetClass = TestTarget.PolicySpaceFileManager
 
-	runTests() {
-		throw new Error("Method not implemented.");
-	}
 
-	createPolicyModelEntity() {
-		
-	}
-	getAllDefinitionsDGNode() {
-
-	}
-	getAllDefinitionsSlot(){
-	}
-
-	getAllDefinitionsSlotValue(){
-	}
-
-	getAllReferencesDGNode() {
-	}
-
-	getAllReferencesSlot() {
-	}
-
-	getAllReferencesSlotValue() {
-	}
-
-	getFoldingRanges() {
-	}
-
-	getAutoComplete() {
-
-	}
-}
-
+LanguageServices_UnitTests.runTests()

@@ -46,13 +46,20 @@ import { isNullOrUndefined } from 'util';
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
 
-
 export class LanguageServicesFacade {
 	services : LanguageServices
 
-	constructor(docs : TextDocWithChanges[]) {
-		this.services = new LanguageServices(docs)
+	static async init(docs : TextDocWithChanges[]) : Promise<LanguageServicesFacade> {
+		let instance : LanguageServicesFacade = new LanguageServicesFacade
+		let services : LanguageServices = await LanguageServices.init(docs)
+		instance.services = services
+		return instance
 	}
+
+	//TODO: it has to be async
+	// constructor(docs : TextDocWithChanges[]) {
+	// 	this.services = new LanguageServices(docs)
+	// }
 
 	addDocs(docs : TextDocWithChanges[]) {
 		this.services.addDocs(docs)
@@ -149,11 +156,20 @@ export class LanguageServices {
 		}
 	]
 
-	constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
-		this.initParsers()
-		this.fileManagers = new Map()
-		this.populateMaps(docs)
+	static async init(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
+		let instance : LanguageServices = new LanguageServices()
+		await instance.initParsers()
+		instance.fileManagers = new Map()
+		instance.populateMaps(docs)
+		return instance
 	}
+
+	//TODO: async
+	// constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
+	// 	this.initParsers()
+	// 	this.fileManagers = new Map()
+	// 	this.populateMaps(docs)
+	// }
 
 	addDocs(docs : TextDocWithChanges[]) {
 		this.populateMaps(docs)
@@ -179,7 +195,10 @@ export class LanguageServices {
 	async initParsers() {
 		this.parsers = new Map()
 		for(let info of this.parsersInfo) {
-			const wasm = info.wasm
+			//const wasm = info.wasm
+			let path = "./parsers/"
+			const wasm = path.concat(info.wasm)
+
 			//const absolute = path.join(context.extensionPath, 'parsers', wasm
 			await Parser.init()
 			const parser = new Parser()
@@ -202,8 +221,12 @@ export class LanguageServices {
 	}
 
 	populateMaps(docs : TextDocWithChanges[]) {
-		for (let doc of docs){
-			let fileManager : FileManager = FileManagerFactory.create(doc, this.getParserByExtension, this.getLanguageByExtension)
+		for (let doc of docs) {
+			const uri = doc.textDocument.uri
+			const extension = getFileExtension(uri)
+			let fileManager : FileManager = FileManagerFactory.create(doc, 
+				this.getParserByExtension(extension), 
+				this.getLanguageByExtension(extension))
 			this.fileManagers.set(doc.textDocument.uri, fileManager)
 		}
 	}
@@ -370,24 +393,40 @@ export abstract class FileManager {
 
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
+		// let funcMap /*: {DGNode : (string) => Location[], } */ = {
+		// 	DGNode: this.getAllDefinitionsDGNode,
+		// 	Slot: this.getAllDefinitionsSlot,
+		// 	SlotValue: this.getAllDefinitionsSlotValue
+		// }
+		// let type : string = PolicyModelEntityType[entity.getType()]
+		// let func : (string) => Location[] =  funcMap[type]
+		//return func(entity.getName())
 
-		let funcMap = {
-			DGNode: this.getAllDefinitionsDGNode,
-			Slot: this.getAllDefinitionsSlot,
-			SlotValue: this.getAllDefinitionsSlotValue
+		switch(entity.getType()){
+			case PolicyModelEntityType.DGNode: 
+				return this.getAllDefinitionsDGNode(entity.getName())
+			case PolicyModelEntityType.Slot: 
+				return this.getAllDefinitionsDGNode(entity.getName())
+			case PolicyModelEntityType.SlotValue: 
+				return this.getAllDefinitionsDGNode(entity.getName())
+			default:
+				return undefined
 		}
-		return funcMap[entity.getType().toString()](entity.getName())
+
 	}
 
 	getAllReferences(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
-
-		let funcMap = {
-			DGNode: this.getAllReferencesDGNode,
-			Slot: this.getAllReferencesSlot,
-			SlotValue: this.getAllReferencesSlotValue
+		switch(entity.getType()){
+			case PolicyModelEntityType.DGNode: 
+				return this.getAllReferencesDGNode(entity.getName(), entity.source)
+			case PolicyModelEntityType.Slot: 
+				return this.getAllReferencesSlot(entity.getName(), entity.source)
+			case PolicyModelEntityType.SlotValue: 
+				return this.getAllReferencesSlotValue(entity.getName(), entity.source)
+			default:
+				return undefined
 		}
-		return funcMap[entity.getType().toString()](entity.getName(), entity.source)
 	}
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
@@ -406,11 +445,11 @@ export abstract class FileManager {
 }
 
 export class FileManagerFactory {
-	static create(doc : TextDocWithChanges, getParserByExtension : (string) => Parser, getLanguageByExtension : (string) => PolicyModelsLanguage) : FileManager | null {
+	static create(doc : TextDocWithChanges, parser : Parser, language : PolicyModelsLanguage) : FileManager | null {
 		const uri = doc.textDocument.uri
 		const extension = getFileExtension(uri)
-		let parser = getParserByExtension(extension)
-		let language = getLanguageByExtension(extension)
+		//let parser = getParserByExtension(extension)
+		//let language = getLanguageByExtension(extension)
 		let tree : Parser.Tree = parser.parse(doc.textDocument.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
