@@ -225,7 +225,7 @@ export class TextDocumentManager {
 	private filesCollector(path,filesToParse){
 		let filesInDirectory: string[] = fs.readdirSync(path,"utf-8");
 		filesInDirectory.forEach(currDirEntry => {
-			let currFilePath = path + "\\" + currDirEntry;
+			let currFilePath = path + "/" + currDirEntry;
 			if (fs.statSync(currFilePath).isDirectory()){
 				this.filesCollector(currFilePath,filesToParse);
 			}else{
