@@ -10,19 +10,14 @@ import {
 	FoldingRangeParams,
 	TextDocumentPositionParams,
 	PrepareRenameParams,
-	Location
+	Location,
+	TextDocumentItem,
+	TextDocumentIdentifier,
+	DidChangeTextDocumentParams,
+	DocumentUri
 } from 'vscode-languageserver';
 
 import { TextDocumentManager } from './DocumentManager';
-
-// export interface SolverInt<T extends TextDocWithChanges> {
-// 	solve(params:any, requestName: string, textDocument): any;
-// 	onDidChangeContent(change: TextDocumentChangeEvent<T>): void;
-// 	onDidOpen(change: TextDocumentChangeEvent<T>): void;
-// 	onDidSave(change: TextDocumentChangeEvent<T>): void;
-// 	onDidClose(change: TextDocumentChangeEvent<T>): void;
-// 	onDidChangeWatchedFiles?(change: DidChangeWatchedFilesParams): void;
-// }
 
 export interface SolverInt {
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;
@@ -32,6 +27,13 @@ export interface SolverInt {
 	onRenameRequest(params:RenameParams, uri: string): WorkspaceEdit;
 	onReferences(params: ReferenceParams, uri: string): Location[];
 	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange[];
+
+	onDidOpenTextDocument (opendDocParam: TextDocumentItem);
+	onDidCloseTextDocument (closedDcoumentParams: TextDocumentIdentifier);
+	onDidChangeTextDocument (params: DidChangeTextDocumentParams);
+	onDeleteFile (deletedFile:DocumentUri);
+	onCreatedNewFile (newFileUri:DocumentUri);
+	onOpenFolder (pathUri: string | null): void;
 }
 
 
@@ -40,10 +42,11 @@ export class PMSolver implements SolverInt{
 	private _documentManager: TextDocumentManager;
 	private _languageFacade;
 
-	constructor(docManager: TextDocumentManager){
-		this._documentManager = docManager;
+	constructor(){
+		this._documentManager = new TextDocumentManager;
 		//TODO init language Facade
 	}
+	
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList {
 		//throw new Error('Method not implemented.');
 		return null;
@@ -77,6 +80,32 @@ export class PMSolver implements SolverInt{
 	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {
 		//throw new Error('Method not implemented.');
 		return null;
+	}
+
+
+
+	onDidOpenTextDocument(opendDocParam: TextDocumentItem) {
+		this._documentManager.openedDocumentInClient(opendDocParam);
+	}
+
+	onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
+		this._documentManager.closedDocumentInClient(closedDcoumentParams);
+	}
+
+	onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
+		this._documentManager.changeTextDocument(params);
+	}
+
+	onDeleteFile(deletedFile: string) {
+		this._documentManager.deletedDocument(deletedFile);
+	}
+
+	onCreatedNewFile(newFileUri: string) {
+		this._documentManager.clientCreatedNewFile(newFileUri);
+	}
+
+	onOpenFolder(pathUri: string | null): void {
+		this._documentManager.openedFolder(pathUri);
 	}
 	
 }

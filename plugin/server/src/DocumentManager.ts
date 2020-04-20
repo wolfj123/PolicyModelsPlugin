@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import { languagesIds } from './Utils';
 import { PMTextDocument, createFromTextDocumentItem, createNewTextDocument } from './Documents';
 
-export interface documentManagerResult {
+export interface DocumentManagerResult {
 	type: documentManagerResultTypes,
 	result?: any;
 }
@@ -23,7 +23,78 @@ export enum documentManagerResultTypes {
 	updateFile
 }
 
-export class TextDocumentManager {
+export interface TextDocumentManagerInt{
+	/**
+	 * indicates if the clinet has a folder or only open files
+	 */
+	folderMode: boolean;
+
+	/**
+	 * sets a file to open, updates data structure to contanin file with text and version received in parameters,
+	 * if it is needed it create a file in the Manager it, in case of difference between the file we already have and the parameters
+	 * received the existing file in Manager will be updated to the params information
+	 * use for onDidOpenTextDocument
+	 * @param opendDocParam 
+	 * @returns array of Promises that will resolve when we finished reading the folder, the promises can't reject
+	 * they return documentManagerResult [], with result of the new PMTextDocument created objects
+	 */
+	openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult []>;
+
+	/**
+	 * sets a file to close this can be done only for files already opened in client(using openedDocumentInClient),
+	 * use for onDidCloseTextDocument
+	 * @param closedDcoumentParams 
+	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
+	 * the promises resolves to a documentManagerResult with no result in it
+	 */
+	closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult>;
+
+	/**
+	 * updates the text of a file already opened in client(using openedDocumentInClient)
+	 * use for onDidChangeTextDocument
+	 * this function updates the relevant files with the new text
+	 * it only supports incremental change !!!!
+	 * @param params 
+	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
+	 * the promises resolves to a DocumentManagerResult with result with array of the changes if exist
+	 */ 
+	changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>;
+
+	/**
+	 * delets a file from the documnet manager
+	 * use for onDidChangeWatchedFiles
+	 * @param deletedFile 
+	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
+	 * the promises resolves to a DocumentManagerResult with result contiaing the URI of deleted file.
+	 */
+	deletedDocument(deletedFile:DocumentUri): Promise<DocumentManagerResult>;
+
+	/**
+	 * this creates a new empty file in the manager, if the file already exists nothing will happen 
+	 * use for onDidChangeWatchedFiles
+	 * @param newFileUri 
+	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
+	 * the promises resolves to a DocumentManagerResult with result containt the URI of created file.
+	 */
+	clientCreatedNewFile(newFileUri:DocumentUri): Promise<DocumentManagerResult>;
+
+	/**
+	 * this reads all the files in folder and sub folders, and create PMTextDocument object for all relevant 
+	 * Policy Model files, this function is synchronic and must be called
+	 * if this function isn't called the rest of the functions will not work, because they all wait for this function to finish its work
+	 * @param pathUri null for no folder, string of the folder URI
+	 */
+	openedFolder(pathUri: string | null): void;
+
+	/**
+	 * returns a copy of PMTextDocument of the document with the requeste URI
+	 * @param uri 
+	 */
+	getDocument(uri: string): PMTextDocument;
+}
+
+export class TextDocumentManager implements TextDocumentManagerInt {
+
 	private _finishedReadingFolder: boolean;
 	private _noOpenFolderMode: boolean;	// indicate only a file is open and not a directory
 	private _allDocuments: PMTextDocument[];
@@ -38,19 +109,22 @@ export class TextDocumentManager {
 		return ! this._noOpenFolderMode
 	}
 
-	public get allDocumnets(): PMTextDocument[] {
-		return this._allDocuments.map(x=>x);
+	public getDocument(uri: string): PMTextDocument{
+		return null;
 	}
 
-	public getFileLastCharPosition(){
-		
+	/**
+	 * !!!!!! USE ONLY FOR TEST !!!!!!!!
+	 */
+	public get allDocumnets(): PMTextDocument[] {
+		return this._allDocuments.map(x=>x);
 	}
 
 	/**
 	 * when the user opens a new files syncs severt document to client and updates AST if needed
 	 * @param params 
 	 */
-	public openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<documentManagerResult []>  {
+	public openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult []>  {
 		if (! this._finishedReadingFolder){
 			return new Promise(resolve =>
 				setTimeout(() => resolve(this.openedDocumentInClient(opendDocParam)) , 0)
@@ -66,7 +140,7 @@ export class TextDocumentManager {
 
 			let newDocument:PMTextDocument = this.createAndAddNewFile(undefined,opendDocParam);
 
-			let ans: documentManagerResult []= [{
+			let ans: DocumentManagerResult []= [{
 				type: documentManagerResultTypes.newFile,
 				result: "shit 2"//newDocument
 			}];
@@ -76,11 +150,11 @@ export class TextDocumentManager {
 		}else if (openedTextDocument.getText() !== opendDocParam.text){
 			this.deletedDocument(opendDocParam.uri);
 			let newDocument: PMTextDocument =  this.createAndAddNewFile(undefined,opendDocParam);
-			let removeAns: documentManagerResult = {
+			let removeAns: DocumentManagerResult = {
 				type: documentManagerResultTypes.removeFile,
 				result: opendDocParam.uri
 			};
-			let addAns: documentManagerResult = {
+			let addAns: DocumentManagerResult = {
 				type: documentManagerResultTypes.newFile,
 				result: "shit 1"//newDocument
 			};
@@ -91,7 +165,7 @@ export class TextDocumentManager {
 		}
 	}
 
-	public closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<documentManagerResult> {
+	public closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult> {
 		if (! this._finishedReadingFolder){
 
 			return new Promise(resolve =>
@@ -107,7 +181,7 @@ export class TextDocumentManager {
 
 		if (this._noOpenFolderMode){
 			this._allDocuments.splice(closedDocmentIdx,1);
-			let ans: documentManagerResult = {
+			let ans: DocumentManagerResult = {
 				type: documentManagerResultTypes.removeFile,
 				result: closedDcoumentParams.uri
 			}
@@ -119,7 +193,7 @@ export class TextDocumentManager {
 	}
 
 
-	public changeTextDocument(params: DidChangeTextDocumentParams): Promise<documentManagerResult>{
+	public changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>{
 		if (! this._finishedReadingFolder){
 			return new Promise(resolve =>
 					setTimeout(() => resolve(this.changeTextDocument(params)), 0)
@@ -132,18 +206,14 @@ export class TextDocumentManager {
 		}
 
 		let changesRanges: Range []= documentToUpdate.update(params.contentChanges,params.textDocument.version);
-		let ans:documentManagerResult = {
+		let ans:DocumentManagerResult = {
 			type: documentManagerResultTypes.updateFile,
 			result: changesRanges
 		}
 		return Promise.resolve(ans);
 	}
 
-	/**
-	 * removes deleted files from _allDocuments
-	 * @param params 
-	 */
-	public deletedDocument(deletedFile:DocumentUri): Promise<documentManagerResult> {
+	public deletedDocument(deletedFile:DocumentUri): Promise<DocumentManagerResult> {
 		if (! this._finishedReadingFolder){
 			return new Promise(resolve=>
 					setTimeout(() => resolve(this.deletedDocument(deletedFile)), 0)
@@ -158,7 +228,7 @@ export class TextDocumentManager {
 		}
 
 		this._allDocuments.splice(deletedIdx,1);
-		let ans: documentManagerResult = {
+		let ans: DocumentManagerResult = {
 			type: documentManagerResultTypes.removeFile,
 			result: deletedFile
 		}
@@ -166,7 +236,7 @@ export class TextDocumentManager {
 		return Promise.resolve(ans);
 	}
 
-	public clientCreatedNewFile(newFileUri:DocumentUri): Promise<documentManagerResult>{
+	public clientCreatedNewFile(newFileUri:DocumentUri): Promise<DocumentManagerResult>{
 		if (! this._finishedReadingFolder){
 			return new Promise(resolve =>
 					setTimeout(()=> resolve(this.clientCreatedNewFile(newFileUri)) , 0)
@@ -179,7 +249,7 @@ export class TextDocumentManager {
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
 		let newDocumet = this.createAndAddNewFile(newFileUri);
-		let ans: documentManagerResult = {
+		let ans: DocumentManagerResult = {
 			type: documentManagerResultTypes.newFile,
 			result: newDocumet
 		}
@@ -201,7 +271,7 @@ export class TextDocumentManager {
 		return newDoc;
 	}
 
-	public openedFolder(pathUri: string){
+	public openedFolder(pathUri: string | null) : void {
 		if (pathUri === null){
 			this._noOpenFolderMode = true;
 			this._finishedReadingFolder = true;

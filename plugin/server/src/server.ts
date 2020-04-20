@@ -42,14 +42,10 @@ import {
 
 import * as child_process from "child_process";
 import {SolverInt, PMSolver} from './Solver';
-import { TextDocumentManager } from './DocumentManager';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
-
-let documentsManager: TextDocumentManager = new TextDocumentManager();
-
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
@@ -58,7 +54,7 @@ let documentsManager: TextDocumentManager = new TextDocumentManager();
 // Listen on the connection
 connection.listen();
 
-let solver: SolverInt = new PMSolver(documentsManager);
+let solver: SolverInt = new PMSolver();
 
 // -------------- Initialize And Capabilites ----------------------
 let clientSupportswatchedFiles: boolean = false;
@@ -223,11 +219,13 @@ connection.onInitialized(() => {
 			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
 
+		// this function muse be declared here or else an error will occur
 		//we need this in order to get the folder that is currently open.
 		connection.workspace.getWorkspaceFolders().then(_event => {
 			connection.console.log('getWorkspaceFolders folder change event received.');
-			documentsManager.openedFolder(_event[0].uri);
+			solver.onOpenFolder(_event[0].uri);
 		});
+		
 
 
 		// //this is not needed - returns VS code configurations we don't care
@@ -264,8 +262,6 @@ connection.onDefinition(
 		return solver.onDefinition(params, params.textDocument.uri);
 });
 
-
-
 connection.onFoldingRanges(
 	(params: FoldingRangeParams): FoldingRange[] => {
 		return solver.onFoldingRanges(params, params.textDocument.uri);
@@ -298,14 +294,16 @@ function runModel(param : string[]) : string {
 
 // --------------------- File Updates  -----------------------------
 
+
+
 connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 	_change.changes.forEach( (currChange: FileEvent) => {
 		switch(currChange.type){
 			case FileChangeType.Created:
-				documentsManager.clientCreatedNewFile(currChange.uri);
+				solver.onOpenFolder(currChange.uri);
 				break;
 			case FileChangeType.Deleted:
-				documentsManager.deletedDocument(currChange.uri);
+				solver.onDeleteFile(currChange.uri);
 				break;
 		}
 	});
@@ -314,19 +312,18 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 			
 connection.onDidChangeTextDocument(event =>{
 	console.log("onDidChangeTextDocument")
-	documentsManager.changeTextDocument(event);
+	solver.onDidChangeTextDocument(event);
 });
 
 connection.onDidCloseTextDocument(event =>{
 	console.log(`onDidCloseTextDocument`);
-	documentsManager.closedDocumentInClient(event.textDocument);
+	solver.onDidCloseTextDocument(event.textDocument);
 
 });
 
 connection.onDidOpenTextDocument(event =>{
 	console.log(`onDidOpenTextDocument`);
-	documentsManager.openedDocumentInClient(event.textDocument);
-	
+	solver.onDidOpenTextDocument(event.textDocument);
 });
 
 

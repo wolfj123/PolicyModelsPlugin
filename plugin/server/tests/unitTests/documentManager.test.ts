@@ -1,5 +1,5 @@
 import * as mocha from 'mocha';
-import {TextDocumentManager, documentManagerResult, documentManagerResultTypes} from '../../src/DocumentManager'
+import {TextDocumentManager, DocumentManagerResult, documentManagerResultTypes} from '../../src/DocumentManager'
 import { expect, assert } from 'chai';
 import { URI } from 'vscode-uri';
 import { TextDocumentItem, DidChangeTextDocumentParams, Range, Position } from 'vscode-languageserver';
@@ -264,7 +264,7 @@ mocha.suite('document Manager test suite', ()=>{
 			const promiseCreatetor = async (folderName,fileName,expecteAmountOfOpenDocuments): Promise<any> => {
 				return new Promise (async (resolve,reject) => {
 					let dgItem: TextDocumentItem= createTextDocumentItem(getFileFullPath(folderName,fileName));
-					let docManagerAns: Promise<documentManagerResult []>  = documentManager.openedDocumentInClient(dgItem);
+					let docManagerAns: Promise<DocumentManagerResult []>  = documentManager.openedDocumentInClient(dgItem);
 					let allDocs:PMTextDocument [] = documentManager.allDocumnets;
 					try{
 						expect(allDocs.length).equals(expecteAmountOfOpenDocuments, "expected to have " + expecteAmountOfOpenDocuments + " document in manager, actual: " + allDocs.length);
@@ -312,7 +312,7 @@ mocha.suite('document Manager test suite', ()=>{
 				//test opening file with different text
 				let diffTextItem: TextDocumentItem= createTextDocumentItem(getFileFullPath(params[4].folderName,params[4].fileName));
 				diffTextItem.text = "bla bla";
-				let docManagerAns: Promise<documentManagerResult []>  =documentManager.openedDocumentInClient(diffTextItem);
+				let docManagerAns: Promise<DocumentManagerResult []>  =documentManager.openedDocumentInClient(diffTextItem);
 				let allDocs:PMTextDocument [] = documentManager.allDocumnets;
 				try{
 					expect(allDocs.length).equals(5, "expected to have 5 opened documents after diff open");
