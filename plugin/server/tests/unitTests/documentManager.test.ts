@@ -42,7 +42,7 @@ mocha.suite('document Manager test suite', ()=>{
 		},
 		{	//2
 			folderUri:"a/Recursive-Sections",
-			folder:"a\\Recursive-Sections",
+			folder:"a/Recursive-Sections",
 			files:
 			[	
 				"decision-graph.dg",
@@ -51,7 +51,7 @@ mocha.suite('document Manager test suite', ()=>{
 		},
 		{	//3
 			folderUri:"a/a/Find-Runs-playground",
-			folder:"a\\a\\Find-Runs-playground",
+			folder:"a/a/Find-Runs-playground",
 			files:
 			[	
 				"decision-graph.dg",
@@ -589,7 +589,7 @@ mocha.suite('document Manager test suite', ()=>{
 
 
 	function getFileFullPath(folderName: string, fileName: string): string {
-		return testFolder + "\\" + folderName +"\\"+ fileName;
+		return testFolder + "/" + folderName +"/"+ fileName;
 	}
 
 	function getFileURI (folderName: string, fileName: string): string {
