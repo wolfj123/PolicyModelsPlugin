@@ -10,15 +10,15 @@ import { getDocUri, activate } from './helper';
 describe('Should do completion', () => {
 	const docUri = getDocUri('completion.pspace');
 
-	it('Completes code in txt file', async () => {
-		await testCompletion(docUri, new vscode.Position(0, 0), {
-			items: [
-				{ label: 'DecisionGraph', kind: vscode.CompletionItemKind.Text },
-				{ label: 'PolicyModels', kind: vscode.CompletionItemKind.Text },
-				{ label: 'PolicySpace', kind: vscode.CompletionItemKind.Text }
-			]
-		});
-	});
+	// it('Completes code in txt file', async () => {
+	// 	await testCompletion(docUri, new vscode.Position(0, 0), {
+	// 		items: [
+	// 			{ label: 'DecisionGraph', kind: vscode.CompletionItemKind.Text },
+	// 			{ label: 'PolicyModels', kind: vscode.CompletionItemKind.Text },
+	// 			{ label: 'PolicySpace', kind: vscode.CompletionItemKind.Text }
+	// 		]
+	// 	});
+	// });
 });
 
 async function testCompletion(
