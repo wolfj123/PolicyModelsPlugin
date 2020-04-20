@@ -16,8 +16,6 @@ import {
 	TextDocumentContentChangeEvent,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter'
-import { isNullOrUndefined } from 'util';
-
 export enum languagesIds {
 	policyspace =  0,
 	decisiongraph =  1,
@@ -30,11 +28,6 @@ const dgExt:string = "dg";
 const viExt:string = "vi";
 
 const allFileExtensions: string [] = [psExt, pspaceExt, dgExt, viExt];
-
-export declare type allParamsTypes = ReferenceParams | DeclarationParams | RenameParams | TextDocumentPositionParams | 
-							  CompletionItem | FoldingRangeParams | string;
-export declare type allSolutionTypes = Location[] | WorkspaceEdit | CompletionList | CompletionItem | FoldingRange[] |
-								LocationLink[] | Range;
 
 export function flatten (arr: any [][]): any [] {
 	let ans: any[] = [];

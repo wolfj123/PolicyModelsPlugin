@@ -68,7 +68,7 @@ export class TextDocumentManager {
 
 			let ans: documentManagerResult []= [{
 				type: documentManagerResultTypes.newFile,
-				result: newDocument
+				result: "shit 2"//newDocument
 			}];
 
 			return Promise.resolve(ans);
@@ -82,7 +82,7 @@ export class TextDocumentManager {
 			};
 			let addAns: documentManagerResult = {
 				type: documentManagerResultTypes.newFile,
-				result: newDocument
+				result: "shit 1"//newDocument
 			};
 			return Promise.resolve([removeAns,addAns]);
 		}else{
@@ -148,14 +148,11 @@ export class TextDocumentManager {
 			return new Promise(resolve=>
 					setTimeout(() => resolve(this.deletedDocument(deletedFile)), 0)
 				);
-			// setTimeout(() => {
-			// 	this.deletedDocument(deletedFile);
-			// }, 0);
-			// return;
 		}
 
 		let deletedIdx: number = this._allDocuments.findIndex(currDoc => currDoc .uri === deletedFile);
 		if (deletedIdx === -1){
+			console.log("shit here in delete")
 			// log error
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
@@ -177,8 +174,8 @@ export class TextDocumentManager {
 		}
 
 		// if the user changes the name of a file when it is opened in the client than openedDocumentInClient
-		// happens before this function and there we already handle it and enter the file to _allDocuments
-		if (this._allDocuments.findIndex(currDoc => currDoc.uri === newFileUri) !== -1){
+		// happens before this function and there we already handling it
+		if (this._allDocuments.find(currDoc => currDoc.uri === newFileUri) !== undefined){
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
 		let newDocumet = this.createAndAddNewFile(newFileUri);
@@ -190,7 +187,7 @@ export class TextDocumentManager {
 		return Promise.resolve(ans);
 	}
 
-	private createAndAddNewFile(newFileUri:string = undefined  ,textDocument?: TextDocumentItem ) {
+	private createAndAddNewFile(newFileUri:string = undefined  ,textDocument?: TextDocumentItem ): PMTextDocument {
 		let newDoc:PMTextDocument = undefined;
 		if (newFileUri !== undefined){
 			newDoc = createNewTextDocument(newFileUri,this.getLangugeIdFromUri(newFileUri));
@@ -204,7 +201,7 @@ export class TextDocumentManager {
 		return newDoc;
 	}
 
-	public openedFolder(pathUri){
+	public openedFolder(pathUri: string){
 		if (pathUri === null){
 			this._noOpenFolderMode = true;
 			this._finishedReadingFolder = true;
@@ -212,7 +209,7 @@ export class TextDocumentManager {
 		}
 		let path = URI.parse(pathUri).fsPath;
 		let filesToParse: {name: string, languageId: languagesIds} []= [];
-		console.log(path);
+		//console.log(path);
 		this.filesCollector(path,filesToParse);
 		filesToParse.forEach(currFile => {
 			let fileContent: string = fs.readFileSync(currFile.name,"utf-8");

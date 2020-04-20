@@ -68,6 +68,8 @@ export interface PMTextDocument {
 	isEqual(other:PMTextDocument): boolean;
 
 	update(changes: TextDocumentContentChangeEvent[], version: number): Range[];
+
+	lastChanges: Range[];
 }
 
 class FullTextDocument implements PMTextDocument {
@@ -77,6 +79,7 @@ class FullTextDocument implements PMTextDocument {
 	private _version: number;
 	private _content: string;
 	private _lineOffsets: number[] | undefined;
+	private _lastChanges: Range[];
 
 	public constructor(uri: DocumentUri, languageId: languagesIds, version: number, content: string) {
 		this._uri = uri;
@@ -84,6 +87,11 @@ class FullTextDocument implements PMTextDocument {
 		this._version = version;
 		this._content = content;
 		this._lineOffsets = undefined;
+		this._lastChanges = [];
+	}
+
+	public get lastChanges(): Range[] {
+		return this._lastChanges;
 	}
 
 	public get uri(): string {
@@ -166,6 +174,7 @@ class FullTextDocument implements PMTextDocument {
 			}
 		}
 		this._version = version;
+		this._lastChanges = changesRange;
 		return changesRange;
 	}
 
