@@ -91,12 +91,17 @@ export interface TextDocumentManagerInt{
 	 * @param uri 
 	 */
 	getDocument(uri: string): PMTextDocument;
+
+	/**
+	 * @returns array of all documents managed by this class
+	 */
+	allDocumnets;
 }
 
 export class TextDocumentManager implements TextDocumentManagerInt {
 
 	private _finishedReadingFolder: boolean;
-	private _noOpenFolderMode: boolean;	// indicate only a file is open and not a directory
+	private _noOpenFolderMode: boolean;	// indicates if a folder was opened or just some files
 	private _allDocuments: PMTextDocument[];
 
 	constructor(){
@@ -109,13 +114,10 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		return ! this._noOpenFolderMode
 	}
 
-	public getDocument(uri: string): PMTextDocument{
-		return null;
+	public getDocument(uri: string): PMTextDocument {
+		return this._allDocuments.find(curr => curr.uri===uri);
 	}
 
-	/**
-	 * !!!!!! USE ONLY FOR TEST !!!!!!!!
-	 */
 	public get allDocumnets(): PMTextDocument[] {
 		return this._allDocuments.map(x=>x);
 	}
@@ -201,7 +203,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		}
 		let documentToUpdate: PMTextDocument = this._allDocuments.find(curr=> curr.uri === params.textDocument.uri);
 		if (documentToUpdate === undefined){
-			//Log erro
+			//Log error
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
 
@@ -222,7 +224,6 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 
 		let deletedIdx: number = this._allDocuments.findIndex(currDoc => currDoc .uri === deletedFile);
 		if (deletedIdx === -1){
-			console.log("shit here in delete")
 			// log error
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
