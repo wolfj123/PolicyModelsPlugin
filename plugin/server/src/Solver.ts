@@ -18,6 +18,7 @@ import {
 } from 'vscode-languageserver';
 
 import { TextDocumentManager } from './DocumentManager';
+import { LanguageServicesFacade } from './LanguageServices';
 
 export interface SolverInt {
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;

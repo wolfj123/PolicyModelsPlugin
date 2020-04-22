@@ -9,7 +9,7 @@ import * as fs from 'fs';
 
 
 import { languagesIds } from './Utils';
-import { PMTextDocument, createFromTextDocumentItem, createNewTextDocument } from './Documents';
+import { PMTextDocument, createFromTextDocumentItem, createNewTextDocument, changeInfo } from './Documents';
 
 export interface DocumentManagerResult {
 	type: documentManagerResultTypes,
@@ -207,7 +207,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
 
-		let changesRanges: Range []= documentToUpdate.update(params.contentChanges,params.textDocument.version);
+		let changesRanges: changeInfo []= documentToUpdate.update(params.contentChanges,params.textDocument.version);
 		let ans:DocumentManagerResult = {
 			type: documentManagerResultTypes.updateFile,
 			result: changesRanges
