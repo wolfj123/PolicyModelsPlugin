@@ -4,8 +4,13 @@ import { DocumentUri,
 		 TextDocumentContentChangeEvent,
 		 TextDocumentItem
 		} from 'vscode-languageserver';
-import { languagesIds } from './Utils';
+import { languagesIds, newRange } from './Utils';
 
+
+export interface changeInfo{
+	oldRange: Range,
+	newRange: Range
+}
 
 export interface PMTextDocument {
     /**
@@ -78,12 +83,12 @@ export interface PMTextDocument {
 	 * @param version version to set to file after change
 	 * @returns array of the ranges of the changed text, this is array of the new text range, not the old
 	 */
-	update(changes: TextDocumentContentChangeEvent[], version: number): Range[];
+	update(changes: TextDocumentContentChangeEvent[], version: number): changeInfo[];
 
 	/**
 	 * array of the last changes range made to the file
 	 */
-	lastChanges: Range[];
+	lastChanges: changeInfo[]
 }
 
 class FullTextDocument implements PMTextDocument {
@@ -93,7 +98,7 @@ class FullTextDocument implements PMTextDocument {
 	private _version: number;
 	private _content: string;
 	private _lineOffsets: number[] | undefined; // only use getter for this, this value is lazy
-	private _lastChanges: Range[];
+	private _lastChanges: changeInfo[];
 
 	public constructor(uri: DocumentUri, languageId: languagesIds, version: number, content: string) {
 		this._uri = uri;
@@ -104,7 +109,7 @@ class FullTextDocument implements PMTextDocument {
 		this._lastChanges = [];
 	}
 
-	public get lastChanges(): Range[] {
+	public get lastChanges(): changeInfo[] {
 		return this._lastChanges;
 	}
 
@@ -133,8 +138,8 @@ class FullTextDocument implements PMTextDocument {
 		return this._content;
 	}
 
-	public update(changes: TextDocumentContentChangeEvent[], version: number): Range[] {
-		let changesRange: Range[] = []; // keeps all the changes Range
+	public update(changes: TextDocumentContentChangeEvent[], version: number): changeInfo[] {
+		let changesRange: changeInfo[] = []; // keeps all the changes Range
 		for (let change of changes) {
 			if (FullTextDocument.isIncremental(change)) {
 				// makes sure start is before end
@@ -174,13 +179,20 @@ class FullTextDocument implements PMTextDocument {
 					start: change.range.start,
 					end: this.positionAt(change.text.length + startOffset)
 				}
-				changesRange.push(newChangePosition);
+				changesRange.push({
+					oldRange: change.range,
+					newRange: newChangePosition
+				});
 			} else if (FullTextDocument.isFull(change)) {
+				let oldRange: Range = {start: this.positionAt(0), end: this.positionAt(this._content.length) }
 				this._content = change.text;
 				this._lineOffsets = undefined;
 				changesRange.push({
+					oldRange: oldRange,
+					newRange : {
 					start: this.positionAt(0),
 					end: this.positionAt(change.text.length)
+					}
 				});
 
 			} else {

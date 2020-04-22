@@ -4,11 +4,11 @@ import { expect, assert } from 'chai';
 import { URI } from 'vscode-uri';
 import { TextDocumentItem, DidChangeTextDocumentParams, Range, Position } from 'vscode-languageserver';
 import * as fs from 'fs';
-import { PMTextDocument } from '../../src/Documents';
+import { PMTextDocument, changeInfo } from '../../src/Documents';
 import { languagesIds } from '../../src/Utils';
 
 
-mocha.suite('document Manager test suite', ()=>{
+mocha.suite('Document Manger unit tets', ()=>{
 
 	let testFolder: string;
 	let testFolderSuffix: string = "/server/tests/sample directory";
@@ -68,7 +68,7 @@ mocha.suite('document Manager test suite', ()=>{
 	});
 
 	function genericTextUpdateTest (documentManager: TextDocumentManager) {
-		const promiseCreator = (fileIdx: number,DidChangeTextDocumentParams: DidChangeTextDocumentParams, expectedNewText:string ,expectedChangeRange): Promise<any> => {
+		const promiseCreator = (fileIdx: number,DidChangeTextDocumentParams: DidChangeTextDocumentParams, expectedNewText:string ,expectedChangeRange: changeInfo): Promise<any> => {
 			return new Promise(async (resolve,reject)=>{
 				let docManagerAns = documentManager.changeTextDocument(DidChangeTextDocumentParams);
 				try {
@@ -115,7 +115,13 @@ mocha.suite('document Manager test suite', ()=>{
 				}
 			]
 		}
-		allPromisesToCheck.push(promiseCreator(0,changeParams1,text1New,{start:{line: 0 , character: 0},end:{line: 0 , character: 0}}))
+
+		let expectedChangeResult1: changeInfo = {
+			oldRange: text1AllDocRange,
+			newRange:{start:{line: 0 , character: 0},end:{line: 0 , character: 0}}
+		}
+
+		allPromisesToCheck.push(promiseCreator(0,changeParams1,text1New,expectedChangeResult1))
 
 
 		//apend \n bla bla bla to text 2
@@ -142,7 +148,16 @@ mocha.suite('document Manager test suite', ()=>{
 		}
 		let changeLine = text2EndPosition.line + 1;
 
-		allPromisesToCheck.push(promiseCreator(1,changeParams2,text2Orig + text2New, {start:text2EndPosition, end: {line: changeLine, character: text2New.length-1}}))
+
+		let expectedChangeResult2: changeInfo = {
+			oldRange: {
+				start: text2EndPosition,
+				end: text2EndPosition
+			},
+			newRange: {start:text2EndPosition, end: {line: changeLine, character: text2New.length-1}}
+		}
+
+		allPromisesToCheck.push(promiseCreator(1,changeParams2,text2Orig + text2New,expectedChangeResult2 ))
 
 		// text 2 replace adde bla bla bla with ab bla ab but in 2 changes
 		let change3NewText = "ab";
@@ -177,16 +192,25 @@ mocha.suite('document Manager test suite', ()=>{
 	}
 
 	function genericTwoChangeUpdateTest (documentManager: TextDocumentManager){
-		// text 2 replace adde bla bla bla with ab bla ab but in 2 changes
-		let allPromisesToCheck:Promise<any>[]= [];
+		// text 2 replace bla bla bla with t1 bla t2 but in 2 changes
 		let allDocs = documentManager.allDocumnets;
 		let text2Orig = allDocs[1].getText();
 		let text2EndPosition: Position = allDocs[1].positionAt(text2Orig.length);
-		let changeLine = text2EndPosition.line + 1;
+		let changeLine = text2EndPosition.line;
 		
 		
-		let change3NewText = "ab";
 		
+		let ChangeRange1: Range = { 
+			start:{line:changeLine,character:8},
+			end: {line:changeLine,character:11}
+		}
+
+		let ChangeRange2: Range = {
+			start:{line:changeLine,character:0},
+			end: {line:changeLine,character:3}
+		}
+
+
 		let chage3Parmas:DidChangeTextDocumentParams = {
 			textDocument: {
 				uri:allDocs[1].uri,
@@ -195,31 +219,32 @@ mocha.suite('document Manager test suite', ()=>{
 			contentChanges:
 				[
 					{
-						text:change3NewText,
+						text:"t2",
 						rangeLength:3,
-						range:{ 
-							start:{line:changeLine,character:8},
-							end: {line:changeLine,character:11}
-						}
+						range: ChangeRange1
 					},
 					{ 
-						text:change3NewText,
+						text:"t1",
 						rangeLength:3,
-						range:{
-								start:{line:changeLine,character:0},
-								end: {line:changeLine,character:3}
-						}
+						range:ChangeRange2
 					}
 				]
 		}
 
-		let doubelChangeFinalText = text2Orig + "\nab bla ab";
+		let doubelChangeFinalText = text2Orig.replace("bla","t1").substring(0,text2Orig.length-4) + "t2";
 
-		let expectedChangeRange: Range [] = [
-			{start:{line:changeLine,character:8},
-			end: {line:changeLine,character:10}},
-			{start:{line:changeLine,character:0},
-			end: {line:changeLine,character:2}}
+		let expectedChangeRange1: Range = {start:{line:changeLine,character:8}, end: {line:changeLine,character:10}}
+		let expectedChangeRange2: Range = {start:{line:changeLine,character:0},end: {line:changeLine,character:2}}
+
+		let expectedChangeResult: changeInfo [] = [
+			{
+				oldRange:ChangeRange1,
+				newRange: expectedChangeRange1
+			},
+			{
+				oldRange: ChangeRange2,
+				newRange: expectedChangeRange2
+			}
 		]
 
 		let twoChangesPromise = 
@@ -230,12 +255,12 @@ mocha.suite('document Manager test suite', ()=>{
 				await docManagerAns.then (ans =>{
 					expect(ans.type).equals(documentManagerResultTypes.updateFile,"expected type of update on  2 changes")
 					expect(ans.result.length).equals(2,"expected to have 2 change range on  2 changes");
-					expect(ans.result).deep.equals(expectedChangeRange, "changes are incorrect for 2 files changes");
+					expect(ans.result).deep.equals(expectedChangeResult, "changes are incorrect for 2 files changes");
 				})
 				let newTextDocumnet: PMTextDocument = documentManager.allDocumnets[1];
 				expect(newTextDocumnet.version).equals(chage3Parmas.textDocument.version,"expected to update version on 2 changes");
 				expect(newTextDocumnet.getText()).equals(doubelChangeFinalText,"expected text on 2 changes");
-				expect(newTextDocumnet.lastChanges[0]).deep.equals(expectedChangeRange, "change wasn't update in documnet for 2 changes" );
+				expect(newTextDocumnet.lastChanges).deep.equals(expectedChangeResult, "change wasn't update in documnet for 2 changes" );
 				resolve();
 			} catch (error) {
 				reject (error);
@@ -372,7 +397,7 @@ mocha.suite('document Manager test suite', ()=>{
 		});
 
 		it ('update 2 changes on text file', ()=>{
-			//return genericTwoChangeUpdateTest(documentManager);
+			return genericTwoChangeUpdateTest(documentManager);
 		});
 
 	});
@@ -582,7 +607,7 @@ mocha.suite('document Manager test suite', ()=>{
 		});
 
 		it ('update 2 changes on text file', ()=>{
-			//return genericTwoChangeUpdateTest(documentManager);
+			return genericTwoChangeUpdateTest(documentManager);
 		});
 
 	});
@@ -605,10 +630,6 @@ function pathToURI (path: string){
 	return URI.file(path).toString();
 }
 
-function createFakeTextDocumentItem (uri:string ="fake-text-uri.ps", langId:string = languagesIds[0],version: number = 1, content:string = "bla bla\n fake text\n in here"){
-	return TextDocumentItem.create(uri, langId ,version ,content)
-}
-
 function createTextDocumentItem (path:string, version: number = 1): TextDocumentItem {
 	let uri:string = pathToURI(path);
 	let content:string = fs.readFileSync(path,"utf-8");
@@ -627,3 +648,4 @@ function finalPromiseCreator (allPromisesToCheck:Promise<any> []):Promise<any> {
 }
 
 
+//"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts && cd ../ && mocha -r ts-node/register server/tests/unitTests/FileManager.test.ts && mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts && mocha -r ts-node/register server/tests/unitTests/documentManager.test.ts"
