@@ -142,8 +142,6 @@ function createPMTextDocFromUrl(uri : string) : PMTextDocument {
 	}
 }
 
-
-
 class LanguageServices_UnitTests {
 	static testTargetClass = TestTarget.LanguageServices
 
@@ -468,7 +466,7 @@ class LanguageServicesFacade_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const param : TextDocumentPositionParams = input.param
+			const param : DeclarationParams = input.param
 			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
 			const result = instance.onDefinition(param)
 			assert.deepEqual(result, output)
@@ -485,7 +483,39 @@ class LanguageServicesFacade_UnitTests {
 
 	// these functions are called when the request is first made from the server
 	static onReferences() {
-	
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : ReferenceParams = input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onReferences(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onReferences', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static onPrepareRename() {
