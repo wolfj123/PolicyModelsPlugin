@@ -142,8 +142,6 @@ function createPMTextDocFromUrl(uri : string) : PMTextDocument {
 	}
 }
 
-
-
 class LanguageServices_UnitTests {
 	static testTargetClass = TestTarget.LanguageServices
 
@@ -366,9 +364,9 @@ class LanguageServicesFacade_UnitTests {
 			LanguageServicesFacade_UnitTests.onReferences()
 			LanguageServicesFacade_UnitTests.onPrepareRename()
 			LanguageServicesFacade_UnitTests.onRenameRequest()
-			LanguageServicesFacade_UnitTests.onCompletion()
-			LanguageServicesFacade_UnitTests.onCompletionResolve()
 			LanguageServicesFacade_UnitTests.onFoldingRanges()
+			//LanguageServicesFacade_UnitTests.onCompletion()
+			//LanguageServicesFacade_UnitTests.onCompletionResolve()
 		})
 	}
 
@@ -468,7 +466,7 @@ class LanguageServicesFacade_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const param : TextDocumentPositionParams = input.param
+			const param : DeclarationParams = input.param
 			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
 			const result = instance.onDefinition(param)
 			assert.deepEqual(result, output)
@@ -485,27 +483,156 @@ class LanguageServicesFacade_UnitTests {
 
 	// these functions are called when the request is first made from the server
 	static onReferences() {
-	
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : ReferenceParams = input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onReferences(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onReferences', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static onPrepareRename() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: {start: {character: 2, line: 4}, end: {character: 4, line: 4}},
+			}
+		]
 
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : RenameParams = input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onPrepareRename(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onPrepareRename', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static onRenameRequest() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			}
+		]
 
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : RenameParams = input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onRenameRequest(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onRenameRequest', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+	
+	static onFoldingRanges() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}}
+				},
+				output: [
+					{range: {start: {character: 0, line: 1},end: {character: 27, line: 1}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 2},end: {character: 27, line: 2}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 4},end: {character: 17, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 5},end: {character: 21, line: 5}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 6},end: {character: 21, line: 6}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const output = testCase.output
+			const filenames : string[] = testCase.input.fileNames
+			const param : FoldingRangeParams = testCase.input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onFoldingRanges(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static onCompletion() {
-
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 
 	static onCompletionResolve() {
-		
-	}
-
-	static onFoldingRanges() {
-
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 }
 
