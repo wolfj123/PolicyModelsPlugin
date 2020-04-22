@@ -2,8 +2,7 @@
 
 //https://samwize.com/2014/02/08/a-guide-to-mochas-describe-it-and-setup-hooks/
 
-import * as assert from 'assert';
-import * as mocha from 'mocha';
+
 import * as TestTarget from "../../src/LanguageServices";
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
@@ -42,6 +41,14 @@ import {
 	docChange2Edit
 } from '../../src/Utils';
 import { TextDocWithChanges } from '../../src/DocumentChangesManager';
+
+import * as assert from 'assert';
+import * as mocha from 'mocha'; 
+const deepEqualInAnyOrder = require('deep-equal-in-any-order');
+const chai = require('chai');
+const expect = chai.expect;
+chai.use(deepEqualInAnyOrder);
+
 
 //TODO: this is duplicate code - need to move it to some library
 const parsersInfo = 	//TODO: maybe extract this info from package.json
@@ -100,6 +107,22 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 // 	})	
 // }
 
+
+function createTextDocFromUrl(uri : string) {
+	let text : string = getTextFromUri(uri)	
+	return {
+		textDocument : {
+			uri: uri,
+			languageId: null,
+			version : null,
+			getText : function() {return text},
+			positionAt : null,
+			offsetAt : null,
+			lineCount : null
+		},
+		changes : [{text : text}]
+	}
+}
 
 
 class LanguageServices_UnitTests {
@@ -326,5 +349,102 @@ class LanguageServices_UnitTests {
 }
 
 
+class LanguageServicesFacade_UnitTests {
+	static testTargetClass = TestTarget.LanguageServicesFacade
 
-LanguageServices_UnitTests.runTests()
+	static runTests() {
+		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
+			LanguageServicesFacade_UnitTests.addDocs()
+			LanguageServicesFacade_UnitTests.updateDoc()
+			LanguageServicesFacade_UnitTests.removeDoc()
+			LanguageServicesFacade_UnitTests.onDefinition()
+			LanguageServicesFacade_UnitTests.onReferences()
+			LanguageServicesFacade_UnitTests.onPrepareRename()
+			LanguageServicesFacade_UnitTests.onRenameRequest()
+			LanguageServicesFacade_UnitTests.onCompletion()
+			LanguageServicesFacade_UnitTests.onCompletionResolve()
+			LanguageServicesFacade_UnitTests.onFoldingRanges()
+		})
+	}
+
+	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
+		let docs : TextDocWithChanges[]
+		docs = filenames.map(createTextDocFromUrl)
+		return await TestTarget.LanguageServicesFacade.init(docs)
+	}
+
+	static addDocs() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
+					add: ['dg2_ws_1.dg', 'dg3_ws_1.dg']
+				},
+				output: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			const add : string[] = testCase.input.add
+			const output = testCase.output
+			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			instance.addDocs(add.map(createTextDocFromUrl))
+			const result = Array.from(instance.services.fileManagers.keys())
+			//assert.deepEqual(result, output)
+			expect(output).to.deep.equalInAnyOrder(result)
+		}
+
+		describe('addDocs', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	static updateDoc() {
+		
+	}
+
+	static removeDoc() {
+		
+	}
+
+	static onDefinition() {
+		
+	}
+
+	// these functions are called when the request is first made from the server
+	static onReferences() {
+	
+	}
+
+	static onPrepareRename() {
+
+	}
+
+	static onRenameRequest() {
+
+	}
+
+	static onCompletion() {
+
+	}
+
+	static onCompletionResolve() {
+		
+	}
+
+	static onFoldingRanges() {
+
+	}
+}
+
+
+
+//LanguageServices_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()
