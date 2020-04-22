@@ -44,6 +44,7 @@ import { TextDocWithChanges } from '../../src/DocumentChangesManager';
 
 import * as assert from 'assert';
 import * as mocha from 'mocha'; 
+import { PMTextDocument } from "../../src/Documents";
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const chai = require('chai');
 const expect = chai.expect;
@@ -107,8 +108,8 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 // 	})	
 // }
 
-
-function createTextDocFromUrl(uri : string) {
+//old interface
+function createTextDocFromUrl(uri : string) : TextDocWithChanges {
 	let text : string = getTextFromUri(uri)	
 	return {
 		textDocument : {
@@ -123,6 +124,24 @@ function createTextDocFromUrl(uri : string) {
 		changes : [{text : text}]
 	}
 }
+
+function createPMTextDocFromUrl(uri : string) : PMTextDocument {
+	let text : string = getTextFromUri(uri)	
+	return {
+			uri: uri,
+			languageId: null,
+			version : null,
+			getText : function() {return text},
+			positionAt : null,
+			offsetAt : null,
+			isEqual : null,
+			lineCount : null,
+			update : null,
+			lastChanges : []
+		
+	}
+}
+
 
 
 class LanguageServices_UnitTests {
@@ -141,22 +160,8 @@ class LanguageServices_UnitTests {
 
 	static async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
 		//let text : string = getTextFromUri(filename)
-		let docs : TextDocWithChanges[]
-		docs = filenames.map(fn => {
-			let text : string = getTextFromUri(fn)	
-			return {
-				textDocument : {
-					uri: fn,
-					languageId: null,
-					version : null,
-					getText : function() {return text},
-					positionAt : null,
-					offsetAt : null,
-					lineCount : null
-				},
-				changes : [{text : text}]
-			}
-		})
+		let docs : PMTextDocument[]
+		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServices.init(docs)
 	}
 
@@ -368,8 +373,8 @@ class LanguageServicesFacade_UnitTests {
 	}
 
 	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
-		let docs : TextDocWithChanges[]
-		docs = filenames.map(createTextDocFromUrl)
+		let docs : PMTextDocument[]
+		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServicesFacade.init(docs)
 	}
 
@@ -391,7 +396,7 @@ class LanguageServicesFacade_UnitTests {
 			const add : string[] = testCase.input.add
 			const output = testCase.output
 			let instance = await LanguageServicesFacade_UnitTests.create(init)
-			instance.addDocs(add.map(createTextDocFromUrl))
+			instance.addDocs(add.map(createPMTextDocFromUrl))
 			const result = Array.from(instance.services.fileManagers.keys())
 			//assert.deepEqual(result, output)
 			expect(output).to.deep.equalInAnyOrder(result)

@@ -24,7 +24,7 @@ import {
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
 import { TextEdit } from 'vscode-languageserver-textdocument';
-import { TextDocWithChanges } from './DocumentChangesManager';
+//import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
 import { 
 	getFileExtension, 
@@ -34,10 +34,12 @@ import {
 	newRange, 
 	newLocation, 
 	flatten, 
-	docChange2Edit
+	docChange2Edit,
+	changeInfo2Edit
 } from './Utils';
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
+import { PMTextDocument } from './Documents';
 
 
 //https://www.npmjs.com/package/web-tree-sitter
@@ -49,7 +51,7 @@ import { isNullOrUndefined } from 'util';
 export class LanguageServicesFacade {
 	services : LanguageServices
 
-	static async init(docs : TextDocWithChanges[]) : Promise<LanguageServicesFacade> {
+	static async init(docs : PMTextDocument[]) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
 		let services : LanguageServices = await LanguageServices.init(docs)
 		instance.services = services
@@ -61,11 +63,11 @@ export class LanguageServicesFacade {
 	// 	this.services = new LanguageServices(docs)
 	// }
 
-	addDocs(docs : TextDocWithChanges[]) {
+	addDocs(docs : PMTextDocument[]) {
 		this.services.addDocs(docs)
 	}
 
-	updateDoc(doc : TextDocWithChanges){
+	updateDoc(doc : PMTextDocument){
 		this.services.updateDoc(doc)
 	}
 
@@ -156,7 +158,7 @@ export class LanguageServices {
 		}
 	]
 
-	static async init(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
+	static async init(docs : PMTextDocument[] /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
 		let instance : LanguageServices = new LanguageServices()
 		await instance.initParsers()
 		instance.fileManagers = new Map()
@@ -171,19 +173,19 @@ export class LanguageServices {
 	// 	this.populateMaps(docs)
 	// }
 
-	addDocs(docs : TextDocWithChanges[]) {
+	addDocs(docs : PMTextDocument[]) {
 		this.populateMaps(docs)
 	}
 
-	updateDoc(doc : TextDocWithChanges){
-		let fileManager : FileManager = this.fileManagers.get(doc.textDocument.uri)
+	updateDoc(doc : PMTextDocument){
+		let fileManager : FileManager = this.fileManagers.get(doc.uri)
 		if(isNullOrUndefined(fileManager)) return
-		let parser : Parser = this.getParserByExtension(getFileExtension(doc.textDocument.uri))
-		const edits : Parser.Edit[] = doc.changes.map(change => docChange2Edit(change))
+		let parser : Parser = this.getParserByExtension(getFileExtension(doc.uri))
+		const edits : Parser.Edit[] = doc.lastChanges.map(change => changeInfo2Edit(change))
 		let tree : Parser.Tree = fileManager.tree
 		edits.forEach((edit : Parser.Edit) => {
 			tree.edit(edit)
-			fileManager.updateTree(parser.parse(doc.textDocument.getText())) //TODO: hopefully passing whole text with several changes doesn't break it
+			fileManager.updateTree(parser.parse(doc.getText())) //TODO: hopefully passing whole text with several changes doesn't break it
 		});
 	}
 
@@ -220,14 +222,14 @@ export class LanguageServices {
 		return this.parsers.get(language)
 	}
 
-	populateMaps(docs : TextDocWithChanges[]) {
+	populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
-			const uri = doc.textDocument.uri
+			const uri = doc.uri //doc.textDocument.uri
 			const extension = getFileExtension(uri)
 			let fileManager : FileManager = FileManagerFactory.create(doc, 
 				this.getParserByExtension(extension), 
 				this.getLanguageByExtension(extension))
-			this.fileManagers.set(doc.textDocument.uri, fileManager)
+			this.fileManagers.set(doc.uri, fileManager)
 		}
 	}
 
@@ -445,12 +447,12 @@ export abstract class FileManager {
 }
 
 export class FileManagerFactory {
-	static create(doc : TextDocWithChanges, parser : Parser, language : PolicyModelsLanguage) : FileManager | null {
-		const uri = doc.textDocument.uri
+	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage) : FileManager | null {
+		const uri = doc.uri
 		const extension = getFileExtension(uri)
 		//let parser = getParserByExtension(extension)
 		//let language = getLanguageByExtension(extension)
-		let tree : Parser.Tree = parser.parse(doc.textDocument.getText()) 
+		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
 				return new DecisionGraphFileManager(tree, uri)
