@@ -11,6 +11,46 @@ const policyspaceTests: TestCase[] = [
         `Storage : one of clear, serverEncrypt.`, 
         ['Storage', 'entity.name.type'], ['clear', 'constant.numeric'], ['serverEncrypt', 'constant.numeric']
     ],
+    [
+        `StorageWithDescription [The way data are stored on the server.]: one of
+        clear [Not encrypted at all],
+        serverEncrypt [Encryption on the server, "at rest". Attacker cannot use the data by getting the files from the file system],
+        clientEncrypt [Encryption on the client side. Data obtained from the server (e.g. buy data breach or subpeona) cannot be used unless the depositor provides the password],
+        doubleEncrypt [Encryption on the client, and then on the server. Both passwords are required in order to make use of the data].`, 
+
+        ['StorageWithDescription', 'entity.name.type'], 
+        ['clear', 'constant.numeric'], 
+        ['serverEncrypt', 'constant.numeric'], 
+        ['clientEncrypt', 'constant.numeric'], 
+        ['doubleEncrypt', 'constant.numeric']
+    ],
+    [
+        `ProtectedDataSubjectsWithDescription [The type of entities that could be harmed by misuse of the data]: some of
+        livingPersons [Living persons - including privacy issues],
+        deadPeople [They don't know they're dead],
+        endangeredSpecies [Endangered species need protection from poachers],
+        rareMinerals [Disclosing location of rare minerals might lead to illegal mining].`, 
+
+        ['ProtectedDataSubjectsWithDescription', 'entity.name.type'], 
+        ['livingPersons', 'constant.numeric'], 
+        ['deadPeople', 'constant.numeric'],
+        ['endangeredSpecies', 'constant.numeric'],
+        ['rareMinerals', 'constant.numeric']
+    ],
+    [
+        `myslot[descriptions1] : consists of something, somethingElse , evenMoreSomething .`, 
+        ['myslot', 'entity.name.type'], 
+        ['something', 'entity.name.type'], 
+        ['somethingElse', 'entity.name.type'], 
+        ['evenMoreSomething', 'entity.name.type']
+    ],
+    [
+        `myslot[descriptions1] : consists of something , <* a wild [comment] appears!*> somethingElse , evenMoreSomething.`, 
+        ['myslot', 'entity.name.type'], 
+        ['something', 'entity.name.type'], 
+        ['somethingElse', 'entity.name.type'],
+        ['evenMoreSomething', 'entity.name.type']
+    ],
 ]
 test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace)
 
