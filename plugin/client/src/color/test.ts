@@ -54,6 +54,36 @@ const policyspaceTests: TestCase[] = [
 ]
 test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace)
 
+
+
+
+// const decisiongrapTests: TestCase[] = [
+//     [
+//         `[ask:
+//             {text: Do the data concern living persons?}
+//             {answers:
+//               {yes ?: [set: livingPersons=yes][call: privacySection ] }
+//               {no: [call: nonHuman] }}]
+//           [ask:
+//             {text: Do the data contain personally identifying information, as defined under HIPAA?}
+//             {terms:
+//               {Personally identifying information: This means the name, address, fingerprints...}
+//               {HIPAA: Health Insurance Portability and Accountability Act}}
+//             {answers:
+//               {yes: [set: livingPersons=yes][call: privacySection ] }
+//               {no: [call: nonHuman] }}]`, 
+
+//         ['ask', 'entity.name.type'], 
+//         ['clear', 'constant.numeric'], 
+//         ['serverEncrypt', 'constant.numeric']
+//     ],
+// ]
+// test(policyspaceTests, 'parsers/tree-sitter-decisiongraph.wasm', colors.colorDecisionGraph)
+
+
+
+
+
 async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunction) {
     await Parser.init()
     const parser = new Parser() 
