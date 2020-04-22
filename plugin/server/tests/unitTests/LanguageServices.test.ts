@@ -2,8 +2,7 @@
 
 //https://samwize.com/2014/02/08/a-guide-to-mochas-describe-it-and-setup-hooks/
 
-import * as assert from 'assert';
-import * as mocha from 'mocha';
+
 import * as TestTarget from "../../src/LanguageServices";
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
@@ -42,6 +41,15 @@ import {
 	docChange2Edit
 } from '../../src/Utils';
 import { TextDocWithChanges } from '../../src/DocumentChangesManager';
+
+import * as assert from 'assert';
+import * as mocha from 'mocha'; 
+import { PMTextDocument } from "../../src/Documents";
+const deepEqualInAnyOrder = require('deep-equal-in-any-order');
+const chai = require('chai');
+const expect = chai.expect;
+chai.use(deepEqualInAnyOrder);
+
 
 //TODO: this is duplicate code - need to move it to some library
 const parsersInfo = 	//TODO: maybe extract this info from package.json
@@ -100,6 +108,40 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 // 	})	
 // }
 
+//old interface
+function createTextDocFromUrl(uri : string) : TextDocWithChanges {
+	let text : string = getTextFromUri(uri)	
+	return {
+		textDocument : {
+			uri: uri,
+			languageId: null,
+			version : null,
+			getText : function() {return text},
+			positionAt : null,
+			offsetAt : null,
+			lineCount : null
+		},
+		changes : [{text : text}]
+	}
+}
+
+function createPMTextDocFromUrl(uri : string) : PMTextDocument {
+	let text : string = getTextFromUri(uri)	
+	return {
+			uri: uri,
+			languageId: null,
+			version : null,
+			getText : function() {return text},
+			positionAt : null,
+			offsetAt : null,
+			isEqual : null,
+			lineCount : null,
+			update : null,
+			lastChanges : []
+		
+	}
+}
+
 
 
 class LanguageServices_UnitTests {
@@ -118,22 +160,8 @@ class LanguageServices_UnitTests {
 
 	static async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
 		//let text : string = getTextFromUri(filename)
-		let docs : TextDocWithChanges[]
-		docs = filenames.map(fn => {
-			let text : string = getTextFromUri(fn)	
-			return {
-				textDocument : {
-					uri: fn,
-					languageId: null,
-					version : null,
-					getText : function() {return text},
-					positionAt : null,
-					offsetAt : null,
-					lineCount : null
-				},
-				changes : [{text : text}]
-			}
-		})
+		let docs : PMTextDocument[]
+		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServices.init(docs)
 	}
 
@@ -326,5 +354,162 @@ class LanguageServices_UnitTests {
 }
 
 
+class LanguageServicesFacade_UnitTests {
+	static testTargetClass = TestTarget.LanguageServicesFacade
 
-LanguageServices_UnitTests.runTests()
+	static runTests() {
+		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
+			LanguageServicesFacade_UnitTests.addDocs()
+			//LanguageServicesFacade_UnitTests.updateDoc()
+			LanguageServicesFacade_UnitTests.removeDoc()
+			LanguageServicesFacade_UnitTests.onDefinition()
+			LanguageServicesFacade_UnitTests.onReferences()
+			LanguageServicesFacade_UnitTests.onPrepareRename()
+			LanguageServicesFacade_UnitTests.onRenameRequest()
+			LanguageServicesFacade_UnitTests.onCompletion()
+			LanguageServicesFacade_UnitTests.onCompletionResolve()
+			LanguageServicesFacade_UnitTests.onFoldingRanges()
+		})
+	}
+
+	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
+		let docs : PMTextDocument[]
+		docs = filenames.map(createPMTextDocFromUrl)
+		return await TestTarget.LanguageServicesFacade.init(docs)
+	}
+
+	static addDocs() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
+					add: ['dg2_ws_1.dg', 'dg3_ws_1.dg']
+				},
+				output: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			const add : string[] = testCase.input.add
+			const output = testCase.output
+			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			instance.addDocs(add.map(createPMTextDocFromUrl))
+			const result = Array.from(instance.services.fileManagers.keys())
+			//assert.deepEqual(result, output)
+			expect(output).to.deep.equalInAnyOrder(result)
+		}
+
+		describe('addDocs', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	static updateDoc() {
+		//This should be tested in sequencial tests
+	}
+
+	static removeDoc() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
+					remove: 'dg1_ws_1.dg'
+				},
+				output: ['ps_ws_1.pspace']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			const remove : string = testCase.input.remove
+			const output = testCase.output
+			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			instance.removeDoc(remove)
+			const result = Array.from(instance.services.fileManagers.keys())
+			expect(output).to.deep.equalInAnyOrder(result)
+		}
+
+		describe('removeDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	static onDefinition() {
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg1_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}},
+					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg2_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg3_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : TextDocumentPositionParams = input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onDefinition(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onDefinition', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	// these functions are called when the request is first made from the server
+	static onReferences() {
+	
+	}
+
+	static onPrepareRename() {
+
+	}
+
+	static onRenameRequest() {
+
+	}
+
+	static onCompletion() {
+
+	}
+
+	static onCompletionResolve() {
+		
+	}
+
+	static onFoldingRanges() {
+
+	}
+}
+
+
+
+//LanguageServices_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()

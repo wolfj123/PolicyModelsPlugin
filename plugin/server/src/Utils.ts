@@ -16,6 +16,7 @@ import {
 	TextDocumentContentChangeEvent,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter'
+import { changeInfo } from './Documents';
 export enum languagesIds {
 	policyspace =  0,
 	decisiongraph =  1,
@@ -65,6 +66,27 @@ export function getFileExtension(filename : string) : string {
 	return re.exec(filename)[1];   
 }
 
+
+/*
+export interface changeInfo{
+	oldRange: Range,
+	newRange: Range
+}
+*/
+export function changeInfo2Edit(change : changeInfo) {
+	const result =  
+	{
+		startIndex: change.oldRange.start.character,
+		oldEndIndex: change.oldRange.end.character, 
+		newEndIndex: change.newRange.end.character,
+		startPosition: {row: change.oldRange.start.line, column: change.oldRange.start.character},
+		oldEndPosition: {row: change.oldRange.end.line, column: change.oldRange.end.character}, 
+		newEndPosition: {row: change.newRange.end.line, column: change.newRange.end.character} 
+	}
+	return result
+}
+
+//old interface
 export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser.Edit {
 	if ("range" in change) {
 		const range : Range = change.range
@@ -86,5 +108,5 @@ export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser
 
 function getEndRowAndColumnOfString(str : string) : {row: number, column: number} {
 	TODO:
-	return null
+	throw new Error("Method not implemented.");
 }

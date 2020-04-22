@@ -14,7 +14,7 @@
 				"999999",
 				"--colors",
 				"${workspaceFolder}/server/tests/unitTests/LanguageServices.test.ts",
-				"${workspaceFolder}/server/tests/unitTests/FileManager.test.ts",
+				"${workspaceFolder}/server/tests/unitTests/PolicyModelFileManager.test.ts",
 			],
 			"console": "integratedTerminal",
 			"internalConsoleOptions": "neverOpen",
