@@ -7,7 +7,6 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import {
 	createConnection,
-	TextDocuments,
 	Diagnostic,
 	DiagnosticSeverity,
 	ProposedFeatures,
@@ -23,7 +22,6 @@ import {
 	WorkspaceEdit,
 	RenameParams,
 	CompletionList,
-	EOL, //  represents the end of line optins allowed
 	InitializeResult,
 	DidChangeWatchedFilesNotification,
 	DidChangeWatchedFilesRegistrationOptions,
@@ -37,29 +35,26 @@ import {
 	TextDocumentChangeRegistrationOptions,
 	TextDocumentChangeEvent,
 	PrepareRenameParams,
+	DidChangeWatchedFilesParams,
+	FileEvent,
+	FileChangeType,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
-import {TextDocWithChanges} from './DocumentChangesManager';
-import {SolverInt, Solver} from './Solver';
+import {SolverInt, PMSolver} from './Solver';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
 
-// Create a simple text document manager. The text document manager
-// supports full document sync only
-
-
-let documents: TextDocuments<TextDocWithChanges> = new TextDocuments(TextDocWithChanges);
 // Make the text document manager listen on the connection
 // for open, change and close text document events
-documents.listen(connection);
+//documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
 
-let solver: SolverInt<TextDocWithChanges> = new Solver(documents);
+let solver: SolverInt = new PMSolver();
 
 // -------------- Initialize And Capabilites ----------------------
 let clientSupportswatchedFiles: boolean = false;
@@ -126,11 +121,11 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			
 
 			// TODO check if needed
-			textDocumentSync:
-			{
-				openClose:true,
-				change:TextDocumentSyncKind.Incremental
-			},
+			// textDocumentSync:
+			// {
+			// 	openClose:true,
+			// 	change:TextDocumentSyncKind.Full
+			// },
 
 			workspace:{
 				workspaceFolders:{
@@ -159,7 +154,7 @@ connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	
 	if (clientSupportswatchedFiles){
-		let wtachedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
+		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
 			watchers: [
 				{
 					kind: WatchKind.Create | WatchKind.Delete, // this will notiryf only when files are created or delted from workspace
@@ -175,7 +170,7 @@ connection.onInitialized(() => {
 				}
 			]
 		}
-		connection.client.register(DidChangeWatchedFilesNotification.type,wtachedFilesOptions);
+		connection.client.register(DidChangeWatchedFilesNotification.type,watchedFilesOptions);
 	}else{
 		//TODO amsel what wolud happen if we don't support (we will need to check the filesystem all the time to see if file was created or delted)
 		console.log("client doesn't support watched files - is this a problem??");
@@ -220,15 +215,17 @@ connection.onInitialized(() => {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
 			connection.console.log('Workspace folder change event received.');
 			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+			
 			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
 
+		// this function muse be declared here or else an error will occur
 		//we need this in order to get the folder that is currently open.
 		connection.workspace.getWorkspaceFolders().then(_event => {
 			connection.console.log('getWorkspaceFolders folder change event received.');
-			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-			connection.console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
+			solver.onOpenFolder(_event[0].uri);
 		});
+		
 
 
 		// //this is not needed - returns VS code configurations we don't care
@@ -247,49 +244,45 @@ connection.onInitialized(() => {
 //------------- User Requests ------------------------------
 
 connection.onExit(():void => {
-connection.dispose();
+	connection.dispose();
 });
 
 connection.onCompletion(
 (params: TextDocumentPositionParams): CompletionList => {	
-	return solver.solve(params, "onCompletion" ,params.textDocument);
-}
-);
+	return solver.onCompletion(params, params.textDocument.uri);
+});
 
 connection.onCompletionResolve(
-(item: CompletionItem): CompletionItem => {
-	return solver.solve(item, "onCompletionResolve", item.data.textDocument);
-}
-);
+	(item: CompletionItem): CompletionItem => {
+		return solver.onCompletionResolve(item, item.data.textDocument);
+});
 
 connection.onDefinition(
-(params: DeclarationParams): LocationLink[] => {
-	return solver.solve(params, "onDefinition", params.textDocument);
+	(params: DeclarationParams): LocationLink[] => {
+		return solver.onDefinition(params, params.textDocument.uri);
+});
+
+connection.onFoldingRanges(
+	(params: FoldingRangeParams): FoldingRange[] => {
+		return solver.onFoldingRanges(params, params.textDocument.uri);
+});
+
+connection.onReferences(
+	(params: ReferenceParams): Location[] => {
+		return solver.onReferences(params, params.textDocument.uri);
 });
 
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
+	//@ts-ignore
 	(params:PrepareRenameParams) =>  {
-		return solver.solve(params,"onPrepareRename",params.textDocument);
-	});
-
-connection.onFoldingRanges(
-	(params: FoldingRangeParams): FoldingRange[] => {
-		return solver.solve(params, "onFoldingRanges", params.textDocument);
-	}
-);
-
-connection.onReferences(
-	(params: ReferenceParams): Location[] => {
-		return solver.solve(params, "onReferences", params.textDocument);
-	}
-);
+		return solver.onPrepareRename(params, params.textDocument.uri);
+});
 
 connection.onRenameRequest(
 	(params: RenameParams): WorkspaceEdit =>{
-		return solver.solve(params, "onRenameRequest", params.textDocument);
-	}
-)
+		return solver.onRenameRequest(params, params.textDocument.uri);
+});
 
 function runModel(param : string[]) : string {
 	console.log("server is running the model")
@@ -299,82 +292,43 @@ function runModel(param : string[]) : string {
 }
 
 
-// --------------------- Automatic Updates  -----------------------------
+// --------------------- File Updates  -----------------------------
 
 
-// every change to file that matches pattern above will be notifed here
-connection.onDidChangeWatchedFiles(_change => {
-	solver.onDidChangeWatchedFiles(_change);
+
+connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
+	_change.changes.forEach( (currChange: FileEvent) => {
+		switch(currChange.type){
+			case FileChangeType.Created:
+				solver.onOpenFolder(currChange.uri);
+				break;
+			case FileChangeType.Deleted:
+				solver.onDeleteFile(currChange.uri);
+				break;
+		}
+	});
 	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
-	//connection.console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
+});
+			
+connection.onDidChangeTextDocument(event =>{
+	console.log("onDidChangeTextDocument")
+	solver.onDidChangeTextDocument(event);
 });
 
+connection.onDidCloseTextDocument(event =>{
+	console.log(`onDidCloseTextDocument`);
+	solver.onDidCloseTextDocument(event.textDocument);
 
-				// The content of a text document has changed. This event is emitted
-				// when the text document first opened or when its content has changed.
-
-				// connection.onDidChangeTextDocument(event =>{
-				// 	let x = documents;
-				// 	//console.log(`onDidChangeTextDocument\n${JSON.stringify(event)}`);
-				// 	console.log(`onDidChangeTextDocument ${testCounter}`);
-				// 	testCounter ++;
-				// });
-
-				// connection.onDidCloseTextDocument(event =>{
-				// 	let x = documents;
-				// 	//console.log(`onDidCloseTextDocument\n${JSON.stringify(event)}`);
-				// 	 console.log(`onDidCloseTextDocument`);
-				// });
-
-				// connection.onDidOpenTextDocument(event =>{
-				// 	let x = documents;
-				// 	// console.log(`onDidOpenTextDocument\n${JSON.stringify(event)}`);
-				// 	 console.log(`onDidOpenTextDocument`);
-				// });
-
-				// connection.onDidSaveTextDocument(event =>{
-				// 	let x = documents;
-				// 	// console.log(`onDidSaveTextDocument\n${JSON.stringify(event)}`);
-				// 	console.log(`onDidSaveTextDocument`);
-				// });
-
-documents.onDidChangeContent(change => {
-// 	//receives the same version twice
-// 	//validateTextDocument(change.document);
-// 	//solver.onDidChangeContent(change);
-	console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
-// 	// connection.console.log(`onDidChangeContent\n${JSON.stringify(change)}`);
 });
 
-
-// // ------------------ this code isn't needed for now when file opens and closes the documnet manager works automatically
-// // this will be needed in case we want some more functionality when closing, opening or saving
-
-// // this is called when the user open a documnet (new one or already existing) - we can't tell if it is a new one or existing
-// // in order to control if it is a new on we need onDidChangeWatchedFiles
-documents.onDidOpen(
-	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
-		console.log ("onDidOpen");
-		solver.onDidOpen(params);
-	});
-
-// // // this is called when the user closes the document tab (can't tell if also the file was deleted for this we need the watched)
-documents.onDidClose(
-	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
-		console.log ("onDidClose");
-	});
-
-// // //this is called when the user saves the document
-documents.onDidSave(
-	(params: TextDocumentChangeEvent<TextDocWithChanges>): void => {
-		console.log ("onDidSave");
-	});
-
-
+connection.onDidOpenTextDocument(event =>{
+	console.log(`onDidOpenTextDocument`);
+	solver.onDidOpenTextDocument(event.textDocument);
+});
 
 
 //------------------------------ UNKOWNN CODE   ----------------------------------------------
-
+/*
 // The example settings
 interface ExampleSettings {
 	maxNumberOfProblems: number;
@@ -466,3 +420,4 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
+*/

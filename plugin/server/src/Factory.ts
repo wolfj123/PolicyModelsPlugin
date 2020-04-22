@@ -26,8 +26,6 @@ export function CreateAnalyzer(textDoc: TextDocWithChanges): Analyzer {
 	return analyzer;
 }
 
-
-
 //import Parser = require('web-tree-sitter');
 /*
 import Parser = require('web-tree-sitter');

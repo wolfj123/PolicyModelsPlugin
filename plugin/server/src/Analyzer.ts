@@ -194,7 +194,7 @@ export class PolicySpaceAnalyzer extends Analyzer{
 		throw new Error('Method not implemented.');
 	}
 
-	referncesFromOtherFiles(params: any) {
+	referncesFromOtherFiles(params: any): Location [] {
 		throw new Error('Method not implemented.');
 	}
 	findDefintionForOtherFile(params: any): LocationLink[] {
