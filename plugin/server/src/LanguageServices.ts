@@ -188,7 +188,7 @@ export class LanguageServices {
 	}
 
 	removeDoc(doc : DocumentUri) {
-		//TODO:
+		this.fileManagers.delete(doc)
 	}
 
 	//maybe this map should be global singleton?

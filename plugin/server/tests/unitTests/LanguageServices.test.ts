@@ -355,7 +355,7 @@ class LanguageServicesFacade_UnitTests {
 	static runTests() {
 		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
 			LanguageServicesFacade_UnitTests.addDocs()
-			LanguageServicesFacade_UnitTests.updateDoc()
+			//LanguageServicesFacade_UnitTests.updateDoc()
 			LanguageServicesFacade_UnitTests.removeDoc()
 			LanguageServicesFacade_UnitTests.onDefinition()
 			LanguageServicesFacade_UnitTests.onReferences()
@@ -407,15 +407,75 @@ class LanguageServicesFacade_UnitTests {
 	}
 
 	static updateDoc() {
-		
+		//This should be tested in sequencial tests
 	}
 
 	static removeDoc() {
-		
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
+					remove: 'dg1_ws_1.dg'
+				},
+				output: ['ps_ws_1.pspace']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			const remove : string = testCase.input.remove
+			const output = testCase.output
+			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			instance.removeDoc(remove)
+			const result = Array.from(instance.services.fileManagers.keys())
+			expect(output).to.deep.equalInAnyOrder(result)
+		}
+
+		describe('removeDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static onDefinition() {
-		
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg1_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}},
+					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg2_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg3_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : TextDocumentPositionParams = input.param
+			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			const result = instance.onDefinition(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onDefinition', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	// these functions are called when the request is first made from the server
