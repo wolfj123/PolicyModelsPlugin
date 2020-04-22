@@ -65,10 +65,24 @@ export interface PMTextDocument {
      */
 	readonly lineCount: number;
 
+	/**
+	 * @param other 
+	 * @returns true if both files have identical infromation
+	 */
 	isEqual(other:PMTextDocument): boolean;
 
+	/**
+	 * updates file text and version according to changes
+	 * this supports both incremental and full change
+	 * @param changes array of changes
+	 * @param version version to set to file after change
+	 * @returns array of the ranges of the changed text, this is array of the new text range, not the old
+	 */
 	update(changes: TextDocumentContentChangeEvent[], version: number): Range[];
 
+	/**
+	 * array of the last changes range made to the file
+	 */
 	lastChanges: Range[];
 }
 
@@ -78,7 +92,7 @@ class FullTextDocument implements PMTextDocument {
 	private _languageId: languagesIds;
 	private _version: number;
 	private _content: string;
-	private _lineOffsets: number[] | undefined;
+	private _lineOffsets: number[] | undefined; // only use getter for this, this value is lazy
 	private _lastChanges: Range[];
 
 	public constructor(uri: DocumentUri, languageId: languagesIds, version: number, content: string) {
@@ -120,7 +134,7 @@ class FullTextDocument implements PMTextDocument {
 	}
 
 	public update(changes: TextDocumentContentChangeEvent[], version: number): Range[] {
-		let changesRange: Range[] = [];
+		let changesRange: Range[] = []; // keeps all the changes Range
 		for (let change of changes) {
 			if (FullTextDocument.isIncremental(change)) {
 				// makes sure start is before end
@@ -173,6 +187,7 @@ class FullTextDocument implements PMTextDocument {
 				throw new Error('Unknown change event received');
 			}
 		}
+
 		this._version = version;
 		this._lastChanges = changesRange;
 		return changesRange;
@@ -242,7 +257,7 @@ class FullTextDocument implements PMTextDocument {
 		}
 
 		if (this._uri !== other._uri || this._version !== other.version || this._languageId !== other._languageId || 
-			this._lineOffsets !== other._lineOffsets || this._content !== other._content ) {
+			this.getLineOffsets() !== other.getLineOffsets() || this._content !== other._content ) {
 				return false;
 		}
 
