@@ -14,7 +14,8 @@ import {
 	TextDocumentItem,
 	TextDocumentIdentifier,
 	DidChangeTextDocumentParams,
-	DocumentUri
+	DocumentUri,
+	Range
 } from 'vscode-languageserver';
 
 import { TextDocumentManager } from './DocumentManager';
@@ -34,18 +35,18 @@ export interface SolverInt {
 	onDidChangeTextDocument (params: DidChangeTextDocumentParams);
 	onDeleteFile (deletedFile:DocumentUri);
 	onCreatedNewFile (newFileUri:DocumentUri);
-	onOpenFolder (pathUri: string | null): void;
+	onOpenFolder (pathUri: string | null);
 }
 
 
 export class PMSolver implements SolverInt{
 
 	private _documentManager: TextDocumentManager;
-	private _languageFacade;
+	private _languageFacade: LanguageServicesFacade;
 
 	constructor(){
 		this._documentManager = new TextDocumentManager;
-		//TODO init language Facade
+		this._languageFacade = undefined;
 	}
 	
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList {
@@ -60,12 +61,12 @@ export class PMSolver implements SolverInt{
 
 	onDefinition(params: DeclarationParams, uri: string): LocationLink[] {
 		//throw new Error('Method not implemented.');
-		return null;
+		let ans:LocationLink[]= this._languageFacade.onDefinition(params);
+		return ans;
 	}
 
 	onPrepareRename(params: PrepareRenameParams, uri: string): Range | null {
-		//throw new Error('Method not implemented.');
-		return null;
+		return this._languageFacade.onPrepareRename(params);
 	}
 
 	onRenameRequest(params: RenameParams, uri: string): WorkspaceEdit {
@@ -74,13 +75,16 @@ export class PMSolver implements SolverInt{
 	}
 
 	onReferences(params: ReferenceParams, uri: string): Location [] {
-		//throw new Error('Method not implemented.');
-		return null;
+		return this._languageFacade.onReferences(params);
 	}
 	
 	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {
-		//throw new Error('Method not implemented.');
-		return null;
+		let foldingLocations: Location [] = this._languageFacade.onFoldingRanges(params);
+		let foldingRanges: FoldingRange[] = foldingLocations.map (currLocation => 
+			FoldingRange.create(currLocation.range.start.line,currLocation.range.end.line,
+				currLocation.range.start.character,currLocation.range.end.character)
+		);
+		return foldingRanges;
 	}
 
 
@@ -105,8 +109,11 @@ export class PMSolver implements SolverInt{
 		this._documentManager.clientCreatedNewFile(newFileUri);
 	}
 
-	onOpenFolder(pathUri: string | null): void {
+	async onOpenFolder(pathUri: string | null) {
 		this._documentManager.openedFolder(pathUri);
+		await LanguageServicesFacade.init(this._documentManager.allDocumnets)
+		.then(ans => this._languageFacade = ans)
+		.catch(rej => console.log('reject form LanguageServicesFacade init \n' + rej));
 	}
 	
 }
