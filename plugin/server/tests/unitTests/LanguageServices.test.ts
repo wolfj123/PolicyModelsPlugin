@@ -160,7 +160,7 @@ class LanguageServices_UnitTests {
 		//let text : string = getTextFromUri(filename)
 		let docs : PMTextDocument[]
 		docs = filenames.map(createPMTextDocFromUrl)
-		return await TestTarget.LanguageServices.init(docs)
+		return await TestTarget.LanguageServices.init(docs,process.cwd());
 	}
 
 	//Test
@@ -373,7 +373,7 @@ class LanguageServicesFacade_UnitTests {
 	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
 		let docs : PMTextDocument[]
 		docs = filenames.map(createPMTextDocFromUrl)
-		return await TestTarget.LanguageServicesFacade.init(docs)
+		return await TestTarget.LanguageServicesFacade.init(docs,process.cwd());
 	}
 
 	static addDocs() {
