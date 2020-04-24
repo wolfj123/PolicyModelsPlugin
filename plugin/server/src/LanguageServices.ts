@@ -21,6 +21,7 @@ import {
 	TextDocumentIdentifier,
 	TextDocumentChangeEvent,
 	DidChangeWatchedFilesParams,
+	PrepareRenameParams,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
 import { TextEdit } from 'vscode-languageserver-textdocument';
@@ -97,7 +98,7 @@ export class LanguageServicesFacade {
 		return this.services.getReferences(location)
 	}
 
-	onPrepareRename(params : RenameParams): Range | null {
+	onPrepareRename(params : PrepareRenameParams): Range | null {
 		let location : Location = position2Location(params.position, params.textDocument.uri)
 		let entity : PolicyModelEntity = this.services.createPolicyModelEntity(location)
 		if(isNullOrUndefined(entity)) {return null}
@@ -159,8 +160,11 @@ export class LanguageServices {
 	]
 
 	static async init(docs : PMTextDocument[] /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
-		let instance : LanguageServices = new LanguageServices()
-		await instance.initParsers()
+		let instance : LanguageServices = new LanguageServices();
+		let fullPath:string = process.cwd();
+		let pluginPath: string = fullPath.substring(0, fullPath.indexOf("plugin") + 6)
+		let parsersPath: string = path.join(pluginPath,"parsers");
+		await instance.initParsers(parsersPath)
 		instance.fileManagers = new Map()
 		instance.populateMaps(docs)
 		return instance
@@ -194,14 +198,10 @@ export class LanguageServices {
 	}
 
 	//maybe this map should be global singleton?
-	async initParsers() {
+	async initParsers(parserPath: string) {
 		this.parsers = new Map()
 		for(let info of this.parsersInfo) {
-			//const wasm = info.wasm
-			let path = "./parsers/"
-			const wasm = path.concat(info.wasm)
-
-			//const absolute = path.join(context.extensionPath, 'parsers', wasm
+			const wasm = path.join(parserPath,info.wasm);
 			await Parser.init()
 			const parser = new Parser()
 			const lang = await Parser.Language.load(wasm)

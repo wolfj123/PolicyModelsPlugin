@@ -11,7 +11,7 @@ import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
 
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector } from 'vscode-languageclient';
 
 let client: LanguageClient;
 
@@ -41,10 +41,25 @@ export function activate(context: ExtensionContext) {
     }
   };
 
+  let documentSelectorOptions :DocumentSelector = 
+		[
+			{
+				language:'policyspace',
+				pattern:"**/*.{ps,pspace}"
+      },
+      {
+				language:'valueinferrence',
+				pattern:"**/*.{vi}"
+      },
+			{
+				language:'decisiongraph',
+				pattern:"**/*.{dg}"
+			}
+    ]
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: [{ scheme: 'file', language: 'policyspace' }],
+    //register all relevant file types
+    documentSelector: documentSelectorOptions,
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc')

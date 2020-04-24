@@ -38,6 +38,7 @@ import {
 	DidChangeWatchedFilesParams,
 	FileEvent,
 	FileChangeType,
+	DefinitionRegistrationOptions,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -111,22 +112,17 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				documentRangeFormattingProvider - same as documentFormattingProvider but in a specifc range
 				documentOnTypeFormattingProvider - same as documentFormattingProvider during typing
 				selectionRangeProvider - when the user asks to select a scope aroung the current cursor / mouse position
-			*/
-			
-
-			/* to check:
+				textDocumentSync:
+				{
+			 		openClose:true,
+			 		change:TextDocumentSyncKind.Full
+				 },
+				 
+				to check:
 				documentHighlightProvider, - to check with others
 				documentSymbolProvider, - WTF
 			*/
 			
-
-			// TODO check if needed
-			// textDocumentSync:
-			// {
-			// 	openClose:true,
-			// 	change:TextDocumentSyncKind.Full
-			// },
-
 			workspace:{
 				workspaceFolders:{
 					supported: false,
@@ -140,7 +136,9 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			definitionProvider: true,
 			foldingRangeProvider: true,
 			referencesProvider: true,
-			renameProvider: true,
+			renameProvider: {
+				prepareProvider: true
+			},
 		},
 		serverInfo:{
 			name: 'Ps server to extened',
@@ -152,6 +150,11 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
+
+	// let x: DefinitionRegistrationOptions = {
+	// 	documentSelector: 
+	// }
+	// connection.client.register()
 	
 	if (clientSupportswatchedFiles){
 		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
@@ -274,7 +277,6 @@ connection.onReferences(
 
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
-	//@ts-ignore
 	(params:PrepareRenameParams) =>  {
 		return solver.onPrepareRename(params, params.textDocument.uri);
 });
