@@ -418,9 +418,9 @@ export abstract class FileManager {
 			case PolicyModelEntityType.DGNode: 
 				return this.getAllDefinitionsDGNode(entity.getName())
 			case PolicyModelEntityType.Slot: 
-				return this.getAllDefinitionsDGNode(entity.getName())
+				return this.getAllDefinitionsSlot(entity.getName())
 			case PolicyModelEntityType.SlotValue: 
-				return this.getAllDefinitionsDGNode(entity.getName())
+				return this.getAllDefinitionsSlotValue(entity.getName())
 			default:
 				return undefined
 		}
