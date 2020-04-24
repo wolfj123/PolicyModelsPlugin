@@ -48,7 +48,7 @@ export function activate(context: ExtensionContext) {
 				pattern:"**/*.{ps,pspace}"
       },
       {
-				language:'valueinferrence',
+				language:'valueinference',
 				pattern:"**/*.{vi}"
       },
 			{

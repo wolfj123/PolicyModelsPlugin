@@ -192,7 +192,7 @@ connection.onInitialized(() => {
 				pattern:"**/*.{dg}"
 			},
 			{
-				language:'valueinferrence',
+				language:'valueinference',
 				pattern:"**/*.{vi}"
 			}
 		]
