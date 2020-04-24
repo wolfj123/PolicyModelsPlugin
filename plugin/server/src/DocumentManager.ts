@@ -106,7 +106,7 @@ export interface TextDocumentManagerInt{
 	/**
 	 * @returns array of all documents managed by this class
 	 */
-	allDocumnets;
+	allDocumnets: PMTextDocument[];
 }
 
 export class TextDocumentManager implements TextDocumentManagerInt {

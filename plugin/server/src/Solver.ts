@@ -36,6 +36,8 @@ export interface SolverInt {
 	onDeleteFile (deletedFile:DocumentUri);
 	onCreatedNewFile (newFileUri:DocumentUri);
 	onOpenFolder (pathUri: string | null);
+	initParser (pluginDir:string);
+	facadeIsReady: boolean;
 }
 
 
@@ -47,6 +49,10 @@ export class PMSolver implements SolverInt{
 	constructor(){
 		this._documentManager = new TextDocumentManager;
 		this._languageFacade = undefined;
+	}
+
+	public get facadeIsReady(){
+		return this._languageFacade !== undefined;
 	}
 	
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList {
@@ -78,7 +84,10 @@ export class PMSolver implements SolverInt{
 		return this._languageFacade.onReferences(params);
 	}
 	
-	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {
+	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {	
+		if (!this.facadeIsReady){
+			return null;
+		}
 		let foldingLocations: Location [] = this._languageFacade.onFoldingRanges(params);
 
 		if (foldingLocations === null || foldingLocations === undefined){
@@ -91,6 +100,9 @@ export class PMSolver implements SolverInt{
 		);
 		return foldingRanges;
 	}
+
+
+
 
 
 
@@ -160,10 +172,21 @@ export class PMSolver implements SolverInt{
 	}
 
 	async onOpenFolder(pathUri: string | null) {
-		this._documentManager.openedFolder(pathUri);
-		await LanguageServicesFacade.init(this._documentManager.allDocumnets)
-		.then(ans => this._languageFacade = ans)
-		.catch(rej => console.log('reject form LanguageServicesFacade init \n' + rej));
+		if (this._languageFacade !== undefined){
+			this._documentManager.openedFolder(pathUri);
+			this._languageFacade.addDocs(this._documentManager.allDocumnets);
+		}else{
+			setTimeout(() => {
+				this.onOpenFolder(pathUri);
+			}, 200);
+		}
 	}
 	
+
+	async initParser (pluginDir:string) {
+		await LanguageServicesFacade.init(this._documentManager.allDocumnets, pluginDir)
+		.then(ans => {console.log (`resolve init `);
+		this._languageFacade = ans;})
+		.catch(rej => console.log('reject form LanguageServicesFacade init \n' + rej));
+	}
 }
