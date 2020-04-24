@@ -18,7 +18,7 @@ import {
 	Range
 } from 'vscode-languageserver';
 
-import { TextDocumentManager } from './DocumentManager';
+import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
 
 export interface SolverInt {
@@ -41,7 +41,7 @@ export interface SolverInt {
 
 export class PMSolver implements SolverInt{
 
-	private _documentManager: TextDocumentManager;
+	private _documentManager: TextDocumentManagerInt;
 	private _languageFacade: LanguageServicesFacade;
 
 	constructor(){
@@ -51,12 +51,12 @@ export class PMSolver implements SolverInt{
 	
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList {
 		//throw new Error('Method not implemented.');
-		return null;
+		return null; //TODO
 	}
 
 	onCompletionResolve(params: CompletionItem, uri: string): CompletionItem {
 		//throw new Error('Method not implemented.');
-		return null;
+		return null; //TODO
 	}
 
 	onDefinition(params: DeclarationParams, uri: string): LocationLink[] {
@@ -71,7 +71,7 @@ export class PMSolver implements SolverInt{
 
 	onRenameRequest(params: RenameParams, uri: string): WorkspaceEdit {
 		//throw new Error('Method not implemented.');
-		return null;
+		return null; //TODO
 	}
 
 	onReferences(params: ReferenceParams, uri: string): Location [] {
@@ -80,6 +80,11 @@ export class PMSolver implements SolverInt{
 	
 	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {
 		let foldingLocations: Location [] = this._languageFacade.onFoldingRanges(params);
+
+		if (foldingLocations === null || foldingLocations === undefined){
+			return [];
+		}
+
 		let foldingRanges: FoldingRange[] = foldingLocations.map (currLocation => 
 			FoldingRange.create(currLocation.range.start.line,currLocation.range.end.line,
 				currLocation.range.start.character,currLocation.range.end.character)
@@ -89,24 +94,69 @@ export class PMSolver implements SolverInt{
 
 
 
-	onDidOpenTextDocument(opendDocParam: TextDocumentItem) {
-		this._documentManager.openedDocumentInClient(opendDocParam);
+	async onDidOpenTextDocument(opendDocParam: TextDocumentItem) {
+		await this._documentManager.openedDocumentInClient(opendDocParam)
+		.then(changeResults=> {
+			changeResults.forEach(currChange => {
+				switch(currChange.type){
+					case documentManagerResultTypes.newFile:
+						this._languageFacade.addDocs([currChange.result]);
+						break;
+					case documentManagerResultTypes.removeFile:
+						this._languageFacade.removeDoc(currChange.result)
+						break;
+				}
+			});
+		})
+		.catch(rej => console.log(`onDidOpenTextDocument was rejected \n${rej} \n`));
 	}
 
-	onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
-		this._documentManager.closedDocumentInClient(closedDcoumentParams);
+	async onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
+		await this._documentManager.closedDocumentInClient(closedDcoumentParams)
+		.then(change=>{
+			switch(change.type){
+				case documentManagerResultTypes.removeFile:
+					this._languageFacade.removeDoc(change.result);
+					break;
+			}
+		})
+		.catch(rej => console.log(`onDidCloseTextDocument was rejected \n${rej} \n`));
 	}
 
-	onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
-		this._documentManager.changeTextDocument(params);
+	async onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
+		await this._documentManager.changeTextDocument(params)
+		.then(change =>{
+			switch(change.type){
+				case documentManagerResultTypes.updateFile:
+					this._languageFacade.updateDoc(this._documentManager.getDocument(params.textDocument.uri));
+					break;
+				case documentManagerResultTypes.noChange:
+					break;
+			}
+		})
+		.catch(rej => console.log(`onDeleteFile was rejected \n${rej} \n`));
 	}
 
-	onDeleteFile(deletedFile: string) {
-		this._documentManager.deletedDocument(deletedFile);
+	async onDeleteFile(deletedFile: string) {
+		await this._documentManager.deletedDocument(deletedFile)
+		.then(change =>{
+			switch(change.type){
+				case documentManagerResultTypes.removeFile:
+					this._languageFacade.removeDoc(change.result);
+			}
+		})
+		.catch(rej => console.log(`onDeleteFile was rejected \n${rej} \n`));
 	}
 
-	onCreatedNewFile(newFileUri: string) {
-		this._documentManager.clientCreatedNewFile(newFileUri);
+	async onCreatedNewFile(newFileUri: string) {
+		await this._documentManager.clientCreatedNewFile(newFileUri)
+		.then(change => {
+			switch(change.type){
+				case documentManagerResultTypes.newFile:
+					this._languageFacade.addDocs([change.result]);
+			}
+		})
+		.catch(rej => console.log(`onCreatedNewFile was rejected \n${rej} \n`));
 	}
 
 	async onOpenFolder(pathUri: string | null) {

@@ -21,10 +21,10 @@
 	"activationEvents": [
 		"onLanguage:policyspace",
 		"onLanguage:decisiongraph",
+		"onLanguage:valueinference",
 		"onLanguage:policyModelDescription",
 		"onLanguage:localizedModel",
-		"onLanguage:localiztion",
-		"onLanguage:valueinference"
+		"onLanguage:localiztion"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
