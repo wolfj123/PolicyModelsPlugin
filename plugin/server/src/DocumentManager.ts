@@ -36,7 +36,10 @@ export interface TextDocumentManagerInt{
 	 * use for onDidOpenTextDocument
 	 * @param opendDocParam 
 	 * @returns array of Promises that will resolve when we finished reading the folder, the promises can't reject
-	 * they return documentManagerResult [], with result of the new PMTextDocument created objects
+	 * possible types:
+	 * 	* noChange - only version was updated, no result
+	 *  * newFile - new file was added to manager, result is tnew newly create PMTextDocument
+	 *  * removeFile - in case of difference between file and data in manager, result is removed URI
 	 */
 	openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult []>;
 
@@ -45,7 +48,9 @@ export interface TextDocumentManagerInt{
 	 * use for onDidCloseTextDocument
 	 * @param closedDcoumentParams 
 	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
-	 * the promises resolves to a documentManagerResult with no result in it
+	 * possible types:
+	 *  * noChange - closed, only changed Version, no result
+	 *  * removeFile - in case of no folder mode the file is removed from manager, result is remove URI
 	 */
 	closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult>;
 
@@ -55,8 +60,10 @@ export interface TextDocumentManagerInt{
 	 * this function updates the relevant files with the new text
 	 * it only supports incremental change !!!!
 	 * @param params 
-	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
-	 * the promises resolves to a DocumentManagerResult with result with array of the changes if exist
+	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject, will be resolved after folder scanning is finished
+	 * possible types:
+	 *  * noChange - in case of error, files wasn't found , no result
+	 *  * updateFile - file was successfully updataetd, result is array of changeInfo
 	 */ 
 	changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>;
 
@@ -65,7 +72,9 @@ export interface TextDocumentManagerInt{
 	 * use for onDidChangeWatchedFiles
 	 * @param deletedFile 
 	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
-	 * the promises resolves to a DocumentManagerResult with result contiaing the URI of deleted file.
+	 * possible types:
+	 *  * noChange - error, file wasn't found
+	 *  * removeFile - removed the file, result is remove URI
 	 */
 	deletedDocument(deletedFile:DocumentUri): Promise<DocumentManagerResult>;
 
@@ -74,7 +83,9 @@ export interface TextDocumentManagerInt{
 	 * use for onDidChangeWatchedFiles
 	 * @param newFileUri 
 	 * @returns Promise that will resolve when we finished reading the folder, the promises can't reject
-	 * the promises resolves to a DocumentManagerResult with result containt the URI of created file.
+	 * possible types:
+	 *  * noChange - file already existed in manager, no result
+	 *  * newFile - created and added new file to manager, result is the PMTextDocument created
 	 */
 	clientCreatedNewFile(newFileUri:DocumentUri): Promise<DocumentManagerResult>;
 
@@ -134,6 +145,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		}
 
 		let openedTextDocument: PMTextDocument = this._allDocuments.find(currDoc => currDoc.uri === opendDocParam.uri);
+
 		if (openedTextDocument === undefined ){
 			//this can happen when:
 			//1) I have an error in the code or understanding
@@ -144,12 +156,13 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 
 			let ans: DocumentManagerResult []= [{
 				type: documentManagerResultTypes.newFile,
-				result: "shit 2"//newDocument
+				result: newDocument
 			}];
 
 			return Promise.resolve(ans);
 
 		}else if (openedTextDocument.getText() !== opendDocParam.text){
+			//in case the text of the file is different from text in our manager
 			this.deletedDocument(opendDocParam.uri);
 			let newDocument: PMTextDocument =  this.createAndAddNewFile(undefined,opendDocParam);
 			let removeAns: DocumentManagerResult = {
@@ -158,10 +171,10 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 			};
 			let addAns: DocumentManagerResult = {
 				type: documentManagerResultTypes.newFile,
-				result: "shit 1"//newDocument
+				result: newDocument
 			};
 			return Promise.resolve([removeAns,addAns]);
-		}else{
+		}else {
 			openedTextDocument.version = opendDocParam.version;
 			return Promise.resolve([{type:documentManagerResultTypes.noChange}]);
 		}
@@ -345,7 +358,6 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 
 
 }
-
 
 
 

@@ -302,7 +302,7 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 	_change.changes.forEach( (currChange: FileEvent) => {
 		switch(currChange.type){
 			case FileChangeType.Created:
-				solver.onOpenFolder(currChange.uri);
+				solver.onCreatedNewFile(currChange.uri);
 				break;
 			case FileChangeType.Deleted:
 				solver.onDeleteFile(currChange.uri);
