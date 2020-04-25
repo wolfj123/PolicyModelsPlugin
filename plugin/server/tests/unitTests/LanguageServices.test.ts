@@ -351,7 +351,6 @@ class LanguageServices_UnitTests {
 	}
 }
 
-
 class LanguageServicesFacade_UnitTests {
 	static testTargetClass = TestTarget.LanguageServicesFacade
 
@@ -410,7 +409,33 @@ class LanguageServicesFacade_UnitTests {
 	}
 
 	static updateDoc() {
-		//This should be tested in sequencial tests
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace'],
+					update: null
+				},
+				output: ['ps_ws_1.pspace']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			let update : PMTextDocument //= testCase.input.update
+			const output = testCase.output
+			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			instance.updateDoc(update)
+		}
+
+		describe('updateDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static removeDoc() {
@@ -638,5 +663,10 @@ class LanguageServicesFacade_UnitTests {
 
 
 
+
+
+//LanguageServicesFacade_UpdateTests.runTests()
 //LanguageServices_UnitTests.runTests()
-LanguageServicesFacade_UnitTests.runTests()
+//LanguageServicesFacade_UnitTests.runTests()
+
+

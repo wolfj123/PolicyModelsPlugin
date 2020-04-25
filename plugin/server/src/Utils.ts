@@ -16,6 +16,7 @@ import {
 	TextDocumentContentChangeEvent,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter'
+import * as _ from 'underscore'
 import { changeInfo } from './Documents';
 export enum languagesIds {
 	policyspace =  0,
@@ -30,11 +31,30 @@ const viExt:string = "vi";
 
 const allFileExtensions: string [] = [psExt, pspaceExt, dgExt, viExt];
 
+
+//Array functions
 export function flatten (arr: any [][]): any [] {
 	let ans: any[] = [];
 	arr.forEach(x=> x.forEach(y=> ans.push(y))   );
 	return ans;
 }
+
+export function uniqueArray(arr : any[]) : any[] {
+	let result = []
+	let clone = arr.slice()  
+	while(clone.length > 0){
+		let element = clone.shift()
+		if(clone.find(e => _.isEqual(e, element))){
+			continue
+		}
+		else {
+			result.push(element)
+		}
+	}
+	return result
+}
+
+
 
 export function point2Position(p : Parser.Point) : Position {
 	return Position.create(p.row, p.column)
