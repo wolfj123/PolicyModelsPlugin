@@ -39,6 +39,9 @@ import {
 	FileEvent,
 	FileChangeType,
 	DefinitionRegistrationOptions,
+	RequestMessage,
+	RequestType,
+	RequestType0,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -89,7 +92,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 	
 	// the didChangeWatchedFiles is used to notify the server when a new file was opned a file was delted or renamed
 	clientSupportswatchedFiles = capabilities.workspace.didChangeWatchedFiles.dynamicRegistration; 
-
 
 	return {
 		capabilities: {		
@@ -150,11 +152,11 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
-
-	// let x: DefinitionRegistrationOptions = {
-	// 	documentSelector: 
-	// }
-	// connection.client.register()
+	connection.onRequest("setPluginDir", async (dir:string) => {
+		await solver.initParser(dir);
+		console.log("finish init from client");
+		return null;
+	})
 	
 	if (clientSupportswatchedFiles){
 		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
@@ -204,8 +206,7 @@ connection.onInitialized(() => {
 	connection.client.register(DidCloseTextDocumentNotification.type,textDocumnetNotificationOptions);
 	connection.client.register(DidChangeTextDocumentNotification.type,textDocumnetNotificationOptions);
 
-
-	//amse probalby not needed beacuse we don't care about configurations
+	//amsel probalby not needed beacuse we don't care about configurations
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -224,9 +225,23 @@ connection.onInitialized(() => {
 
 		// this function muse be declared here or else an error will occur
 		//we need this in order to get the folder that is currently open.
-		connection.workspace.getWorkspaceFolders().then(_event => {
+		connection.workspace.getWorkspaceFolders().then(async _event => {
 			connection.console.log('getWorkspaceFolders folder change event received.');
-			solver.onOpenFolder(_event[0].uri);
+			
+			if (! solver.facadeIsReady){
+				await connection.sendRequest("getPluginDir").then ( async (ans: string) =>{
+					await solver.initParser(ans);
+					console.log("finish init from server");
+				})
+			}
+
+			if (_event === null || _event === undefined) {
+				await solver.onOpenFolder(null);
+				console.log(`finished wiating for open folder`);
+			}else{
+				await solver.onOpenFolder(_event[0].uri);
+				console.log(`finished wiating for open folder`);
+			}
 		});
 		
 

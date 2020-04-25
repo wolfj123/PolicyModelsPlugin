@@ -52,9 +52,9 @@ import { PMTextDocument } from './Documents';
 export class LanguageServicesFacade {
 	services : LanguageServices
 
-	static async init(docs : PMTextDocument[]) : Promise<LanguageServicesFacade> {
+	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
-		let services : LanguageServices = await LanguageServices.init(docs)
+		let services : LanguageServices = await LanguageServices.init(docs, pluginDir)
 		instance.services = services
 		return instance
 	}
@@ -159,11 +159,21 @@ export class LanguageServices {
 		}
 	]
 
-	static async init(docs : PMTextDocument[] /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
+	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
 		let instance : LanguageServices = new LanguageServices();
-		let fullPath:string = process.cwd();
-		let pluginPath: string = fullPath.substring(0, fullPath.indexOf("plugin") + 6)
-		let parsersPath: string = path.join(pluginPath,"parsers");
+		// let fullPath:string = process.cwd();
+		// let idx: number = fullPath.indexOf("plugin");
+		// let pluginPath: string;
+		// if (idx === -1){
+		// 	pluginPath = fullPath;
+		// }else {
+		// 	pluginPath = fullPath.substring(0,  idx + 6);
+		// }
+		// console.log(`plugin path in facade ${pluginPath}`);
+		// let parsersPath: string = path.join(pluginPath,"parsers");
+		console.log(`language facade init plugin dir is: ${pluginDir}`);
+
+		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
 		instance.fileManagers = new Map()
 		instance.populateMaps(docs)

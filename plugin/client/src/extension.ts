@@ -11,7 +11,7 @@ import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
 
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
 let client: LanguageClient;
 
@@ -72,9 +72,29 @@ export function activate(context: ExtensionContext) {
 
   addRunCommand(context);
 
+
+
   // Start the client. This will also launch the server
   client.start();
+
+  client.onReady().then(_ => {
+    client.sendRequest("setPluginDir",context.extensionPath);
+    
+    client.onRequest("getPluginDir",(a)=>{
+      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
+      console.log(`${JSON.stringify(a)}`);
+      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
+
+      return context.extensionPath;
+    });
+  });
+
+
+
 }
+
+
+
 
 export function deactivate(): Thenable<void> | undefined {
   if (!client) {
