@@ -233,6 +233,8 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
 				]
 			}
 		]
@@ -375,14 +377,14 @@ class LanguageServicesFacade_UnitTests {
 
 	static runTests() {
 		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
-//			LanguageServicesFacade_UnitTests.addDocs()
+			LanguageServicesFacade_UnitTests.addDocs()
 			LanguageServicesFacade_UnitTests.updateDoc()
-			// LanguageServicesFacade_UnitTests.removeDoc()
-			// LanguageServicesFacade_UnitTests.onDefinition()
-			// LanguageServicesFacade_UnitTests.onReferences()
-			// LanguageServicesFacade_UnitTests.onPrepareRename()
-			// LanguageServicesFacade_UnitTests.onRenameRequest()
-			// LanguageServicesFacade_UnitTests.onFoldingRanges()
+			LanguageServicesFacade_UnitTests.removeDoc()
+			LanguageServicesFacade_UnitTests.onDefinition()
+			LanguageServicesFacade_UnitTests.onReferences()
+			LanguageServicesFacade_UnitTests.onPrepareRename()
+			LanguageServicesFacade_UnitTests.onRenameRequest()
+			LanguageServicesFacade_UnitTests.onFoldingRanges()
 			//LanguageServicesFacade_UnitTests.onCompletion()
 			//LanguageServicesFacade_UnitTests.onCompletionResolve()
 		})
@@ -550,6 +552,8 @@ class LanguageServicesFacade_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
 				]
 			}
 		]
@@ -618,6 +622,8 @@ class LanguageServicesFacade_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
 				]
 			}
 		]
@@ -693,7 +699,7 @@ class LanguageServicesFacade_UnitTests {
 
 
 
-//LanguageServices_UnitTests.runTests()
+LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
 
