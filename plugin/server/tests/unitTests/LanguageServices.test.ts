@@ -83,6 +83,25 @@ function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLan
 	return correspondingInfo[0].language
 }
 
+function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
+	let result : PMTextDocument = {
+		uri : uri,
+		languageId : null,
+		version : null,
+		getText : function(){return newText},
+		positionAt: null,
+		offsetAt: null,
+		lineCount: null,
+		isEqual: null,
+		update: null,
+		lastChanges: [{
+			oldRange: oldRange,
+			newRange: newRange
+		}]
+	}
+	return result
+}
+
 function getParserWasmPathByExtension(extension : string) : string | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
@@ -214,6 +233,8 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
 				]
 			}
 		]
@@ -351,14 +372,13 @@ class LanguageServices_UnitTests {
 	}
 }
 
-
 class LanguageServicesFacade_UnitTests {
 	static testTargetClass = TestTarget.LanguageServicesFacade
 
 	static runTests() {
 		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
 			LanguageServicesFacade_UnitTests.addDocs()
-			//LanguageServicesFacade_UnitTests.updateDoc()
+			LanguageServicesFacade_UnitTests.updateDoc()
 			LanguageServicesFacade_UnitTests.removeDoc()
 			LanguageServicesFacade_UnitTests.onDefinition()
 			LanguageServicesFacade_UnitTests.onReferences()
@@ -410,7 +430,44 @@ class LanguageServicesFacade_UnitTests {
 	}
 
 	static updateDoc() {
-		//This should be tested in sequencial tests
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps1.pspace'],
+					update: {
+						url : 'ps1.pspace',
+						text : `new_name [atomic_slot_desc.]: one of` +
+								`	slotval1 [desc],` +
+								`	slotval2 [desc],` +
+								`	slot1val3 [desc].`,
+						oldRange: {start: {character: 0, line: 0},end: {character: 8, line: 0}},
+						newRange : {start: {character: 0, line: 0},end: {character: 8, line: 0}},
+					}
+				},
+				output: {name: 'new_name' , type : TestTarget.PolicyModelEntityType.Slot}
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			let update : PMTextDocument = createPMTextDoc(testCase.input.update.url, testCase.input.update.text, testCase.input.update.oldRange, testCase.input.update.newRange)
+			const output = testCase.output
+			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			instance.updateDoc(update)
+			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
+			assert.equal(result.getName(), output.name)
+			assert.equal(result.getType(), output.type)
+		}
+
+		describe('updateDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
 	}
 
 	static removeDoc() {
@@ -495,6 +552,8 @@ class LanguageServicesFacade_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
 				]
 			}
 		]
@@ -563,6 +622,8 @@ class LanguageServicesFacade_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
 				]
 			}
 		]
@@ -638,5 +699,7 @@ class LanguageServicesFacade_UnitTests {
 
 
 
-//LanguageServices_UnitTests.runTests()
+LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
+
+

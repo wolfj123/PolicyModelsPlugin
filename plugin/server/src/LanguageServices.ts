@@ -25,19 +25,8 @@ import {
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
 import { TextEdit } from 'vscode-languageserver-textdocument';
-//import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { 
-	getFileExtension, 
-	point2Position, 
-	position2Point, 
-	position2Location,
-	newRange, 
-	newLocation, 
-	flatten, 
-	docChange2Edit,
-	changeInfo2Edit
-} from './Utils';
+import * as Utils from './Utils'
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
 import { PMTextDocument } from './Documents';
@@ -77,7 +66,7 @@ export class LanguageServicesFacade {
 	}
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		let locations : Location[] = this.services.getDeclarations(location)
 		
 		let result : LocationLink[] = locations.map(loc =>{
@@ -94,22 +83,22 @@ export class LanguageServicesFacade {
 
 	// these functions are called when the request is first made from the server
 	onReferences(params : ReferenceParams):  Location[] {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		return this.services.getReferences(location)
 	}
 
 	onPrepareRename(params : PrepareRenameParams): Range | null {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		let entity : PolicyModelEntity = this.services.createPolicyModelEntity(location)
 		if(isNullOrUndefined(entity)) {return null}
-		let pos1 : Position = point2Position(entity.syntaxNode.startPosition)
-		let pos2 : Position = point2Position(entity.syntaxNode.endPosition)
-		let range : Range = newRange(pos1, pos2)
+		let pos1 : Position = Utils.point2Position(entity.syntaxNode.startPosition)
+		let pos2 : Position = Utils.point2Position(entity.syntaxNode.endPosition)
+		let range : Range = Utils.newRange(pos1, pos2)
 		return range
 	}
 
 	onRenameRequest(params : RenameParams) : Location[]	{		//WorkspaceEdit {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		return this.services.getReferences(location)
 	}
 
@@ -194,8 +183,8 @@ export class LanguageServices {
 	updateDoc(doc : PMTextDocument){
 		let fileManager : FileManager = this.fileManagers.get(doc.uri)
 		if(isNullOrUndefined(fileManager)) return
-		let parser : Parser = this.getParserByExtension(getFileExtension(doc.uri))
-		const edits : Parser.Edit[] = doc.lastChanges.map(change => changeInfo2Edit(change))
+		let parser : Parser = this.getParserByExtension(Utils.getFileExtension(doc.uri))
+		const edits : Parser.Edit[] = doc.lastChanges.map(change => Utils.changeInfo2Edit(change))
 		let tree : Parser.Tree = fileManager.tree
 		edits.forEach((edit : Parser.Edit) => {
 			tree.edit(edit)
@@ -235,7 +224,7 @@ export class LanguageServices {
 	populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
 			const uri = doc.uri //doc.textDocument.uri
-			const extension = getFileExtension(uri)
+			const extension = Utils.getFileExtension(uri)
 			let fileManager : FileManager = FileManagerFactory.create(doc, 
 				this.getParserByExtension(extension), 
 				this.getLanguageByExtension(extension))
@@ -268,6 +257,7 @@ export class LanguageServices {
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
 
+		//get all the declarations of the entity and their source files
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
 			let locs : Location[] = fm.getAllDefinitions(entity)
 			declarations = declarations.concat(locs)
@@ -276,32 +266,34 @@ export class LanguageServices {
 			}
 		});
 		
+		//if no source file, then just get all the references
 		if(docsWithDeclaration.length == 0){
 			this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
 				references = references.concat(fm.getAllReferences(entity))
 			});
 		}
+		//if there is a source file, then get all the references from that source
 		else {
 			docsWithDeclaration.forEach((uri: DocumentUri) => {	
 				entity.setSource(uri)
 				this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
-					references.concat(fm.getAllReferences(entity))
+					references = references.concat(fm.getAllReferences(entity))
 				});
 			});
 		}
-		
-		//TODO: we need to make sure the array contains unique values only
+
 		result = result.concat(declarations) //we include declarations in this query
 		result = result.concat(references)
+		result = Utils.uniqueArray(result)
 		return result
 	}
 
 	getRangeOfDoc(uri : DocumentUri) : Range | null {
 		let fm : FileManager = this.fileManagers.get(uri)
 		if(isNullOrUndefined(fm)) {return null}
-		let pos1 : Position = point2Position(fm.tree.rootNode.startPosition)
-		let pos2 : Position = point2Position(fm.tree.rootNode.endPosition)
-		let range : Range = newRange(pos1, pos2)
+		let pos1 : Position = Utils.point2Position(fm.tree.rootNode.startPosition)
+		let pos2 : Position = Utils.point2Position(fm.tree.rootNode.endPosition)
+		let range : Range = Utils.newRange(pos1, pos2)
 		return range
 	}
 
@@ -396,11 +388,11 @@ export abstract class FileManager {
 	getNodeFromLocation(location : Location) : Parser.SyntaxNode | null {
 		if(!this.isLocationInDoc(location)) return null
 		const position : Position = location.range.start
-	 	return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
+	 	return this.tree.walk().currentNode().namedDescendantForPosition(Utils.position2Point(position))
 	}
 
 	rangeArray2LocationArray(ranges : Range[]) : Location[] {
-		return ranges.map(range => newLocation(this.uri, range))
+		return ranges.map(range => Utils.newLocation(this.uri, range))
 	}
 
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
@@ -459,7 +451,7 @@ export abstract class FileManager {
 export class FileManagerFactory {
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage) : FileManager | null {
 		const uri = doc.uri
-		const extension = getFileExtension(uri)
+		const extension = Utils.getFileExtension(uri)
 		//let parser = getParserByExtension(extension)
 		//let language = getLanguageByExtension(extension)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
@@ -683,7 +675,7 @@ export class DecisionGraphServices {
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_reference")
-		let slotIdentifiers : Parser.SyntaxNode[] = flatten(slotRefs.map(ref => ref.descendantsOfType("slot_identifier")))
+		let slotIdentifiers : Parser.SyntaxNode[] = Utils.flatten(slotRefs.map(ref => ref.descendantsOfType("slot_identifier")))
 		let relevant = slotIdentifiers.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevant)
 	}
@@ -772,7 +764,7 @@ export class PolicySpaceServices {
 export class ValueInferenceServices {
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let identifiers : Parser.SyntaxNode[] = flatten(root.descendantsOfType("slot_reference")
+		let identifiers : Parser.SyntaxNode[] = Utils.flatten(root.descendantsOfType("slot_reference")
 			.map(id => id.descendantsOfType("slot_identifier")))
 		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
@@ -853,7 +845,7 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 	return nodes.map(
 		id => {
-			return newRange(point2Position(id.startPosition), point2Position(id.endPosition))
+			return Utils.newRange(Utils.point2Position(id.startPosition), Utils.point2Position(id.endPosition))
 		}
 	)
 }

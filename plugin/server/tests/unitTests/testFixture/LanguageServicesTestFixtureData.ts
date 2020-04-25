@@ -71,8 +71,16 @@ text :
 	[ Encrypt=Double; DUA_AM=Sign    -> Crimson ]
   ]
 `
+},
+//***************** UPDATE *****************/
+{
+uri : "ps1_vr2.pspace",
+text : 
+`new_name [atomic_slot_desc.]: one of
+	slotval1 [desc],
+	slotval2 [desc],
+	slotval3 [desc].`
 }
-
 //***************** WOKRSPACE 1 *****************/
 ,{
 uri : "ps_ws_1.pspace",
