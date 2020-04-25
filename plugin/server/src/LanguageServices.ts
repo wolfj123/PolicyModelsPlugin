@@ -25,20 +25,7 @@ import {
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
 import { TextEdit } from 'vscode-languageserver-textdocument';
-//import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-// import { 
-// 	getFileExtension, 
-// 	point2Position, 
-// 	position2Point, 
-// 	position2Location,
-// 	newRange, 
-// 	newLocation, 
-// 	flatten, 
-// 	docChange2Edit,
-// 	changeInfo2Edit
-// } from './Utils';
-
 import * as Utils from './Utils'
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
@@ -297,9 +284,6 @@ export class LanguageServices {
 
 		result = result.concat(declarations) //we include declarations in this query
 		result = result.concat(references)
-
-		//TODO: we need to make sure the array contains unique values only
-		//result = _.unique(result)
 		result = Utils.uniqueArray(result)
 		return result
 	}

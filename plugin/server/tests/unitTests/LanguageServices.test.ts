@@ -83,6 +83,25 @@ function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLan
 	return correspondingInfo[0].language
 }
 
+function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
+	let result : PMTextDocument = {
+		uri : uri,
+		languageId : null,
+		version : null,
+		getText : function(){return newText},
+		positionAt: null,
+		offsetAt: null,
+		lineCount: null,
+		isEqual: null,
+		update: null,
+		lastChanges: [{
+			oldRange: oldRange,
+			newRange: newRange
+		}]
+	}
+	return result
+}
+
 function getParserWasmPathByExtension(extension : string) : string | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
@@ -356,14 +375,14 @@ class LanguageServicesFacade_UnitTests {
 
 	static runTests() {
 		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
-			LanguageServicesFacade_UnitTests.addDocs()
-			//LanguageServicesFacade_UnitTests.updateDoc()
-			LanguageServicesFacade_UnitTests.removeDoc()
-			LanguageServicesFacade_UnitTests.onDefinition()
-			LanguageServicesFacade_UnitTests.onReferences()
-			LanguageServicesFacade_UnitTests.onPrepareRename()
-			LanguageServicesFacade_UnitTests.onRenameRequest()
-			LanguageServicesFacade_UnitTests.onFoldingRanges()
+//			LanguageServicesFacade_UnitTests.addDocs()
+			LanguageServicesFacade_UnitTests.updateDoc()
+			// LanguageServicesFacade_UnitTests.removeDoc()
+			// LanguageServicesFacade_UnitTests.onDefinition()
+			// LanguageServicesFacade_UnitTests.onReferences()
+			// LanguageServicesFacade_UnitTests.onPrepareRename()
+			// LanguageServicesFacade_UnitTests.onRenameRequest()
+			// LanguageServicesFacade_UnitTests.onFoldingRanges()
 			//LanguageServicesFacade_UnitTests.onCompletion()
 			//LanguageServicesFacade_UnitTests.onCompletionResolve()
 		})
@@ -414,19 +433,30 @@ class LanguageServicesFacade_UnitTests {
 			{
 				title: 'sanity',
 				input: {
-					init: ['ps_ws_1.pspace'],
-					update: null
+					init: ['ps1.pspace'],
+					update: {
+						url : 'ps1.pspace',
+						text : `new_name [atomic_slot_desc.]: one of` +
+								`	slotval1 [desc],` +
+								`	slotval2 [desc],` +
+								`	slot1val3 [desc].`,
+						oldRange: {start: {character: 0, line: 0},end: {character: 8, line: 0}},
+						newRange : {start: {character: 0, line: 0},end: {character: 8, line: 0}},
+					}
 				},
-				output: ['ps_ws_1.pspace']
+				output: {name: 'new_name' , type : TestTarget.PolicyModelEntityType.Slot}
 			}
 		]
 
 		async function test(testCase) : Promise<void> {
 			const init : string[] = testCase.input.init
-			let update : PMTextDocument //= testCase.input.update
+			let update : PMTextDocument = createPMTextDoc(testCase.input.update.url, testCase.input.update.text, testCase.input.update.oldRange, testCase.input.update.newRange)
 			const output = testCase.output
 			let instance = await LanguageServicesFacade_UnitTests.create(init)
 			instance.updateDoc(update)
+			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
+			assert.equal(result.getName(), output.name)
+			assert.equal(result.getType(), output.type)
 		}
 
 		describe('updateDoc', function() {
@@ -663,10 +693,7 @@ class LanguageServicesFacade_UnitTests {
 
 
 
-
-
-//LanguageServicesFacade_UpdateTests.runTests()
 //LanguageServices_UnitTests.runTests()
-//LanguageServicesFacade_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()
 
 
