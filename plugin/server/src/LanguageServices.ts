@@ -328,7 +328,14 @@ export class LanguageServices {
 export enum PolicyModelEntityType {
 	DGNode,
 	Slot,
-	SlotValue
+	SlotValue,
+	ValueInference
+}
+
+export enum PolicyModelEntityCategory {
+	FoldRange,
+	Declaration,
+	Reference
 }
 
 export class PolicyModelEntity {
@@ -336,14 +343,24 @@ export class PolicyModelEntity {
 	name : string
 	source? : DocumentUri
 	syntaxNode : Parser.SyntaxNode
+	location : Location
+	category : PolicyModelEntityCategory
 
-	constructor(name : string , type : PolicyModelEntityType, syntaxNode : Parser.SyntaxNode, source : DocumentUri = undefined){
+	constructor(
+			name : string , 
+			type : PolicyModelEntityType, 
+			syntaxNode : Parser.SyntaxNode, 
+			source : DocumentUri, 
+			category){
 		this.name = name
 		this.type = type
 		this.syntaxNode = syntaxNode
-		if(source){
-			this.source = source
-		}
+		this.location = Utils.newLocation(source, 
+			Utils.newRange(
+				Utils.point2Position(syntaxNode.startPosition), 
+				Utils.point2Position(syntaxNode.endPosition)))
+		this.source = source
+		this.category = category
 	}
 
 	getType() : PolicyModelEntityType {
@@ -361,8 +378,11 @@ export class PolicyModelEntity {
 	setSource(uri : DocumentUri) {
 		this.source = uri
 	}
-}
 
+	getCategory() : PolicyModelEntityCategory {
+		return this.category
+	}
+}
 
 
 //****File Managers****/
@@ -475,31 +495,7 @@ export class DecisionGraphFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
-		let name : string
-		switch(node.type) {
-			case 'node_id':
-			case 'node_id_value':
-				//let name : string
-				let nodeWithText : Parser.SyntaxNode
-				if(node.type === 'node_id') {
-					nodeWithText = node.descendantsOfType('node_id_value')[0]
-				}
-				else { //node.type === 'node_id_value'
-					nodeWithText = node
-				}
-				name = nodeWithText.text
-
-				let source : DocumentUri = (nodeWithText.parent.type === 'node_reference') ? undefined : this.uri ;
-				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, nodeWithText, source)
-			case 'slot_identifier':
-				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node)
-					
-			case 'slot_value':
-				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node)	
-		}
-		return null
+		return DecisionGraphServices.createEntityFromNode(node, location.uri)
 	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		let ranges : Range[] = DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, this.tree)
@@ -537,18 +533,7 @@ export class PolicySpaceFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
-		let name : string
-		if(node.type === 'identifier_value') {
-			name = node.text
-			switch(node.parent.type) {
-				case 'identifier':
-				case 'compound_values':					
-					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node)					
-				case 'slot_value':
-					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node)	
-			}
-		}
-		return null
+		return PolicySpaceServices.createEntityFromNode(node, location.uri)
 	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		return []
@@ -586,17 +571,7 @@ export class ValueInferenceFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
-		let name : string
-		if(node.type === 'slot_identifier') {
-			name = node.text
-			switch(node.parent.type) {
-				case 'slot_reference':				
-					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node)					
-				case 'slot_value':
-					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node)	
-			}
-		}
-		return null
+		return ValueInferenceServices.createEntityFromNode(node, location.uri)
 	}
 	getAllDefinitionsDGNode(name: string): Location[] {
 		return []
@@ -633,6 +608,75 @@ export class ValueInferenceFileManager extends FileManager {
 
 //****Language Specific Services****/
 export class DecisionGraphServices {
+	static nodeTypes : string[] = [
+		'ask_node',
+		'continue_node',
+		'todo_node',
+		'call_node',
+		'reject_node',
+		'set_node',
+		'section_node',
+		'part_node',
+		'consider_node',
+		'when_node',
+		'import_node',
+		'end_node',
+		'text_sub_node',
+		'terms_sub_node',
+		'term_sub_node',
+		'answers_sub_node',
+		'answer_sub_node',
+		'slot_sub_node',
+		'consider_options_sub_node',
+		'consider_option_sub_node',
+		'else_sub_node',
+		'when_answer_sub_node',
+		'info_sub_node',
+		'continue_node',
+	]
+
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri) : PolicyModelEntity | null {
+		let name : string
+		switch(node.type) {
+			case 'node_id':
+			case 'node_id_value':
+				//let name : string
+				let nodeWithText : Parser.SyntaxNode
+				if(node.type === 'node_id') {
+					nodeWithText = node.descendantsOfType('node_id_value')[0]
+				}
+				else { //node.type === 'node_id_value'
+					nodeWithText = node
+				}
+				name = nodeWithText.text
+
+				let source : DocumentUri = (nodeWithText.parent.type === 'node_reference') ? undefined : uri ;
+				let category : PolicyModelEntityCategory = (nodeWithText.parent.type === 'node_reference') ? PolicyModelEntityCategory.Reference : PolicyModelEntityCategory.Declaration ;
+				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, nodeWithText, source, category)
+			case 'slot_identifier':
+				name = node.text
+				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, source, PolicyModelEntityCategory.Reference)
+					
+			case 'slot_value':
+				name = node.text
+				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, source, PolicyModelEntityCategory.Reference)	
+			default:
+				return null
+		}
+	}
+
+	static getAllEntitiesInDoc(tree : Parser.Tree) : PolicyModelEntity[] {
+		let result = []
+		for (let node of nextNode(tree)) {
+			switch (node.type){
+
+				//TODO:
+
+			}
+		}
+		return result
+	}
+
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
@@ -688,36 +732,11 @@ export class DecisionGraphServices {
 	}
 
 	static getAllNodesInDocument(tree : Parser.Tree) : Range[] {
-		const nodeTypes : string[] = [
-			'ask_node',
-			'continue_node',
-			'todo_node',
-			'call_node',
-			'reject_node',
-			'set_node',
-			'section_node',
-			'part_node',
-			'consider_node',
-			'when_node',
-			'import_node',
-			'end_node',
-			'text_sub_node',
-			'terms_sub_node',
-			'term_sub_node',
-			'answers_sub_node',
-			'answer_sub_node',
-			'slot_sub_node',
-			'consider_options_sub_node',
-			'consider_option_sub_node',
-			'else_sub_node',
-			'when_answer_sub_node',
-			'info_sub_node',
-			'continue_node',
-		]
+		
 		//let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = []
 		for (let node of nextNode(tree)) {
-			if(nodeTypes.indexOf(node.type) > -1){
+			if(this.nodeTypes.indexOf(node.type) > -1){
 				result.push(node)
 			}
 		}
@@ -726,6 +745,25 @@ export class DecisionGraphServices {
 }
 
 export class PolicySpaceServices {
+	
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri) : PolicyModelEntity | null {
+		let name : string
+		if(node.type === 'identifier_value') {
+			name = node.text
+			switch(node.parent.type) {
+				case 'identifier':
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.Declaration)	
+				case 'compound_values':					
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.Reference)					
+				case 'slot_value':
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, uri, PolicyModelEntityCategory.Declaration)
+				default:
+					return null	
+			}
+		}
+		return null
+	} 
+	
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
@@ -762,6 +800,22 @@ export class PolicySpaceServices {
 }
 
 export class ValueInferenceServices {
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri) : PolicyModelEntity | null {
+		let name : string
+		if(node.type === 'slot_identifier') {
+			name = node.text
+			switch(node.parent.type) {
+				case 'slot_reference':				
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.Reference)					
+				case 'slot_value':
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, uri, PolicyModelEntityCategory.Reference)	
+				default:
+					return null
+			}
+		}
+		return null
+	} 
+
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let identifiers : Parser.SyntaxNode[] = Utils.flatten(root.descendantsOfType("slot_reference")
