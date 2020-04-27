@@ -639,28 +639,27 @@ export class DecisionGraphServices {
 	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri) : PolicyModelEntity | null {
 		let name : string
 		switch(node.type) {
-			case 'node_id':
+			//case 'node_id':
 			case 'node_id_value':
-				//let name : string
 				let nodeWithText : Parser.SyntaxNode
-				if(node.type === 'node_id') {
-					nodeWithText = node.descendantsOfType('node_id_value')[0]
-				}
-				else { //node.type === 'node_id_value'
+				// if(node.type === 'node_id') {
+				// 	nodeWithText = node.descendantsOfType('node_id_value')[0]
+				// }
+				// else {
 					nodeWithText = node
-				}
+				//}
 				name = nodeWithText.text
 
 				let source : DocumentUri = (nodeWithText.parent.type === 'node_reference') ? undefined : uri ;
 				let category : PolicyModelEntityCategory = (nodeWithText.parent.type === 'node_reference') ? PolicyModelEntityCategory.Reference : PolicyModelEntityCategory.Declaration ;
-				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, nodeWithText, source, category)
+				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, nodeWithText, uri, category)
 			case 'slot_identifier':
 				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, source, PolicyModelEntityCategory.Reference)
+				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.Reference)
 					
 			case 'slot_value':
 				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, source, PolicyModelEntityCategory.Reference)	
+				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, uri, PolicyModelEntityCategory.Reference)	
 			default:
 				return null
 		}
@@ -670,7 +669,7 @@ export class DecisionGraphServices {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(this.nodeTypes.indexOf(node.type) > -1) {
-				result.push(new PolicyModelEntity("", PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
+				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = DecisionGraphServices.createEntityFromNode(node, uri)
@@ -773,7 +772,7 @@ export class PolicySpaceServices {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(node.type === "slot") {
-				result.push(new PolicyModelEntity("", PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.FoldRange))
+				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = PolicySpaceServices.createEntityFromNode(node, uri)
@@ -841,10 +840,10 @@ export class ValueInferenceServices {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(node.type === "value_inference") {
-				result.push(new PolicyModelEntity("", PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
+				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.ValueInference, node, uri, PolicyModelEntityCategory.FoldRange))
 			}
 			else if(node.type === "inference_pair") {
-				result.push(new PolicyModelEntity("", PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
+				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.InferencePair, node, uri, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = ValueInferenceServices.createEntityFromNode(node, uri)

@@ -6,7 +6,7 @@
 import * as TestTarget from "../../src/LanguageServices";
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
-import { isNullOrUndefined } from "util";
+import { isNullOrUndefined, inspect } from "util";
 import {
 	ReferenceParams,
 	DocumentUri,
@@ -120,12 +120,23 @@ async function getParser(text : string, uri : string) : Promise<Parser> {
 	return Promise.resolve(parser)
 }
 
-// function getTree(uri) : Promise<Parser.Tree> {					
-// 	let text = getTextFromUri(uri)
-// 	return getParser(text, uri).then((parser) => {
-// 		return parser.parse(text)
-// 	})	
-// }
+async function getTree(uri : string) : Promise<Parser.Tree> {					
+	let text = getTextFromUri(uri)
+	return getParser(text, uri).then((parser) => {
+		return parser.parse(text)
+	})	
+}
+
+//for some reason it doesnt work
+function runMochaTestCases(title : string,  testCases, testFunction) {
+	describe('getDeclarations', function() {
+		testCases.forEach((testCase, index) => {
+			it(testCase.title , function(done) {
+				testFunction(testCase).then(run => done()).catch(err => done(err))
+			});
+		})
+	})
+}
 
 //old interface
 function createTextDocFromUrl(uri : string) : TextDocWithChanges {
@@ -697,8 +708,63 @@ class LanguageServicesFacade_UnitTests {
 	}
 }
 
+class DecisionGraphServices_UnitTests {
+	static testTargetClass = TestTarget.DecisionGraphServices
+
+	static runTests() {
+		describe(DecisionGraphServices_UnitTests.testTargetClass.name + " unit tests", function() {
+			DecisionGraphServices_UnitTests.getAllEntitiesInDoc()
+		})
+	}
+
+	static getAllEntitiesInDoc() {
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: 'dg2.dg',
+				output: [
+					{"category": 0, "name": "import_node", "type": 0, }, 
+					{"category": 1, "name": "findme", "type": 0, }, 
+					{"category": 0, "name": "ask_node", "type": 0, }, 
+					{"category": 0, "name": "text_sub_node", "type": 0, }, 
+					{"category": 0, "name": "answer_sub_node", "type": 0, }, 
+					{"category": 0, "name": "answers_sub_node", "type": 0, },
+					{"category": 1, "name": "yo", "type": 0, }, 
+					{"category": 0, "name": "call_node", "type": 0, }, 
+					{"category": 2, "name": "findme", "type": 0, }, 		
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			return getTree(testCase.input).then(tree => {
+				let uri : DocumentUri = testCase.input
+				const output = testCase.output
+				const result = TestTarget.DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
+					return {
+						name: e.getName(),
+						type: e.getType(),
+						category: e.getCategory()
+					}
+				})
+				expect(output).to.deep.equalInAnyOrder(result)
+			})
+		}
+
+		describe('getAllEntitiesInDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+}
 
 
+
+DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
