@@ -329,7 +329,8 @@ export enum PolicyModelEntityType {
 	DGNode,
 	Slot,
 	SlotValue,
-	ValueInference
+	ValueInference,
+	InferencePair
 }
 
 export enum PolicyModelEntityCategory {
@@ -665,13 +666,17 @@ export class DecisionGraphServices {
 		}
 	}
 
-	static getAllEntitiesInDoc(tree : Parser.Tree) : PolicyModelEntity[] {
-		let result = []
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
+		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
-			switch (node.type){
-
-				//TODO:
-
+			if(this.nodeTypes.indexOf(node.type) > -1) {
+				result.push(new PolicyModelEntity("", PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else {
+				let entity = DecisionGraphServices.createEntityFromNode(node, uri)
+				if(!isNullOrUndefined(entity)) {
+					result.push(entity)
+				}
 			}
 		}
 		return result
@@ -763,6 +768,22 @@ export class PolicySpaceServices {
 		}
 		return null
 	} 
+
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
+		let result : PolicyModelEntity[] = []
+		for (let node of nextNode(tree)) {
+			if(node.type === "slot") {
+				result.push(new PolicyModelEntity("", PolicyModelEntityType.Slot, node, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else {
+				let entity = PolicySpaceServices.createEntityFromNode(node, uri)
+				if(!isNullOrUndefined(entity)) {
+					result.push(entity)
+				}
+			}
+		}
+		return result
+	}
 	
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -815,6 +836,25 @@ export class ValueInferenceServices {
 		}
 		return null
 	} 
+
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
+		let result : PolicyModelEntity[] = []
+		for (let node of nextNode(tree)) {
+			if(node.type === "value_inference") {
+				result.push(new PolicyModelEntity("", PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else if(node.type === "inference_pair") {
+				result.push(new PolicyModelEntity("", PolicyModelEntityType.DGNode, node, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else {
+				let entity = ValueInferenceServices.createEntityFromNode(node, uri)
+				if(!isNullOrUndefined(entity)) {
+					result.push(entity)
+				}
+			}
+		}
+		return result
+	}
 
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
