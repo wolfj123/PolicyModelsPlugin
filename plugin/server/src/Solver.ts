@@ -20,6 +20,7 @@ import {
 
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
+import { Logger } from './Logger';
 
 export interface SolverInt {
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;
@@ -45,10 +46,12 @@ export class PMSolver implements SolverInt{
 
 	private _documentManager: TextDocumentManagerInt;
 	private _languageFacade: LanguageServicesFacade;
+	private _logger: Logger;
 
 	constructor(){
 		this._documentManager = new TextDocumentManager;
 		this._languageFacade = undefined;
+		this._logger = undefined;
 	}
 
 	public get facadeIsReady(){
