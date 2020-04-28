@@ -65,3 +65,37 @@ export async function setTestContent(content: string): Promise<boolean> {
 	);
 	return editor.edit(eb => eb.replace(all, content));
 }
+
+
+export const getWordRangeFromLineInEditor = (word: string, line:number) : vscode.Range => {
+	var firstLine = editor.document.lineAt(line);
+	var wordStartPosition: vscode.Position = 
+		editor.document.positionAt(editor.document.offsetAt(firstLine.range.start) + firstLine.text.indexOf(word) + 1);
+	var wordEndPosition: vscode.Position = 
+		editor.document.positionAt(editor.document.offsetAt(wordStartPosition) + word.length);
+	return new vscode.Range(wordStartPosition, wordEndPosition);
+}
+
+export async function getWordRangeFromLineInFile (word: string, line:number, docUri:vscode.Uri) : Promise<vscode.Range> {
+	let doc: vscode.TextDocument;
+	try {
+		doc = await vscode.workspace.openTextDocument(docUri);
+	} catch (e) {
+		console.error(e);
+		return
+	}
+	var firstLine = doc.lineAt(line);
+	var wordStartPosition: vscode.Position = 
+		editor.document.positionAt(editor.document.offsetAt(firstLine.range.start) + firstLine.text.indexOf(word) + 1);
+	var wordEndPosition: vscode.Position = 
+		editor.document.positionAt(editor.document.offsetAt(wordStartPosition) + word.length);
+	return new vscode.Range(wordStartPosition, wordEndPosition);
+}
+
+export const getWordPositionFromLine = (word: string, line:number, shiftig = 0) : vscode.Position => {
+	if(shiftig===undefined)
+		shiftig=0;
+	var firstLine = editor.document.lineAt(line);
+	return editor.document.positionAt(editor.document.offsetAt(firstLine.range.start) + firstLine.text.indexOf(word) + 1 + shiftig);
+
+}
