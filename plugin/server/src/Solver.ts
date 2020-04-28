@@ -20,7 +20,7 @@ import {
 
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
-import { Logger } from './Logger';
+import { Logger, initLogger, logSources } from './Logger';
 
 export interface SolverInt {
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;
@@ -38,6 +38,7 @@ export interface SolverInt {
 	onCreatedNewFile (newFileUri:DocumentUri);
 	onOpenFolder (pathUri: string | null);
 	initParser (pluginDir:string);
+
 	facadeIsReady: boolean;
 }
 
@@ -48,10 +49,10 @@ export class PMSolver implements SolverInt{
 	private _languageFacade: LanguageServicesFacade;
 	private _logger: Logger;
 
-	constructor(){
+	constructor(pluginDir : string){
 		this._documentManager = new TextDocumentManager;
 		this._languageFacade = undefined;
-		this._logger = undefined;
+		this._logger = initLogger(logSources.server,pluginDir);
 	}
 
 	public get facadeIsReady(){

@@ -55,7 +55,7 @@ let logger: Logger;
 // Listen on the connection
 connection.listen();
 
-let solver: SolverInt = new PMSolver();
+let solver: SolverInt;
 
 // -------------- Initialize And Capabilites ----------------------
 let clientSupportswatchedFiles: boolean = false;
@@ -153,9 +153,10 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	connection.onRequest("setPluginDir", async (dir:string) => {
+		solver = new PMSolver(dir);
+		logger = initLogger(logSources.serverHttp,dir);
 		await solver.initParser(dir);
 		console.log("finish init from client");
-		logger = initLogger(logSources.serverHttp,dir);
 		return null;
 	})
 	

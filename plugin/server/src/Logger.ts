@@ -17,66 +17,62 @@ import * as fs from 'fs';
 */
 
 const logFolder:string = 'Logs/'
-const clinetLogFileName:string = 'clientLog.log';
 const serverLogFileName:string =   'serverLog.log';
-const clientHttpFileName: string =  'clientHttp.log';
 const serverHttpFileName: string =  'serverHttp.log';
-const globalErrosFileName: string =  'allErrors.log';
-const combinedLogFileName: string =  'combinedLog.log';
+const documentMangerFileName: string = 'documents.log'
+const parserFileName: string = 'parser.log'
 
-const allLogs = [
-	clinetLogFileName, serverLogFileName, clientHttpFileName, serverHttpFileName, globalErrosFileName, combinedLogFileName
-]
+export enum logSources {
+	server = 0,
+	serverHttp = 1,
+	documents = 2,
+	parser = 3
+}
+
+const allLogs: {[id:number]: string}={
+	 0:	serverLogFileName,
+	 1: serverHttpFileName,
+	 2: documentMangerFileName,
+	 3: parserFileName
+}
 
 const printFormat = winston.format.printf(({ level, message, timestamp}) => {
 	return `${timestamp} ${level}: ${message}`;
   });
 
-const labelPrintFomrat = winston.format.printf (({ level, message, label, timestamp }) => {
-	return `${timestamp} [${label}] ${level}: ${message}`;
-  });
-
-const globalFormat = winston.format.combine(
+const logsFormat = winston.format.combine(
 	winston.format.timestamp(),
 	printFormat
 )
 
-export enum logSources {
-	client,
-	server,
-	clientHttp,
-	serverHttp
-}
+let globalLog: winston.Logger = undefined;
 
-let globalErros: winston.Logger; 
-
-let combinedLog: winston.Logger;
-
-
-
-export function initLogger(source: logSources, pluginDir: string): Logger {
-	allLogs.forEach( currLog => {
+export function initLogger(source: logSources, pluginDir: string): Logger {	
+	if (globalLog === undefined){
 		try {
-			fs.unlinkSync(path.join(pluginDir, logFolder, currLog));
+			fs.unlinkSync
 		}catch (err){
 			console.log(err);
 		}
-	})
-	
-	// globalErros = winston.createLogger({
-	// 	level: 'error',
-	// 	format: globalFormat,
-	// 	transports: [
-	// 		new winston.transports.File({filename: globalErrosFileName})
-	// 	]
-	// });
-	// combinedLog= winston.createLogger({
-	// 	level: 'info',
-	// 	transports: [
-	// 		new winston.transports.File({filename: combinedLogFileName})
-	// 	]
-	// });
+		globalLog = winston.createLogger({
+			level:'info',
+			format: winston.format.combine(
+				winston.format.timestamp(),
+				printFormat
+			),
+			transports: [new winston.transports.File({filename: path.join(pluginDir, logFolder,"globalLog.log")})]
+		});
 
+		globalLog.info(`the plugin dir is: ${pluginDir}`);
+	}
+
+	//delete old Log
+	try {
+		fs.unlinkSync(path.join(pluginDir,logFolder,allLogs[source]));
+	} catch (error) {
+		globalLog.error(`can't delet log ${source.toString()}`);
+	}
+	
 	return new Logger1(source,pluginDir);
 }
 
@@ -92,56 +88,46 @@ export interface Logger {
 
 class Logger1 implements Logger {
 	private _log: winston.Logger;
+	private _type: logSources;
 	
 	constructor(source: logSources, pluginDir:string){
-		let fileName:string;
-		switch (source){
-			case logSources.client:
-				fileName = path.join(pluginDir,logFolder, clinetLogFileName);
-				break;
-			case logSources.server:
-				fileName = path.join(pluginDir,logFolder, serverLogFileName);
-				break;
-			case logSources.clientHttp:
-				fileName = path.join(pluginDir,logFolder, clientHttpFileName);
-				break;
-			case logSources.serverHttp:
-				fileName = path.join(pluginDir,logFolder, serverHttpFileName);
-				break;
+		this._type = source;
+		let fileName: string = allLogs[source];
+		
+		if (fileName === undefined) {
+			globalLog.error(`can't find the requeseted log type: ${source.toString()}`);
+			return;
 		}
 
-
 		this._log = winston.createLogger({
-			level: (source === logSources.client || source === logSources.server ) ? 'info' : 'http',
-			format: globalFormat,
+			level: source !== logSources.serverHttp ? 'info' : 'http',
+			format: logsFormat,
 			transports:[
 				new winston.transports.Console (),
 				new winston.transports.File({filename: fileName})]
 		})
 
 		console.log('created logs in: ' + fileName);
-
 	}
 
 	async error (msg: string, moreData?: any){
 		setTimeout(()=>{
 			this._log.error(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
-			globalErros.error(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
-			combinedLog.info(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
-		},0);
-	}
-
-	async info (msg: string, moreData?: any){
-		setTimeout(()=>{
-			this._log.info(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
-			combinedLog.info(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
+			globalLog.error(`[${this._type.toString()}]  ${msg}\ndata:\n${JSON.stringify(moreData)}`);
 		},0);
 	}
 
 	async warn (msg: string, moreData?: any){
 		setTimeout(()=>{
 			this._log.warn(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
-			combinedLog.warn(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
+			globalLog.warn(`[${this._type.toString()}]  ${msg}\ndata:\n${JSON.stringify(moreData)}`);
+		},0);
+	}
+
+	async info (msg: string, moreData?: any){
+		setTimeout(()=>{
+			this._log.info(`${msg}\ndata:\n${JSON.stringify(moreData)}`);
+			globalLog.info(`[${this._type.toString()}]  ${msg}\ndata:\n${JSON.stringify(moreData)}`);
 		},0);
 	}
 
