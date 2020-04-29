@@ -160,7 +160,8 @@ export class LanguageServices {
 		// }
 		// console.log(`plugin path in facade ${pluginPath}`);
 		// let parsersPath: string = path.join(pluginPath,"parsers");
-		console.log(`language facade init plugin dir is: ${pluginDir}`);
+		
+		//console.log(`language facade init plugin dir is: ${pluginDir}`);
 
 		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
@@ -606,6 +607,16 @@ export class ValueInferenceFileManager extends FileManager {
 
 //****Cache variant****/
 export class LanguageServicesWithCache extends LanguageServices {
+	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServicesWithCache> {
+		let instance : LanguageServicesWithCache = new LanguageServicesWithCache();
+		//console.log(`language facade init plugin dir is: ${pluginDir}`);
+		let parsersPath: string = path.join(pluginDir,"parsers");
+		await instance.initParsers(parsersPath)
+		instance.fileManagers = new Map()
+		instance.populateMaps(docs)
+		return instance
+	}
+
 	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
 		return FileManagerFactory.create(doc, 
 			this.getParserByExtension(extension), 

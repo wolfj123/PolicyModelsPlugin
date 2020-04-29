@@ -389,27 +389,29 @@ class LanguageServices_UnitTests {
 	}
 }
 
-// class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
-// 	static testTargetClass = TestTarget.LanguageServicesWithCache
+class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
+	testTargetClass = TestTarget.LanguageServicesWithCache
 
-// 	static runTests() {
-// 		describe(LanguageServicesWithCache_UnitTests.testTargetClass.name + " unit tests", function() {
-// 			LanguageServicesWithCache_UnitTests.getDeclarations()
-// 			LanguageServicesWithCache_UnitTests.getReferences()
-// 			LanguageServicesWithCache_UnitTests.getRangeOfDoc()
-// 			LanguageServicesWithCache_UnitTests.createPolicyModelEntity()
-// 			LanguageServicesWithCache_UnitTests.getFoldingRanges()
-// 			//LanguageServicesWithCache_UnitTests.getCompletion()
-// 		})
-// 	}
+	static runTests() {
+		let self = new LanguageServicesWithCache_UnitTests()
+		describe(self.testTargetClass.name + " unit tests", function() {
+			self.getDeclarations()
+			self.getReferences()
+			// self.getRangeOfDoc()
+			// self.createPolicyModelEntity()
+			// self.getFoldingRanges()
 
-// 	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesWithCache> {
-// 		//let text : string = getTextFromUri(filename)
-// 		let docs : PMTextDocument[]
-// 		docs = filenames.map(createPMTextDocFromUrl)
-// 		return await TestTarget.LanguageServicesWithCache.init(docs,process.cwd());
-// 	}
-// }
+
+			//self.getCompletion()
+		})
+	}
+
+	async create(filenames : string[]) : Promise<TestTarget.LanguageServicesWithCache> {
+		let docs : PMTextDocument[]
+		docs = filenames.map(createPMTextDocFromUrl)
+		return await TestTarget.LanguageServicesWithCache.init(docs,process.cwd());
+	}
+}
 
 
 
@@ -807,9 +809,9 @@ class DecisionGraphServices_UnitTests {
 
 
 
-DecisionGraphServices_UnitTests.runTests()
-LanguageServices_UnitTests.runTests()
-//LanguageServicesWithCache_UnitTests.runTests()
-LanguageServicesFacade_UnitTests.runTests()
+// DecisionGraphServices_UnitTests.runTests()
+// LanguageServices_UnitTests.runTests()
+LanguageServicesWithCache_UnitTests.runTests()
+// LanguageServicesFacade_UnitTests.runTests()
 
 
