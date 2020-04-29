@@ -792,9 +792,9 @@ export class DecisionGraphServices {
 			{
 				return ref.descendantsOfType("node_id_value")[0].text === name &&
 					(!(importedGraphName) || (importedGraphName &&
-					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName))
+					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text === importedGraphName))
 			}	
-		)
+		).map(ref => {return ref.descendantsOfType("node_id_value")[0]})
 		return getRangesOfSyntaxNodes(relevantReferences)
 	}
 
