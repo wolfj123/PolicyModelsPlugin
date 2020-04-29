@@ -173,20 +173,21 @@ function createPMTextDocFromUrl(uri : string) : PMTextDocument {
 }
 
 class LanguageServices_UnitTests {
-	static testTargetClass = TestTarget.LanguageServices
+	testTargetClass = TestTarget.LanguageServices
 
 	static runTests() {
-		describe(LanguageServices_UnitTests.testTargetClass.name + " unit tests", function() {
-			LanguageServices_UnitTests.getDeclarations()
-			LanguageServices_UnitTests.getReferences()
-			LanguageServices_UnitTests.getRangeOfDoc()
-			LanguageServices_UnitTests.createPolicyModelEntity()
-			LanguageServices_UnitTests.getFoldingRanges()
-			//LanguageServices_UnitTests.getCompletion()
+		let self = new LanguageServices_UnitTests()
+		describe(self.testTargetClass.name + " unit tests", function() {
+			self.getDeclarations()
+			self.getReferences()
+			self.getRangeOfDoc()
+			self.createPolicyModelEntity()
+			self.getFoldingRanges()
+			//self.getCompletion()
 		})
 	}
 
-	static async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
+	async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
 		//let text : string = getTextFromUri(filename)
 		let docs : PMTextDocument[]
 		docs = filenames.map(createPMTextDocFromUrl)
@@ -194,7 +195,8 @@ class LanguageServices_UnitTests {
 	}
 
 	//Test
-	static getDeclarations() {
+	getDeclarations() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -216,7 +218,7 @@ class LanguageServices_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const location : Location = input.location
-			let instance = await LanguageServices_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.getDeclarations(location)
 			assert.deepEqual(result, output)
 		}
@@ -231,7 +233,8 @@ class LanguageServices_UnitTests {
 	}
 
 	//Test
-	static getReferences() {
+	getReferences() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -255,7 +258,7 @@ class LanguageServices_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const location : Location = input.location
-			let instance = await LanguageServices_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.getReferences(location)
 			assert.deepEqual(result, output)
 		}
@@ -270,7 +273,8 @@ class LanguageServices_UnitTests {
 	}
 
 	//Test
-	static getRangeOfDoc() {
+	getRangeOfDoc() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -288,7 +292,7 @@ class LanguageServices_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const filename : string = input.location
-			let instance = await LanguageServices_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.getRangeOfDoc(filename)
 			assert.deepEqual(result, output)
 		}
@@ -303,7 +307,8 @@ class LanguageServices_UnitTests {
 	}
 
 	//Test
-	static createPolicyModelEntity() {
+	createPolicyModelEntity() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -321,7 +326,7 @@ class LanguageServices_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const location : Location = input.location
-			let instance = await LanguageServices_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.createPolicyModelEntity(location)
 			assert.deepEqual({name : result.name, type : result.type}, output)
 		}
@@ -336,7 +341,8 @@ class LanguageServices_UnitTests {
 	}
 
 	//Test
-	static getFoldingRanges() {
+	getFoldingRanges() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -362,7 +368,7 @@ class LanguageServices_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const location : string = input.location
-			let instance = await LanguageServices_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.getFoldingRanges(location)
 			assert.deepEqual(result, output)
 		}
@@ -377,37 +383,63 @@ class LanguageServices_UnitTests {
 	}
 
 	//Test
-	static getCompletion() {
+	getCompletion() {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
 }
 
+// class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
+// 	static testTargetClass = TestTarget.LanguageServicesWithCache
+
+// 	static runTests() {
+// 		describe(LanguageServicesWithCache_UnitTests.testTargetClass.name + " unit tests", function() {
+// 			LanguageServicesWithCache_UnitTests.getDeclarations()
+// 			LanguageServicesWithCache_UnitTests.getReferences()
+// 			LanguageServicesWithCache_UnitTests.getRangeOfDoc()
+// 			LanguageServicesWithCache_UnitTests.createPolicyModelEntity()
+// 			LanguageServicesWithCache_UnitTests.getFoldingRanges()
+// 			//LanguageServicesWithCache_UnitTests.getCompletion()
+// 		})
+// 	}
+
+// 	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesWithCache> {
+// 		//let text : string = getTextFromUri(filename)
+// 		let docs : PMTextDocument[]
+// 		docs = filenames.map(createPMTextDocFromUrl)
+// 		return await TestTarget.LanguageServicesWithCache.init(docs,process.cwd());
+// 	}
+// }
+
+
+
 class LanguageServicesFacade_UnitTests {
-	static testTargetClass = TestTarget.LanguageServicesFacade
+	testTargetClass = TestTarget.LanguageServicesFacade
 
 	static runTests() {
-		describe(LanguageServicesFacade_UnitTests.testTargetClass.name + " unit tests", function() {
-			LanguageServicesFacade_UnitTests.addDocs()
-			LanguageServicesFacade_UnitTests.updateDoc()
-			LanguageServicesFacade_UnitTests.removeDoc()
-			LanguageServicesFacade_UnitTests.onDefinition()
-			LanguageServicesFacade_UnitTests.onReferences()
-			LanguageServicesFacade_UnitTests.onPrepareRename()
-			LanguageServicesFacade_UnitTests.onRenameRequest()
-			LanguageServicesFacade_UnitTests.onFoldingRanges()
-			//LanguageServicesFacade_UnitTests.onCompletion()
-			//LanguageServicesFacade_UnitTests.onCompletionResolve()
+		let self = new LanguageServicesFacade_UnitTests()
+		describe(self.testTargetClass.name + " unit tests", function() {
+			self.addDocs()
+			self.updateDoc()
+			self.removeDoc()
+			self.onDefinition()
+			self.onReferences()
+			self.onPrepareRename()
+			self.onRenameRequest()
+			self.onFoldingRanges()
+			//self.onCompletion()
+			//self.onCompletionResolve()
 		})
 	}
 
-	static async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
+	async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
 		let docs : PMTextDocument[]
 		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServicesFacade.init(docs,process.cwd());
 	}
 
-	static addDocs() {
+	addDocs() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -424,7 +456,7 @@ class LanguageServicesFacade_UnitTests {
 			const init : string[] = testCase.input.init
 			const add : string[] = testCase.input.add
 			const output = testCase.output
-			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			let instance = await self.create(init)
 			instance.addDocs(add.map(createPMTextDocFromUrl))
 			const result = Array.from(instance.services.fileManagers.keys())
 			//assert.deepEqual(result, output)
@@ -440,7 +472,8 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 
-	static updateDoc() {
+	updateDoc() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -465,7 +498,7 @@ class LanguageServicesFacade_UnitTests {
 			const init : string[] = testCase.input.init
 			let update : PMTextDocument = createPMTextDoc(testCase.input.update.url, testCase.input.update.text, testCase.input.update.oldRange, testCase.input.update.newRange)
 			const output = testCase.output
-			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			let instance = await self.create(init)
 			instance.updateDoc(update)
 			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
 			assert.equal(result.getName(), output.name)
@@ -481,7 +514,8 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 
-	static removeDoc() {
+	removeDoc() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -498,7 +532,7 @@ class LanguageServicesFacade_UnitTests {
 			const init : string[] = testCase.input.init
 			const remove : string = testCase.input.remove
 			const output = testCase.output
-			let instance = await LanguageServicesFacade_UnitTests.create(init)
+			let instance = await self.create(init)
 			instance.removeDoc(remove)
 			const result = Array.from(instance.services.fileManagers.keys())
 			expect(output).to.deep.equalInAnyOrder(result)
@@ -513,7 +547,8 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 
-	static onDefinition() {
+	onDefinition() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -535,7 +570,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const param : DeclarationParams = input.param
-			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.onDefinition(param)
 			assert.deepEqual(result, output)
 		}
@@ -550,7 +585,8 @@ class LanguageServicesFacade_UnitTests {
 	}
 
 	// these functions are called when the request is first made from the server
-	static onReferences() {
+	onReferences() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -574,7 +610,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const param : ReferenceParams = input.param
-			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.onReferences(param)
 			assert.deepEqual(result, output)
 		}
@@ -588,7 +624,8 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 
-	static onPrepareRename() {
+	onPrepareRename() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -606,7 +643,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const param : RenameParams = input.param
-			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.onPrepareRename(param)
 			assert.deepEqual(result, output)
 		}
@@ -620,7 +657,8 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 
-	static onRenameRequest() {
+	onRenameRequest() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -644,7 +682,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
 			const param : RenameParams = input.param
-			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.onRenameRequest(param)
 			assert.deepEqual(result, output)
 		}
@@ -658,7 +696,8 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 	
-	static onFoldingRanges() {
+	onFoldingRanges() {
+		let self = this
 		const testCases = 
 		[
 			{
@@ -683,7 +722,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			const filenames : string[] = testCase.input.fileNames
 			const param : FoldingRangeParams = testCase.input.param
-			let instance = await LanguageServicesFacade_UnitTests.create(filenames)
+			let instance = await self.create(filenames)
 			const result = instance.onFoldingRanges(param)
 			assert.deepEqual(result, output)
 		}
@@ -697,27 +736,28 @@ class LanguageServicesFacade_UnitTests {
 		})
 	}
 
-	static onCompletion() {
+	onCompletion() {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
 
-	static onCompletionResolve() {
+	onCompletionResolve() {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
 }
 
 class DecisionGraphServices_UnitTests {
-	static testTargetClass = TestTarget.DecisionGraphServices
+	testTargetClass = TestTarget.DecisionGraphServices
 
 	static runTests() {
-		describe(DecisionGraphServices_UnitTests.testTargetClass.name + " unit tests", function() {
-			DecisionGraphServices_UnitTests.getAllEntitiesInDoc()
+		let self = new DecisionGraphServices_UnitTests()
+		describe(self.testTargetClass.name + " unit tests", function() {
+			self.getAllEntitiesInDoc()
 		})
 	}
 
-	static getAllEntitiesInDoc() {
+	getAllEntitiesInDoc() {
 		const testCases = 
 		[
 			{
@@ -764,8 +804,12 @@ class DecisionGraphServices_UnitTests {
 
 
 
+
+
+
 DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
+//LanguageServicesWithCache_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
 
