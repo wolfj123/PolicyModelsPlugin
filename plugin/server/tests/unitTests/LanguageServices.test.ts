@@ -248,7 +248,7 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
 		]
@@ -260,7 +260,7 @@ class LanguageServices_UnitTests {
 			const location : Location = input.location
 			let instance = await self.create(filenames)
 			const result = instance.getReferences(location)
-			assert.deepEqual(result, output)
+			expect(output).to.deep.equalInAnyOrder(result)
 		}
 
 		describe('getReferences', function() {
@@ -396,7 +396,7 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		let self = new LanguageServicesWithCache_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
 			self.getDeclarations()
-			self.getReferences()
+			//self.getReferences()
 			// self.getRangeOfDoc()
 			// self.createPolicyModelEntity()
 			// self.getFoldingRanges()
@@ -602,7 +602,7 @@ class LanguageServicesFacade_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
 		]
@@ -674,7 +674,7 @@ class LanguageServicesFacade_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 41, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
 		]
@@ -809,9 +809,9 @@ class DecisionGraphServices_UnitTests {
 
 
 
-// DecisionGraphServices_UnitTests.runTests()
-// LanguageServices_UnitTests.runTests()
+DecisionGraphServices_UnitTests.runTests()
+LanguageServices_UnitTests.runTests()
 LanguageServicesWithCache_UnitTests.runTests()
-// LanguageServicesFacade_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()
 
 

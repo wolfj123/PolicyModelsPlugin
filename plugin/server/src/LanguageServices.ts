@@ -641,7 +641,7 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 		const type = PolicyModelEntityType.DGNode
 		const category = PolicyModelEntityCategory.Declaration
 		return this.cache
-			.filter(e => e.getName() == name && e.getCategory() == category && e.getType() == type)
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
 			.map(e => e.location)
 	}
 
@@ -650,21 +650,21 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 		const category1 = PolicyModelEntityCategory.Reference
 		const category2 = PolicyModelEntityCategory.Declaration
 		return this.cache
-			.filter(e => e.getName() == name && e.getCategory() == category1 || category1 && e.getType() == type)
+			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
 			.map(e => e.location)
 	}
 	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
 		const type = PolicyModelEntityType.Slot
 		const category = PolicyModelEntityCategory.Reference
 		return this.cache
-			.filter(e => e.getName() == name && e.getCategory() == category && e.getType() == type)
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
 			.map(e => e.location)
 	}
 	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
 		const type = PolicyModelEntityType.Slot
 		const category = PolicyModelEntityCategory.Reference
 		return this.cache
-			.filter(e => e.getName() == name && e.getCategory() == category && e.getType() == type)
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
 			.map(e => e.location)
 	}
 	getFoldingRanges(): Location[] {
