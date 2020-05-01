@@ -20,7 +20,7 @@ import {
 
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
-import { Logger, initLogger, logSources } from './Logger';
+import { Logger, initLogger, logSources, getLogger } from './Logger';
 
 export interface SolverInt {
 	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;
@@ -47,12 +47,10 @@ export class PMSolver implements SolverInt{
 
 	private _documentManager: TextDocumentManagerInt;
 	private _languageFacade: LanguageServicesFacade;
-	private _logger: Logger;
 
-	constructor(pluginDir : string){
+	constructor(){
 		this._documentManager = new TextDocumentManager;
 		this._languageFacade = undefined;
-		this._logger = initLogger(logSources.server,pluginDir);
 	}
 
 	public get facadeIsReady(){
@@ -121,10 +119,13 @@ export class PMSolver implements SolverInt{
 					case documentManagerResultTypes.removeFile:
 						this._languageFacade.removeDoc(currChange.result)
 						break;
+					default:
+						getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
+						break;
 				}
 			});
 		})
-		.catch(rej => console.log(`onDidOpenTextDocument was rejected \n${rej} \n`));
+		.catch(rej => getLogger(logSources.server).error(`onDidOpenTextDocument was rejected`,{rej}));
 	}
 
 	async onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
@@ -134,9 +135,12 @@ export class PMSolver implements SolverInt{
 				case documentManagerResultTypes.removeFile:
 					this._languageFacade.removeDoc(change.result);
 					break;
+				default:
+					getLogger(logSources.server).error('onDidCloseTextDocument wrong change type',change);
+					break;
 			}
 		})
-		.catch(rej => console.log(`onDidCloseTextDocument was rejected \n${rej} \n`));
+		.catch(rej => getLogger(logSources.server).error(`onDidCloseTextDocument was rejected `, rej));
 	}
 
 	async onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
@@ -148,9 +152,12 @@ export class PMSolver implements SolverInt{
 					break;
 				case documentManagerResultTypes.noChange:
 					break;
+				default:
+					getLogger(logSources.server).error('onDidChangeTextDocument wrong change type',change);
+					break;
 			}
 		})
-		.catch(rej => console.log(`onDeleteFile was rejected \n${rej} \n`));
+		.catch(rej => getLogger(logSources.server).error(`onDeleteFile was rejected `,rej));
 	}
 
 	async onDeleteFile(deletedFile: string) {
@@ -159,9 +166,12 @@ export class PMSolver implements SolverInt{
 			switch(change.type){
 				case documentManagerResultTypes.removeFile:
 					this._languageFacade.removeDoc(change.result);
+				default:
+					getLogger(logSources.server).error('onDeleteFile wrong change type',change);
+					break;
 			}
 		})
-		.catch(rej => console.log(`onDeleteFile was rejected \n${rej} \n`));
+		.catch(rej => getLogger(logSources.server).error(`onDeleteFile was rejected `, rej));
 	}
 
 	async onCreatedNewFile(newFileUri: string) {
@@ -170,16 +180,20 @@ export class PMSolver implements SolverInt{
 			switch(change.type){
 				case documentManagerResultTypes.newFile:
 					this._languageFacade.addDocs([change.result]);
+				default:
+					getLogger(logSources.server).error('onCreatedNewFile wrong change type',change);
+					break;
 			}
 		})
-		.catch(rej => console.log(`onCreatedNewFile was rejected \n${rej} \n`));
+		.catch(rej =>getLogger(logSources.server).error(`onCreatedNewFile was rejected`, rej));
 	}
 
 	async onOpenFolder(pathUri: string | null) {
-		if (this._languageFacade !== undefined){
+		if (this._languageFacade !== undefined) {
 			this._documentManager.openedFolder(pathUri);
 			this._languageFacade.addDocs(this._documentManager.allDocumnets);
 		}else{
+			getLogger(logSources.server).warn("opend folder when facade wasn't initialized");
 			setTimeout(() => {
 				this.onOpenFolder(pathUri);
 			}, 200);
@@ -189,8 +203,8 @@ export class PMSolver implements SolverInt{
 
 	async initParser (pluginDir:string) {
 		await LanguageServicesFacade.init(this._documentManager.allDocumnets, pluginDir)
-		.then(ans => {console.log (`resolve init `);
+		.then(ans => {console.log (`resolve parser init successfully`);
 		this._languageFacade = ans;})
-		.catch(rej => console.log('reject form LanguageServicesFacade init \n' + rej));
+		.catch(rej => getLogger(logSources.server).error('reject form LanguageServicesFacade init', rej));
 	}
 }

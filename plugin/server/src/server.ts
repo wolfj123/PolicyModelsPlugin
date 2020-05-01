@@ -41,12 +41,12 @@ import {
 
 import * as child_process from "child_process";
 import {SolverInt, PMSolver} from './Solver';
-import {initLogger, logSources,Logger} from './Logger';
+import {initLogger, logSources,Logger, getLogger} from './Logger';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
-let logger: Logger;
+
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
@@ -153,8 +153,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	connection.onRequest("setPluginDir", async (dir:string) => {
-		solver = new PMSolver(dir);
-		logger = initLogger(logSources.serverHttp,dir);
+		initLogger(dir);
+		solver = new PMSolver();
 		await solver.initParser(dir);
 		console.log("finish init from client");
 		return null;
@@ -269,49 +269,49 @@ connection.onExit(():void => {
 
 connection.onCompletion(
 (params: TextDocumentPositionParams): CompletionList => {
-	logger.http(`onCompletion`, params);	
+	getLogger(logSources.serverHttp).http(`onCompletion`, params);	
 	return solver.onCompletion(params, params.textDocument.uri);
 });
 
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		logger.http(`onCompletionResolve`,item);
+		getLogger(logSources.serverHttp).http(`onCompletionResolve`,item);
 		return solver.onCompletionResolve(item, item.data.textDocument);
 });
 
 connection.onDefinition(
 	(params: DeclarationParams): LocationLink[] => {
-		logger.http(`onDefinition`,params);
+		getLogger(logSources.serverHttp).http(`onDefinition`,params);
 		return solver.onDefinition(params, params.textDocument.uri);
 });
 
 connection.onFoldingRanges(
 	(params: FoldingRangeParams): FoldingRange[] => {
-		logger.http(`onFoldingRanges`,params);
+		getLogger(logSources.serverHttp).http(`onFoldingRanges`,params);
 		return solver.onFoldingRanges(params, params.textDocument.uri);
 });
 
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
-		logger.http(`onReferences`,params);
+		getLogger(logSources.serverHttp).http(`onReferences`,params);
 		return solver.onReferences(params, params.textDocument.uri);
 });
 
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
 	(params:PrepareRenameParams) =>  {
-		logger.http(`onPrepareRename`,params);
+		getLogger(logSources.serverHttp).http(`onPrepareRename`,params);
 		return solver.onPrepareRename(params, params.textDocument.uri);
 });
 
 connection.onRenameRequest(
 	(params: RenameParams): WorkspaceEdit => {
-		logger.http(`onRenameRequest`,params);
+		getLogger(logSources.serverHttp).http(`onRenameRequest`,params);
 		return solver.onRenameRequest(params, params.textDocument.uri);
 });
 
 function runModel(param : string[]) : string {
-	logger.http(`runModel`,param);
+	getLogger(logSources.serverHttp).http(`runModel`,param);
 	console.log("server is running the model")
 	let cwd = __dirname + "/../../";
 	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
@@ -324,7 +324,7 @@ function runModel(param : string[]) : string {
 
 
 connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
-	logger.http(`onDidChangeWatchedFiles`,_change);
+	getLogger(logSources.serverHttp).http(`onDidChangeWatchedFiles`,_change);
 	_change.changes.forEach( (currChange: FileEvent) => {
 		switch(currChange.type){
 			case FileChangeType.Created:
@@ -339,20 +339,20 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 });
 			
 connection.onDidChangeTextDocument(event => {
-	logger.http(`onDidChangeTextDocument`,event);
+	getLogger(logSources.serverHttp).http(`onDidChangeTextDocument`,event);
 	console.log("onDidChangeTextDocument")
 	solver.onDidChangeTextDocument(event);
 });
 
 connection.onDidCloseTextDocument(event => {
-	logger.http(`onDidCloseTextDocument`,event);
+	getLogger(logSources.serverHttp).http(`onDidCloseTextDocument`,event);
 	console.log(`onDidCloseTextDocument`);
 	solver.onDidCloseTextDocument(event.textDocument);
 
 });
 
 connection.onDidOpenTextDocument(event => {
-	logger.http(`onDidOpenTextDocument`,event);
+	getLogger(logSources.serverHttp).http(`onDidOpenTextDocument`,event);
 	console.log(`onDidOpenTextDocument`);
 	solver.onDidOpenTextDocument(event.textDocument);
 });

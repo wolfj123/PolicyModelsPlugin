@@ -1,25 +1,12 @@
 import * as winston from 'winston';
 import * as path from 'path';
 import * as fs from 'fs';
-
-/*
-  interface LoggerOptions {
-    levels?: Config.AbstractConfigSetLevels;
-    silent?: boolean;
-    format?: logform.Format;
-    level?: string;
-    exitOnError?: Function | boolean;
-    defaultMeta?: any;
-    transports?: Transport[] | Transport;
-    exceptionHandlers?: any;
-  }
-
-*/
+import { FileTransportInstance } from 'winston/lib/winston/transports';
 
 const logFolder:string = 'Logs/'
 const serverLogFileName:string =   'serverLog.log';
 const serverHttpFileName: string =  'serverHttp.log';
-const documentMangerFileName: string = 'documents.log'
+const documentsFileName: string = 'documents.log'
 const parserFileName: string = 'parser.log'
 
 export enum logSources {
@@ -29,12 +16,26 @@ export enum logSources {
 	parser = 3
 }
 
-const allLogs: {[id:number]: string}={
-	 0:	serverLogFileName,
-	 1: serverHttpFileName,
-	 2: documentMangerFileName,
-	 3: parserFileName
-}
+const allLogs: {source: logSources, name: string} [] =[
+	{
+		source:logSources.server,
+		name:serverLogFileName
+	},
+	{
+		source:logSources.serverHttp,
+		name:serverHttpFileName
+	},
+	{
+		source:logSources.documents,
+		name:documentsFileName
+	},
+	{
+		source:logSources.parser,
+		name:parserFileName
+	},
+]
+
+let allLoggers: {source: logSources, log: Logger} [] = [];
 
 const printFormat = winston.format.printf(({ level, message, timestamp}) => {
 	return `${timestamp} ${level}: ${message}`;
@@ -47,33 +48,58 @@ const logsFormat = winston.format.combine(
 
 let globalLog: winston.Logger = undefined;
 
-export function initLogger(source: logSources, pluginDir: string): Logger {	
+export function getLogger(source: logSources): Logger {
+	let logger = allLoggers.find(curr => curr.source === source);
+	if (logger === undefined){
+		globalLog.error(`requested bad Logger ${source}`);
+	}
+	return logger.log;
+}
+
+export function initLogger(pluginDir: string): void {
+	
 	if (globalLog === undefined){
 		try {
-			fs.unlinkSync
+			fs.unlinkSync(path.join(pluginDir, logFolder,"globalLog.log"));
 		}catch (err){
-			console.log(err);
+			console.log(`this should show \n` + err);
 		}
+
+		let fileForLog: FileTransportInstance = new winston.transports.File({filename: path.join(pluginDir, logFolder,"globalLog.log")});
 		globalLog = winston.createLogger({
 			level:'info',
 			format: winston.format.combine(
 				winston.format.timestamp(),
 				printFormat
 			),
-			transports: [new winston.transports.File({filename: path.join(pluginDir, logFolder,"globalLog.log")})]
+			exitOnError: false,
+			transports: [
+				fileForLog,
+				//new winston.transports.Console({ handleExceptions: true })
+			]
 		});
 
 		globalLog.info(`the plugin dir is: ${pluginDir}`);
 	}
 
-	//delete old Log
-	try {
-		fs.unlinkSync(path.join(pluginDir,logFolder,allLogs[source]));
-	} catch (error) {
-		globalLog.error(`can't delet log ${source.toString()}`);
-	}
+	globalLog.add(new winston.transports.File({
+		filename:  path.join(pluginDir, logFolder,"unhandeled_exceptions.log"),
+		handleExceptions: true
+	}))
+
+	allLogs.forEach(currLog => {
+		try {
+			fs.unlinkSync(path.join(pluginDir,logFolder,currLog.name));
+		} catch (error) {
+			globalLog.error(`can't delete log ${currLog.name}, error msg: ${error}`);
+		}
+
+		allLoggers.push({
+			source:currLog.source,
+			log: new Logger1(currLog.source, currLog.name,pluginDir)
+		});
+	});
 	
-	return new Logger1(source,pluginDir);
 }
 
 export interface Logger {
@@ -90,24 +116,16 @@ class Logger1 implements Logger {
 	private _log: winston.Logger;
 	private _type: logSources;
 	
-	constructor(source: logSources, pluginDir:string){
+	constructor(source: logSources, fileName: string,pluginDir:string){
 		this._type = source;
-		let fileName: string = allLogs[source];
-		
-		if (fileName === undefined) {
-			globalLog.error(`can't find the requeseted log type: ${source.toString()}`);
-			return;
-		}
 
 		this._log = winston.createLogger({
 			level: source !== logSources.serverHttp ? 'info' : 'http',
 			format: logsFormat,
 			transports:[
-				new winston.transports.Console (),
-				new winston.transports.File({filename: fileName})]
+				//new winston.transports.Console (),
+				new winston.transports.File({filename: path.join(pluginDir,logFolder,fileName)})]
 		})
-
-		console.log('created logs in: ' + fileName);
 	}
 
 	async error (msg: string, moreData?: any){
