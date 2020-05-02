@@ -6,6 +6,7 @@ import { TextDocumentItem, DidChangeTextDocumentParams, Range, Position } from '
 import * as fs from 'fs';
 import { PMTextDocument, changeInfo } from '../../src/Documents';
 import { languagesIds } from '../../src/Utils';
+import { initLogger } from '../../src/Logger';
 
 
 mocha.suite('Document Manger unit tets', ()=>{
@@ -275,6 +276,7 @@ mocha.suite('Document Manger unit tets', ()=>{
 		let listOfOpnedFiles: {folderName: string, fileName: string } [] = [];
 
 		mocha.before( ()=>{
+			initLogger(testFolder);
 			documentManager = new TextDocumentManager();
 		});
 
@@ -408,6 +410,7 @@ mocha.suite('Document Manger unit tets', ()=>{
 		let fakeFileUri:string;
 
 		mocha.before( ()=>{
+			initLogger(testFolder);
 			documentManager = new TextDocumentManager();
 			fakeFileUri = pathToURI(testFolder + "/fake-file.ps");
 		});
