@@ -270,7 +270,7 @@ class LanguageServices_UnitTests {
 			const location : Location = input.location
 			let instance = await self.create(filenames)
 			const result = instance.getReferences(location)
-			expect(output).to.deep.equalInAnyOrder(result)
+			expect(result).to.deep.equalInAnyOrder(output)
 		}
 
 		describe('getReferences', function() {
@@ -831,6 +831,6 @@ DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
-//LanguageServicesWithCache_UnitTests.runTests()
+LanguageServicesWithCache_UnitTests.runTests()
 
 
