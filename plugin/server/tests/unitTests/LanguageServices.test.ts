@@ -560,9 +560,9 @@ class LanguageServicesFacade_UnitTests {
 					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
 				},
 				output: [
-					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg1_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}},
-					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg2_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
-					{targetRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg3_ws_1.dg', targetSelectionRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+					{targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg1_ws_1.dg', targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}},
+					{targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg2_ws_1.dg', targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+					{targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg3_ws_1.dg', targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
 				]
 			}
 		]
