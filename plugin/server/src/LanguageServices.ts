@@ -74,8 +74,8 @@ export class LanguageServicesFacade {
 			if(isNullOrUndefined(rangeOfDoc)) {return null}
 			return {
 				targetUri : loc.uri,
-				targetRange: loc.range,
-				targetSelectionRange: rangeOfDoc
+				targetSelectionRange: loc.range,
+				targetRange: rangeOfDoc
 			}
 		})
 		return result.filter(loc => !isNullOrUndefined(loc))

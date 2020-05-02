@@ -68,7 +68,6 @@ export class PMSolver implements SolverInt{
 	}
 
 	onDefinition(params: DeclarationParams, uri: string): LocationLink[] {
-		//throw new Error('Method not implemented.');
 		let ans:LocationLink[]= this._languageFacade.onDefinition(params);
 		return ans;
 	}
