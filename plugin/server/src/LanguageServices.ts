@@ -640,40 +640,23 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 
 	getAllDefinitionsDGNode(name: string): Location[] {
-		const type = PolicyModelEntityType.DGNode
-		const category = PolicyModelEntityCategory.Declaration
-		return this.cache
-			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllDefinitionsDGNode(this.cache, name)
 	}
 
 	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
-		const type = PolicyModelEntityType.DGNode
-		const category1 = PolicyModelEntityCategory.Reference
-		const category2 = PolicyModelEntityCategory.Declaration
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesDGNode(this.cache, name, source)
 	}
+	
 	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category = PolicyModelEntityCategory.Reference
-		return this.cache
-			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
 	}
+
 	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category = PolicyModelEntityCategory.Reference
-		return this.cache
-			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
 	}
+
 	getFoldingRanges(): Location[] {
-		const category = PolicyModelEntityCategory.FoldRange
-		return this.cache
-			.filter(e => e.getCategory() == category )
-			.map(e => e.location)
+		return CacheQueries.getFoldingRanges(this.cache)
 	}
 	getAutoComplete(location: Location) {
 		//TODO:
@@ -693,42 +676,27 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 		this.tree = newTree
 		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
 	}
+
 	getAllDefinitionsSlot(name: string): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category = PolicyModelEntityCategory.Reference
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllDefinitionsSlot(this.cache, name)
 	}
+
 	getAllDefinitionsSlotValue(name: string): Location[] {
-		const type = PolicyModelEntityType.SlotValue
-		const category = PolicyModelEntityCategory.Reference
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllDefinitionsSlotValue(this.cache, name)
 	}
+
 	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category1 = PolicyModelEntityCategory.Reference
-		const category2 = PolicyModelEntityCategory.Declaration
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
 	}
+
 	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
-		const type = PolicyModelEntityType.SlotValue
-		const category1 = PolicyModelEntityCategory.Reference
-		const category2 = PolicyModelEntityCategory.Declaration
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
 	}
+
 	getFoldingRanges(): Location[] {
-		const category = PolicyModelEntityCategory.FoldRange
-		return this.cache
-			.filter(e => e.getCategory() == category )
-			.map(e => e.location)
+		return CacheQueries.getFoldingRanges(this.cache)
 	}
+
 	getAutoComplete(location: Location) {
 		//TODO:
 		throw new Error("Method not implemented.");
@@ -748,26 +716,15 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
 	}
 	getAllReferencesSlot(name: string, source: string): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category1 = PolicyModelEntityCategory.Reference
-		const category2 = PolicyModelEntityCategory.Declaration
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
 	}
+
 	getAllReferencesSlotValue(name: string, source: string): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category1 = PolicyModelEntityCategory.Reference
-		const category2 = PolicyModelEntityCategory.Declaration
-		return this.cache
-			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
-			.map(e => e.location)
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
 	}
+
 	getFoldingRanges(): Location[] {
-		const category = PolicyModelEntityCategory.FoldRange
-		return this.cache
-			.filter(e => e.getCategory() == category )
-			.map(e => e.location)
+		return CacheQueries.getFoldingRanges(this.cache)
 	}
 }
 
@@ -956,6 +913,7 @@ export class PolicySpaceServices {
 		let relevantSlots = slots
 			.map(slot => slot.children.find(child => child.type === "identifier"))
 			.filter(id => id && id.descendantsOfType("identifier_value")[0].text === name)
+			.map(id => id.descendantsOfType("identifier_value")[0])
 		return getRangesOfSyntaxNodes(relevantSlots)
 	}
 
@@ -1049,6 +1007,64 @@ export class ValueInferenceServices {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = root.descendantsOfType("inference_pair")
 		return getRangesOfSyntaxNodes(result)
+	}
+}
+
+export class CacheQueries {
+	static getAllDefinitionsDGNode(cache : PolicyModelEntity[], name: string): Location[] {
+		const type = PolicyModelEntityType.DGNode
+		const category = PolicyModelEntityCategory.Declaration
+		return cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllReferencesDGNode(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.DGNode
+		const category1 = PolicyModelEntityCategory.Reference
+		const category2 = PolicyModelEntityCategory.Declaration
+		return cache
+			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllDefinitionsSlot(cache : PolicyModelEntity[],name: string): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Declaration
+		return cache
+			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllReferencesSlot(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Reference
+		return cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllDefinitionsSlotValue(cache : PolicyModelEntity[],name: string): Location[] {
+		const type = PolicyModelEntityType.SlotValue
+		const category = PolicyModelEntityCategory.Reference
+		return cache
+			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
+			.map(e => e.location)
+	}
+	
+	static getAllReferencesSlotValue(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Reference
+		return cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getFoldingRanges(cache : PolicyModelEntity[]): Location[] {
+		const category = PolicyModelEntityCategory.FoldRange
+		return cache
+			.filter(e => e.getCategory() == category )
+			.map(e => e.location)
 	}
 }
 

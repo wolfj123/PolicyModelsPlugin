@@ -447,7 +447,7 @@ class PolicySpaceFileManager_UnitTests {
 			{
 				title: 'sanity',
 				input: {fileName: 'ps1.pspace', nodeName: 'atomic_slot1'},
-				output: [{range: {end: {character: 32,line: 0},start: {character: 0,line: 0}},uri: 'ps1.pspace'}]
+				output: [{range: {end: {character: 12,line: 0},start: {character: 0,line: 0}},uri: 'ps1.pspace'}]
 			}
 		]
 
