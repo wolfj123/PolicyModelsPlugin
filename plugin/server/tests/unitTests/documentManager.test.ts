@@ -410,9 +410,8 @@ mocha.suite('Document Manger unit tets', ()=>{
 		let fakeFileUri:string;
 
 		mocha.before( ()=>{
-			initLogger(testFolder);
-			documentManager = new TextDocumentManager();
 			fakeFileUri = pathToURI(testFolder + "/fake-file.ps");
+			documentManager = new TextDocumentManager();			
 		});
 		
 		it ('test open folder worked',()=>{
