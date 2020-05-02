@@ -10,6 +10,7 @@ import * as fs from 'fs';
 
 import { languagesIds } from './Utils';
 import { PMTextDocument, createFromTextDocumentItem, createNewTextDocument, changeInfo } from './Documents';
+import { getLogger, logSources } from './Logger';
 
 export interface DocumentManagerResult {
 	type: documentManagerResultTypes,
@@ -190,7 +191,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 
 		let closedDocmentIdx: number = this._allDocuments.findIndex(currDoc => currDoc.uri === closedDcoumentParams.uri);
 		if (closedDocmentIdx === -1 ){
-			//log error
+			getLogger(logSources.documents).error(`didn't find a documnet to close in closedDocumentInClient`, closedDcoumentParams);
 			return Promise.resolve({type:documentManagerResultTypes.noChange});
 		}
 
@@ -216,7 +217,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		}
 		let documentToUpdate: PMTextDocument = this._allDocuments.find(curr=> curr.uri === params.textDocument.uri);
 		if (documentToUpdate === undefined){
-			//Log error
+			getLogger(logSources.documents).error(`didn't find text document to change in changeTextDocument`, params);
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
 
@@ -237,7 +238,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 
 		let deletedIdx: number = this._allDocuments.findIndex(currDoc => currDoc .uri === deletedFile);
 		if (deletedIdx === -1){
-			// log error
+			getLogger(logSources.documents).error(`didn't find text document to delete in deletedDocument`, deletedFile);
 			return Promise.resolve({type: documentManagerResultTypes.noChange});
 		}
 
@@ -293,7 +294,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		}
 		let path = URI.parse(pathUri).fsPath;
 		let filesToParse: {name: string, languageId: languagesIds} []= [];
-		//console.log(path);
+		getLogger(logSources.documents).info(`documents folder location `,path);
 		this.filesCollector(path,filesToParse);
 		filesToParse.forEach(currFile => {
 			let fileContent: string = fs.readFileSync(currFile.name,"utf-8");

@@ -33,23 +33,20 @@ import {
 	DidCloseTextDocumentNotification,
 	DidChangeConfigurationNotification,
 	TextDocumentChangeRegistrationOptions,
-	TextDocumentChangeEvent,
 	PrepareRenameParams,
 	DidChangeWatchedFilesParams,
 	FileEvent,
 	FileChangeType,
-	DefinitionRegistrationOptions,
-	RequestMessage,
-	RequestType,
-	RequestType0,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
 import {SolverInt, PMSolver} from './Solver';
+import {initLogger, logSources,Logger, getLogger} from './Logger';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
+
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
@@ -58,7 +55,7 @@ let connection = createConnection(ProposedFeatures.all);
 // Listen on the connection
 connection.listen();
 
-let solver: SolverInt = new PMSolver();
+let solver: SolverInt;
 
 // -------------- Initialize And Capabilites ----------------------
 let clientSupportswatchedFiles: boolean = false;
@@ -71,6 +68,9 @@ let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
+	//logger.http(`onInitialize`,params);
+	
+
 	// console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
 	// connection.console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
 
@@ -153,6 +153,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	connection.onRequest("setPluginDir", async (dir:string) => {
+		initLogger(dir);
+		solver = new PMSolver();
 		await solver.initParser(dir);
 		console.log("finish init from client");
 		return null;
@@ -266,42 +268,50 @@ connection.onExit(():void => {
 });
 
 connection.onCompletion(
-(params: TextDocumentPositionParams): CompletionList => {	
+(params: TextDocumentPositionParams): CompletionList => {
+	getLogger(logSources.serverHttp).http(`onCompletion`, params);	
 	return solver.onCompletion(params, params.textDocument.uri);
 });
 
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
+		getLogger(logSources.serverHttp).http(`onCompletionResolve`,item);
 		return solver.onCompletionResolve(item, item.data.textDocument);
 });
 
 connection.onDefinition(
 	(params: DeclarationParams): LocationLink[] => {
+		getLogger(logSources.serverHttp).http(`onDefinition`,params);
 		return solver.onDefinition(params, params.textDocument.uri);
 });
 
 connection.onFoldingRanges(
 	(params: FoldingRangeParams): FoldingRange[] => {
+		getLogger(logSources.serverHttp).http(`onFoldingRanges`,params);
 		return solver.onFoldingRanges(params, params.textDocument.uri);
 });
 
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
+		getLogger(logSources.serverHttp).http(`onReferences`,params);
 		return solver.onReferences(params, params.textDocument.uri);
 });
 
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
 	(params:PrepareRenameParams) =>  {
+		getLogger(logSources.serverHttp).http(`onPrepareRename`,params);
 		return solver.onPrepareRename(params, params.textDocument.uri);
 });
 
 connection.onRenameRequest(
-	(params: RenameParams): WorkspaceEdit =>{
+	(params: RenameParams): WorkspaceEdit => {
+		getLogger(logSources.serverHttp).http(`onRenameRequest`,params);
 		return solver.onRenameRequest(params, params.textDocument.uri);
 });
 
 function runModel(param : string[]) : string {
+	getLogger(logSources.serverHttp).http(`runModel`,param);
 	console.log("server is running the model")
 	let cwd = __dirname + "/../../";
 	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
@@ -314,6 +324,7 @@ function runModel(param : string[]) : string {
 
 
 connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
+	getLogger(logSources.serverHttp).http(`onDidChangeWatchedFiles`,_change);
 	_change.changes.forEach( (currChange: FileEvent) => {
 		switch(currChange.type){
 			case FileChangeType.Created:
@@ -327,18 +338,21 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
 			
-connection.onDidChangeTextDocument(event =>{
+connection.onDidChangeTextDocument(event => {
+	getLogger(logSources.serverHttp).http(`onDidChangeTextDocument`,event);
 	console.log("onDidChangeTextDocument")
 	solver.onDidChangeTextDocument(event);
 });
 
-connection.onDidCloseTextDocument(event =>{
+connection.onDidCloseTextDocument(event => {
+	getLogger(logSources.serverHttp).http(`onDidCloseTextDocument`,event);
 	console.log(`onDidCloseTextDocument`);
 	solver.onDidCloseTextDocument(event.textDocument);
 
 });
 
-connection.onDidOpenTextDocument(event =>{
+connection.onDidOpenTextDocument(event => {
+	getLogger(logSources.serverHttp).http(`onDidOpenTextDocument`,event);
 	console.log(`onDidOpenTextDocument`);
 	solver.onDidOpenTextDocument(event.textDocument);
 });

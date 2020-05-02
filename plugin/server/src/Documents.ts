@@ -5,6 +5,7 @@ import { DocumentUri,
 		 TextDocumentItem
 		} from 'vscode-languageserver';
 import { languagesIds, newRange } from './Utils';
+import { getLogger, logSources } from './Logger';
 
 
 export interface changeInfo{
@@ -196,7 +197,8 @@ class FullTextDocument implements PMTextDocument {
 				});
 
 			} else {
-				throw new Error('Unknown change event received');
+				getLogger(logSources.documents).error('wrong update type');
+				return undefined;
 			}
 		}
 
