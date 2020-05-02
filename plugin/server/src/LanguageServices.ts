@@ -160,7 +160,8 @@ export class LanguageServices {
 		// }
 		// console.log(`plugin path in facade ${pluginPath}`);
 		// let parsersPath: string = path.join(pluginPath,"parsers");
-		console.log(`language facade init plugin dir is: ${pluginDir}`);
+		
+		//console.log(`language facade init plugin dir is: ${pluginDir}`);
 
 		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
@@ -225,11 +226,18 @@ export class LanguageServices {
 		for (let doc of docs) {
 			const uri = doc.uri //doc.textDocument.uri
 			const extension = Utils.getFileExtension(uri)
-			let fileManager : FileManager = FileManagerFactory.create(doc, 
-				this.getParserByExtension(extension), 
-				this.getLanguageByExtension(extension))
+			// let fileManager : FileManager = FileManagerFactory.create(doc, 
+			// 	this.getParserByExtension(extension), 
+			// 	this.getLanguageByExtension(extension))
+			let fileManager : FileManager = this.getFileManager(doc, extension)
 			this.fileManagers.set(doc.uri, fileManager)
 		}
+	}
+
+	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+		return FileManagerFactory.create(doc, 
+			this.getParserByExtension(extension), 
+			this.getLanguageByExtension(extension))
 	}
 
 	getFileManagerByLocation(location : Location) : FileManager {
@@ -390,7 +398,6 @@ export class PolicyModelEntity {
 export abstract class FileManager {
 	tree : Parser.Tree
 	uri : DocumentUri
-	//TODO: maybe some sort of cache?
 
 	constructor(tree : Parser.Tree, uri : DocumentUri){
 		this.tree = tree
@@ -418,15 +425,6 @@ export abstract class FileManager {
 
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
-		// let funcMap /*: {DGNode : (string) => Location[], } */ = {
-		// 	DGNode: this.getAllDefinitionsDGNode,
-		// 	Slot: this.getAllDefinitionsSlot,
-		// 	SlotValue: this.getAllDefinitionsSlotValue
-		// }
-		// let type : string = PolicyModelEntityType[entity.getType()]
-		// let func : (string) => Location[] =  funcMap[type]
-		//return func(entity.getName())
-
 		switch(entity.getType()){
 			case PolicyModelEntityType.DGNode: 
 				return this.getAllDefinitionsDGNode(entity.getName())
@@ -470,7 +468,7 @@ export abstract class FileManager {
 }
 
 export class FileManagerFactory {
-	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage) : FileManager | null {
+	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
 		const uri = doc.uri
 		const extension = Utils.getFileExtension(uri)
 		//let parser = getParserByExtension(extension)
@@ -478,13 +476,13 @@ export class FileManagerFactory {
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
-				return new DecisionGraphFileManager(tree, uri)
+				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, uri) : new DecisionGraphFileManager(tree, uri)
 
 			case PolicyModelsLanguage.PolicySpace:
-				return new PolicySpaceFileManager(tree, uri)	
+				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, uri) : new PolicySpaceFileManager(tree, uri)	
 						
 			case PolicyModelsLanguage.ValueInference:
-				return new ValueInferenceFileManager(tree, uri)	
+				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, uri) : new ValueInferenceFileManager(tree, uri)
 				
 			default:
 				return null
@@ -607,7 +605,87 @@ export class ValueInferenceFileManager extends FileManager {
 
 
 
-//****Language Specific Services****/
+//****Cache variant****/
+export class LanguageServicesWithCache extends LanguageServices {
+	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServicesWithCache> {
+		let instance : LanguageServicesWithCache = new LanguageServicesWithCache();
+		//console.log(`language facade init plugin dir is: ${pluginDir}`);
+		let parsersPath: string = path.join(pluginDir,"parsers");
+		await instance.initParsers(parsersPath)
+		instance.fileManagers = new Map()
+		instance.populateMaps(docs)
+		return instance
+	}
+
+	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+		return FileManagerFactory.create(doc, 
+			this.getParserByExtension(extension), 
+			this.getLanguageByExtension(extension), true)
+	}
+}
+
+export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
+	cache : PolicyModelEntity[]
+
+	constructor(tree : Parser.Tree, uri : DocumentUri){
+		super(tree, uri)
+		this.cache = DecisionGraphServices.getAllEntitiesInDoc(tree, uri)
+	}
+
+	updateTree(newTree : Parser.Tree) {
+		this.tree = newTree
+		this.cache = DecisionGraphServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+
+	getAllDefinitionsDGNode(name: string): Location[] {
+		const type = PolicyModelEntityType.DGNode
+		const category = PolicyModelEntityCategory.Declaration
+		return this.cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.DGNode
+		const category1 = PolicyModelEntityCategory.Reference
+		const category2 = PolicyModelEntityCategory.Declaration
+		return this.cache
+			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
+			.map(e => e.location)
+	}
+	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Reference
+		return this.cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Reference
+		return this.cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+	getFoldingRanges(): Location[] {
+		const category = PolicyModelEntityCategory.FoldRange
+		return this.cache
+			.filter(e => e.getCategory() == category )
+			.map(e => e.location)
+	}
+	getAutoComplete(location: Location) {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+}
+
+export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {}
+
+export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManager {}
+
+
+
+//****Language Specific Static Services****/
 export class DecisionGraphServices {
 	static nodeTypes : string[] = [
 		'ask_node',
@@ -714,9 +792,9 @@ export class DecisionGraphServices {
 			{
 				return ref.descendantsOfType("node_id_value")[0].text === name &&
 					(!(importedGraphName) || (importedGraphName &&
-					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName))
+					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text === importedGraphName))
 			}	
-		)
+		).map(ref => {return ref.descendantsOfType("node_id_value")[0]})
 		return getRangesOfSyntaxNodes(relevantReferences)
 	}
 
