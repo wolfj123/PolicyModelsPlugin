@@ -200,15 +200,25 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'node sanity',
+				title: 'sanity node',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+				]
+			},
+			{
+				title: 'sanity pspace',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'}
+				},
+				output: [
+					{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'}
 				]
 			}
 		]
@@ -245,10 +255,10 @@ class LanguageServices_UnitTests {
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
+					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
 		]
@@ -260,7 +270,7 @@ class LanguageServices_UnitTests {
 			const location : Location = input.location
 			let instance = await self.create(filenames)
 			const result = instance.getReferences(location)
-			expect(output).to.deep.equalInAnyOrder(result)
+			expect(result).to.deep.equalInAnyOrder(output)
 		}
 
 		describe('getReferences', function() {
@@ -360,6 +370,19 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
 				]
+			},
+			{
+				title: 'pspace sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: 'ps_ws_1.pspace'
+				},
+				output: [
+					{range:{end:{character:26, line:3},start:{character:0,line:0}},uri:"ps_ws_1.pspace"},
+					{range:{end:{character:26,line:8},start:{character:0,line:5}},uri:"ps_ws_1.pspace"},
+					{range:{end:{character:32,line:13},start:{character:0,line:10}},uri:"ps_ws_1.pspace"},
+					{range:{end:{character:91,line:15},start:{character:0,line:15}},uri:"ps_ws_1.pspace"},
+				]
 			}
 		]
 
@@ -396,12 +419,10 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		let self = new LanguageServicesWithCache_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
 			self.getDeclarations()
-			//self.getReferences()
-			// self.getRangeOfDoc()
-			// self.createPolicyModelEntity()
-			// self.getFoldingRanges()
-
-
+			self.getReferences()
+			self.getRangeOfDoc()
+			self.createPolicyModelEntity()
+			self.getFoldingRanges()
 			//self.getCompletion()
 		})
 	}
@@ -410,7 +431,7 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		let docs : PMTextDocument[]
 		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServicesWithCache.init(docs,process.cwd());
-	}
+	} 
 }
 
 
@@ -560,9 +581,8 @@ class LanguageServicesFacade_UnitTests {
 					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
 				},
 				output: [
-					{targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg1_ws_1.dg', targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}},
-					{targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg2_ws_1.dg', targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
-					{targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, targetUri: 'dg3_ws_1.dg', targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 11}}},
+					{targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}, targetUri: 'dg1_ws_1.dg', 
+					targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}},
 				]
 			}
 		]
@@ -599,10 +619,10 @@ class LanguageServicesFacade_UnitTests {
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
+					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
 		]
@@ -671,10 +691,10 @@ class LanguageServicesFacade_UnitTests {
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug?
+					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
 		]
@@ -806,12 +826,10 @@ class DecisionGraphServices_UnitTests {
 
 
 
-
-
-
 DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
-//LanguageServicesWithCache_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
+
+LanguageServicesWithCache_UnitTests.runTests()
 
 

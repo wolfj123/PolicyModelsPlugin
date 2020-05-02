@@ -127,6 +127,18 @@ export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser
 }
 
 function getEndRowAndColumnOfString(str : string) : {row: number, column: number} {
-	TODO:
+	//TODO:
 	throw new Error("Method not implemented.");
+}
+
+//Mixins helper function
+//https://www.youtube.com/watch?v=LvjNGo5ALyQ
+function applyMixins(derivedCtor: any, baseCtors: any[]) {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+             if (name !== 'constructor') {
+                derivedCtor.prototype[name] = baseCtor.prototype[name];
+            }
+        });
+    });
 }
