@@ -736,9 +736,39 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 }
 
 export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManager {
+	cache : PolicyModelEntity[]
 
+	constructor(tree : Parser.Tree, uri : DocumentUri){
+		super(tree, uri)
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, uri)
+	}
 
-	
+	updateTree(newTree : Parser.Tree) {
+		this.tree = newTree
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+	getAllReferencesSlot(name: string, source: string): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category1 = PolicyModelEntityCategory.Reference
+		const category2 = PolicyModelEntityCategory.Declaration
+		return this.cache
+			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
+			.map(e => e.location)
+	}
+	getAllReferencesSlotValue(name: string, source: string): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category1 = PolicyModelEntityCategory.Reference
+		const category2 = PolicyModelEntityCategory.Declaration
+		return this.cache
+			.filter(e => e.getName() === name && (e.getCategory() == category1 ||  e.getCategory() == category2) && e.getType() == type)
+			.map(e => e.location)
+	}
+	getFoldingRanges(): Location[] {
+		const category = PolicyModelEntityCategory.FoldRange
+		return this.cache
+			.filter(e => e.getCategory() == category )
+			.map(e => e.location)
+	}
 }
 
 
