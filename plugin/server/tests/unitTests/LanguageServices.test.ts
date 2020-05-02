@@ -360,6 +360,19 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
 				]
+			},
+			{
+				title: 'pspace sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: 'ps_ws_1.pspace'
+				},
+				output: [
+					{range:{end:{character:26, line:3},start:{character:0,line:0}},uri:"ps_ws_1.pspace"},
+					{range:{end:{character:26,line:8},start:{character:0,line:5}},uri:"ps_ws_1.pspace"},
+					{range:{end:{character:32,line:13},start:{character:0,line:10}},uri:"ps_ws_1.pspace"},
+					{range:{end:{character:91,line:15},start:{character:0,line:15}},uri:"ps_ws_1.pspace"},
+				]
 			}
 		]
 
@@ -396,12 +409,10 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		let self = new LanguageServicesWithCache_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
 			self.getDeclarations()
-			//self.getReferences()
-			// self.getRangeOfDoc()
-			// self.createPolicyModelEntity()
-			// self.getFoldingRanges()
-
-
+			self.getReferences()
+			self.getRangeOfDoc()
+			self.createPolicyModelEntity()
+			self.getFoldingRanges()
 			//self.getCompletion()
 		})
 	}
@@ -806,12 +817,9 @@ class DecisionGraphServices_UnitTests {
 
 
 
-
-
-
 DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
-//LanguageServicesWithCache_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
+LanguageServicesWithCache_UnitTests.runTests()
 
 
