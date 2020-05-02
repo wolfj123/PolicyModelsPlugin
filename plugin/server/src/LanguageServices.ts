@@ -249,13 +249,15 @@ export class LanguageServices {
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
 		if(isNullOrUndefined(entity)) return []
 		
-		let result : Location[] = []
-		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
-			result = result.concat(fm.getAllDefinitions(entity))
-		});
+		//let result : Location[] = []
+		// this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+		// 	result = result.concat(fm.getAllDefinitions(entity))
+		// });
+		let result = fm.getAllDefinitions(entity)
 		return result
 	}
 
+	/*
 	getReferences(location : Location) : Location[] {
 		let result : Location[] = []
 		let declarations : Location[] = []
@@ -290,6 +292,26 @@ export class LanguageServices {
 			});
 		}
 
+		result = result.concat(declarations) //we include declarations in this query
+		result = result.concat(references)
+		result = Utils.uniqueArray(result)
+		return result
+	}
+	*/
+
+	getReferences(location : Location) : Location[] {
+		let result : Location[] = []
+		let declarations : Location[] = []
+		let references : Location[] = []
+
+		let fm : FileManager = this.getFileManagerByLocation(location)
+		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
+		declarations = fm.getAllDefinitions(entity)
+		
+		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+			references = references.concat(fm.getAllReferences(entity))
+		});
+	
 		result = result.concat(declarations) //we include declarations in this query
 		result = result.concat(references)
 		result = Utils.uniqueArray(result)
