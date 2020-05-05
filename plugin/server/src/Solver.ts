@@ -15,7 +15,11 @@ import {
 	TextDocumentIdentifier,
 	DidChangeTextDocumentParams,
 	DocumentUri,
-	Range
+	Range,
+	TextEdit,
+	Position,
+	TextDocumentEdit,
+	VersionedTextDocumentIdentifier
 } from 'vscode-languageserver';
 
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
@@ -23,13 +27,13 @@ import { LanguageServicesFacade } from './LanguageServices';
 import { Logger, initLogger, logSources, getLogger } from './Logger';
 
 export interface SolverInt {
-	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList;
-	onCompletionResolve(params: CompletionItem, uri: string): CompletionItem;
-	onDefinition(params:DeclarationParams, uri: string): LocationLink [];
-	onPrepareRename(params:PrepareRenameParams, uri: string):  Range ;
-	onRenameRequest(params:RenameParams, uri: string): WorkspaceEdit;
-	onReferences(params: ReferenceParams, uri: string): Location[];
-	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange[];
+	onCompletion(params: TextDocumentPositionParams): CompletionList;
+	onCompletionResolve(params: CompletionItem): CompletionItem;
+	onDefinition(params:DeclarationParams): LocationLink [];
+	onPrepareRename(params:PrepareRenameParams):  Range ;
+	onRenameRequest(params:RenameParams): WorkspaceEdit;
+	onReferences(params: ReferenceParams): Location[];
+	onFoldingRanges(params: FoldingRangeParams): FoldingRange[];
 
 	onDidOpenTextDocument (opendDocParam: TextDocumentItem);
 	onDidCloseTextDocument (closedDcoumentParams: TextDocumentIdentifier);
@@ -57,35 +61,57 @@ export class PMSolver implements SolverInt{
 		return this._languageFacade !== undefined;
 	}
 	
-	onCompletion(params: TextDocumentPositionParams, uri: string): CompletionList {
+	onCompletion(params: TextDocumentPositionParams): CompletionList {
 		//throw new Error('Method not implemented.');
 		return null; //TODO
 	}
 
-	onCompletionResolve(params: CompletionItem, uri: string): CompletionItem {
+	onCompletionResolve(params: CompletionItem): CompletionItem {
 		//throw new Error('Method not implemented.');
 		return null; //TODO
 	}
 
-	onDefinition(params: DeclarationParams, uri: string): LocationLink[] {
+	onDefinition(params: DeclarationParams): LocationLink[] {
 		let ans:LocationLink[]= this._languageFacade.onDefinition(params);
 		return ans;
 	}
 
-	onPrepareRename(params: PrepareRenameParams, uri: string): Range | null {
+	onPrepareRename(params: PrepareRenameParams): Range | null {
 		return this._languageFacade.onPrepareRename(params);
 	}
 
-	onRenameRequest(params: RenameParams, uri: string): WorkspaceEdit {
-		//throw new Error('Method not implemented.');
-		return null; //TODO
+	onRenameRequest(params: RenameParams): WorkspaceEdit {
+		let locationsToRename: Location[] = this._languageFacade.onRenameRequest(params);
+		let newName: string = params.newName;
+		let uniqeFiles: DocumentUri [] = [... new Set(locationsToRename.map(currLocation => currLocation.uri))];
+		let allFilesEdits:TextDocumentEdit [] = [];
+
+		uniqeFiles.forEach(currFile => {
+			let curFileLocationsToEdit: Location [] = locationsToRename.filter(currLocation => currLocation.uri === currFile);
+			let currFileEdits:TextEdit [] = curFileLocationsToEdit.map(currChangeLocation =>{
+				return TextEdit.replace(currChangeLocation.range,newName);
+			});
+
+			if (currFileEdits !== undefined && currFileEdits.length !== 0){
+				let textDocToChange: VersionedTextDocumentIdentifier = {
+					uri: currFile,
+					version: null
+				} 
+				allFilesEdits.push({
+					edits:currFileEdits,
+					textDocument: textDocToChange
+				});
+			}
+		})
+
+		return {documentChanges:allFilesEdits};
 	}
 
-	onReferences(params: ReferenceParams, uri: string): Location [] {
+	onReferences(params: ReferenceParams): Location [] {
 		return this._languageFacade.onReferences(params);
 	}
 	
-	onFoldingRanges(params: FoldingRangeParams, uri: string): FoldingRange [] {	
+	onFoldingRanges(params: FoldingRangeParams): FoldingRange [] {	
 		if (!this.facadeIsReady){
 			return null;
 		}
@@ -101,8 +127,6 @@ export class PMSolver implements SolverInt{
 		);
 		return foldingRanges;
 	}
-
-
 
 
 
@@ -197,6 +221,7 @@ export class PMSolver implements SolverInt{
 				this.onOpenFolder(pathUri);
 			}, 200);
 		}
+		console.log("finish open folder");
 	}
 	
 

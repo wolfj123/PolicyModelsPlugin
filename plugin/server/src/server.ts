@@ -225,12 +225,13 @@ connection.onInitialized(() => {
 			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
 
-		// this function muse be declared here or else an error will occur
-		//we need this in order to get the folder that is currently open.
+		// this function must be declared here or else an error will occur
+		// we need this in order to get the folder that is currently open.
 		connection.workspace.getWorkspaceFolders().then(async _event => {
 			connection.console.log('getWorkspaceFolders folder change event received.');
 			
 			if (! solver.facadeIsReady){
+				// getLogger(logSources.server).warn("sending init language facede from getWorkspaceFolders");
 				await connection.sendRequest("getPluginDir").then ( async (ans: string) =>{
 					await solver.initParser(ans);
 					console.log("finish init from server");
@@ -270,51 +271,51 @@ connection.onExit(():void => {
 connection.onCompletion(
 (params: TextDocumentPositionParams): CompletionList => {
 	getLogger(logSources.serverHttp).http(`onCompletion`, params);	
-	return solver.onCompletion(params, params.textDocument.uri);
+	return solver.onCompletion(params);
 });
 
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
 		getLogger(logSources.serverHttp).http(`onCompletionResolve`,item);
-		return solver.onCompletionResolve(item, item.data.textDocument);
+		return solver.onCompletionResolve(item);
 });
 
 connection.onDefinition(
 	(params: DeclarationParams): LocationLink[] => {
 		getLogger(logSources.serverHttp).http(`onDefinition`,params);
-		return solver.onDefinition(params, params.textDocument.uri);
+		return solver.onDefinition(params);
 });
 
 connection.onFoldingRanges(
 	(params: FoldingRangeParams): FoldingRange[] => {
 		getLogger(logSources.serverHttp).http(`onFoldingRanges`,params);
-		return solver.onFoldingRanges(params, params.textDocument.uri);
+		return solver.onFoldingRanges(params);
 });
 
 connection.onReferences(
 	(params: ReferenceParams): Location[] => {
 		getLogger(logSources.serverHttp).http(`onReferences`,params);
-		return solver.onReferences(params, params.textDocument.uri);
+		return solver.onReferences(params);
 });
 
 connection.onPrepareRename ( 
 	//this reutnrs the range of the word if can be renamed and null if it can't
 	(params:PrepareRenameParams) =>  {
 		getLogger(logSources.serverHttp).http(`onPrepareRename`,params);
-		return solver.onPrepareRename(params, params.textDocument.uri);
+		return solver.onPrepareRename(params);
 });
 
 connection.onRenameRequest(
 	(params: RenameParams): WorkspaceEdit => {
 		getLogger(logSources.serverHttp).http(`onRenameRequest`,params);
-		return solver.onRenameRequest(params, params.textDocument.uri);
+		return solver.onRenameRequest(params);
 });
 
 function runModel(param : string[]) : string {
 	getLogger(logSources.serverHttp).http(`runModel`,param);
 	console.log("server is running the model")
 	let cwd = __dirname + "/../../";
-	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
+	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar ${}"`);
 	return "execute ends";
 }
 
