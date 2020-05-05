@@ -575,7 +575,7 @@ class LanguageServicesFacade_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'node sanity',
+				title: 'sanity dg->node',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
@@ -583,6 +583,28 @@ class LanguageServicesFacade_UnitTests {
 				output: [
 					{targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}, targetUri: 'dg1_ws_1.dg', 
 					targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}},
+				]
+			}
+			,{
+				title: 'sanity pspace->slot',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'ps_ws_1.pspace'}, position: {character: 0, line: 0} }
+				},
+				output: [
+					{targetRange: {start: {character: 0, line: 0},end: {character: 0, line: 16}}, targetUri: 'ps_ws_1.pspace', 
+					targetSelectionRange: {start: {character: 0, line: 0},end: {character: 12, line: 0}}},
+				]
+			},
+			{
+				title: 'sanity dg->slot',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 16, line: 8} }
+				},
+				output: [
+					{targetRange: {start: {character: 0, line: 0},end: {character: 0, line: 16}}, targetUri: 'ps_ws_1.pspace', 
+					targetSelectionRange: {start: {character: 0, line: 0},end: {character: 12, line: 0}}},
 				]
 			}
 		]
@@ -830,6 +852,6 @@ DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
-LanguageServicesWithCache_UnitTests.runTests()
+//LanguageServicesWithCache_UnitTests.runTests()
 
 
