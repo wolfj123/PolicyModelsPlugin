@@ -667,7 +667,10 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 
 	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
-		return CacheQueries.getAllDefinitionsDGNode(this.cache, name)
+		if(source === this.uri){
+			return CacheQueries.getAllDefinitionsDGNode(this.cache, name)
+		}
+		return []
 	}
 
 	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
