@@ -9,7 +9,7 @@ import { languagesIds } from '../../src/Utils';
 import { initLogger } from '../../src/Logger';
 
 
-mocha.suite('Document Manger unit tets', ()=>{
+describe('Document Manger unit tets', ()=>{
 
 	let testFolder: string;
 	let testFolderSuffix: string = "/server/tests/sample directory";
@@ -62,7 +62,7 @@ mocha.suite('Document Manger unit tets', ()=>{
 		}
 	]
 	
-	mocha.before(()=>{
+	before(()=>{
 		let cwd: string = process.cwd();
 		testFolder = cwd+testFolderSuffix;
 		console.log("testDir " + testFolder);
@@ -275,7 +275,7 @@ mocha.suite('Document Manger unit tets', ()=>{
 		let documentManager: TextDocumentManager;
 		let listOfOpnedFiles: {folderName: string, fileName: string } [] = [];
 
-		mocha.before( ()=>{
+		before( ()=>{
 			initLogger(testFolder);
 			documentManager = new TextDocumentManager();
 		});
@@ -409,7 +409,7 @@ mocha.suite('Document Manger unit tets', ()=>{
 		let listOfOpnedFiles: number [][];
 		let fakeFileUri:string;
 
-		mocha.before( ()=>{
+		before( ()=>{
 			fakeFileUri = pathToURI(testFolder + "/fake-file.ps");
 			documentManager = new TextDocumentManager();			
 		});

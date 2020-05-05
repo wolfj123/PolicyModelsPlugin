@@ -6,14 +6,14 @@ import { URI } from 'vscode-uri';
 import { RenameParams, WorkspaceEdit } from 'vscode-languageserver';
 import { initLogger } from '../../src/Logger';
 
-mocha.suite('Solver Test Suite', ()=>{
+describe('Solver Test Suite', ()=>{
 
 	let testFolder: string;
 	let testFolderSuffix: string = "/server/tests/sample directory";
 	let solver: SolverInt;
 	let codeFolder: string;
 
-	mocha.before(async ()=> {
+	before(async ()=> {
 		let cwd:string = process.cwd()
 		initLogger(cwd);
 		testFolder = cwd + testFolderSuffix;
@@ -24,7 +24,7 @@ mocha.suite('Solver Test Suite', ()=>{
 	});
 
 
-	mocha.test('test rename from pspace file', ()=> {
+	it('test rename from pspace file', ()=> {
 		let inputParams: RenameParams = {
 			textDocument: {uri: URI.file(path.join(codeFolder,"policy-space.pspace")).toString()},
 			position: {"line":2,"character":36},
