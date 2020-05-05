@@ -315,7 +315,7 @@ function runModel(param : string[]) : string {
 	getLogger(logSources.serverHttp).http(`runModel`,param);
 	console.log("server is running the model")
 	let cwd = __dirname + "/../../";
-	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar ${}"`);
+	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
 	return "execute ends";
 }
 
