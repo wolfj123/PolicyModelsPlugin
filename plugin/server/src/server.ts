@@ -3,8 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
-
 import {
 	createConnection,
 	Diagnostic,
@@ -40,13 +38,15 @@ import {
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
+import * as path from 'path';
 import {SolverInt, PMSolver} from './Solver';
 import {initLogger, logSources,Logger, getLogger} from './Logger';
+import { URI } from 'vscode-uri';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
-
+let folderFS: string = undefined;
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
@@ -240,9 +240,11 @@ connection.onInitialized(() => {
 
 			if (_event === null || _event === undefined) {
 				await solver.onOpenFolder(null);
+				folderFS = undefined;
 				console.log(`finished wiating for open folder`);
 			}else{
 				await solver.onOpenFolder(_event[0].uri);
+				folderFS = URI.parse(_event[0].uri).fsPath;
 				console.log(`finished wiating for open folder`);
 			}
 		});
@@ -314,8 +316,12 @@ connection.onRenameRequest(
 function runModel(param : string[]) : string {
 	getLogger(logSources.serverHttp).http(`runModel`,param);
 	console.log("server is running the model")
-	let cwd = __dirname + "/../../";
-	child_process.execSync(`start cmd.exe /K java -jar "${cwd}/cli/DataTagsLib.jar"`);
+	let cliJar: string = path.join(__dirname,"/../../cli/DataTagsLib.jar");
+	if (folderFS === undefined){
+		child_process.execSync(`start cmd.exe /K java -jar "${cliJar}"`);
+	}else{
+		child_process.execSync(`start cmd.exe /K java -jar "${cliJar}" "${folderFS}"`);
+	}
 	return "execute ends";
 }
 
