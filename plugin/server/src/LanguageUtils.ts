@@ -32,8 +32,6 @@ import { isNullOrUndefined } from 'util';
 import { PMTextDocument } from './Documents';
 
 
-
-
 export enum PolicyModelsLanguage {
 	PolicySpace,
 	DecisionGraph,
@@ -59,14 +57,11 @@ export const parsersInfo = 	//TODO: maybe extract this info from package.json
 	}
 ]
 
-
 export function getLanguageByExtension(extension : string) : PolicyModelsLanguage | null {
 	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
 	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
 	return correspondingInfo[0].language
 }
-
-
 
 
 //****Entities****/
@@ -75,7 +70,8 @@ export enum PolicyModelEntityType {
 	Slot,
 	SlotValue,
 	ValueInference,
-	InferencePair
+	InferencePair,
+	Keyword
 }
 
 export enum PolicyModelEntityCategory {
@@ -140,36 +136,95 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 	)
 }
 
+function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[] = undefined) {
+	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
+		if(visibleRanges) {
+			for (const { start, end } of visibleRanges) {
+				const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
+				if (overlap) return true
+			}
+			return false
+		}
+		return true
+	}
+
+	let visitedChildren = false
+	let cursor = root.walk()
+	let parents = [cursor.nodeType]
+	let parent
+	let grandparent
+	while (true) {
+		// Advance cursor
+		if (visitedChildren) {
+			if (cursor.gotoNextSibling()) {
+				visitedChildren = false
+			} else if (cursor.gotoParent()) {
+				parents.pop()
+				visitedChildren = true
+				continue
+			} else {
+				break
+			}
+		} else {
+			const parent = cursor.nodeType
+			if (cursor.gotoFirstChild()) {
+				parents.push(parent)
+				visitedChildren = false
+			} else {
+				visitedChildren = true
+				continue
+			}
+		}
+		// Skip nodes that are not visible
+		if (!visible(cursor, visibleRanges)) {
+			visitedChildren = true
+			continue
+		}
+
+		yield cursor.currentNode()
+	}
+}
+
+
 
 //****Language Specific Static Services****/
-export class DecisionGraphServices {
-	static nodeTypes : string[] = [
-		'ask_node',
-		'continue_node',
-		'todo_node',
-		'call_node',
-		'reject_node',
-		'set_node',
-		'section_node',
-		'part_node',
-		'consider_node',
-		'when_node',
-		'import_node',
-		'end_node',
-		'text_sub_node',
-		'terms_sub_node',
-		'term_sub_node',
-		'answers_sub_node',
-		'answer_sub_node',
-		'slot_sub_node',
-		'consider_options_sub_node',
-		'consider_option_sub_node',
-		'else_sub_node',
-		'when_answer_sub_node',
-		'info_sub_node',
-		'continue_node',
-	]
 
+const mainNodesTypes : string[] = [
+	'text_sub_node',
+	'terms_sub_node',
+	'term_sub_node',
+	'answers_sub_node',
+	'answer_sub_node',
+	'slot_sub_node',
+	'consider_options_sub_node',
+	'consider_option_sub_node',
+	'else_sub_node',
+	'when_answer_sub_node',
+	'info_sub_node',
+]
+
+const subNodesTypes : string[] = [
+	'ask_node',
+	'continue_node',
+	'todo_node',
+	'call_node',
+	'reject_node',
+	'set_node',
+	'section_node',
+	'part_node',
+	'consider_node',
+	'when_node',
+	'import_node',
+	'end_node',
+	'continue_node',
+]
+
+const nodeTypes : string[] = mainNodesTypes.concat(subNodesTypes)
+
+
+
+export class DecisionGraphServices {
+	
 	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri, importMap : Map<string, string>= undefined) : PolicyModelEntity | null {
 		let name : string
 		let source : DocumentUri
@@ -227,7 +282,7 @@ export class DecisionGraphServices {
 		}
 
 		for (let node of nextNode(tree)) {
-			if(this.nodeTypes.indexOf(node.type) > -1) {
+			if(nodeTypes.indexOf(node.type) > -1) {
 				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, uri, uri, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
@@ -299,11 +354,23 @@ export class DecisionGraphServices {
 		//let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = []
 		for (let node of nextNode(tree)) {
-			if(this.nodeTypes.indexOf(node.type) > -1){
+			if(nodeTypes.indexOf(node.type) > -1){
 				result.push(node)
 			}
 		}
 		return getRangesOfSyntaxNodes(result)
+	}
+
+	static getCompletion(tree : Parser.Tree, location : Location) : PolicyModelEntityType | null {
+		//TODO:
+		let result : PolicyModelEntityType = null
+		let cursor : Parser.TreeCursor = tree.walk()
+		let node : Parser.SyntaxNode = cursor.currentNode().descendantForPosition(Utils.position2Point(location.range.start), Utils.position2Point(location.range.end))
+
+		
+
+
+		return result
 	}
 }
 
@@ -445,52 +512,3 @@ export class ValueInferenceServices {
 	}
 }
 
-
-function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[] = undefined) {
-	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
-		if(visibleRanges) {
-			for (const { start, end } of visibleRanges) {
-				const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
-				if (overlap) return true
-			}
-			return false
-		}
-		return true
-	}
-
-	let visitedChildren = false
-	let cursor = root.walk()
-	let parents = [cursor.nodeType]
-	let parent
-	let grandparent
-	while (true) {
-		// Advance cursor
-		if (visitedChildren) {
-			if (cursor.gotoNextSibling()) {
-				visitedChildren = false
-			} else if (cursor.gotoParent()) {
-				parents.pop()
-				visitedChildren = true
-				continue
-			} else {
-				break
-			}
-		} else {
-			const parent = cursor.nodeType
-			if (cursor.gotoFirstChild()) {
-				parents.push(parent)
-				visitedChildren = false
-			} else {
-				visitedChildren = true
-				continue
-			}
-		}
-		// Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
-			visitedChildren = true
-			continue
-		}
-
-		yield cursor.currentNode()
-	}
-}
