@@ -151,7 +151,7 @@ class DecisionGraphFileManager_UnitTests {
 			const nodeName : string = input.nodeName
 			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
-				const result = instance.getAllDefinitionsDGNode(nodeName)
+				const result = instance.getAllDefinitionsDGNode(nodeName, filename)
 				assert.deepEqual(result, output)
 			})
 		}
@@ -426,7 +426,7 @@ class PolicySpaceFileManager_UnitTests {
 			const nodeName : string = input.nodeName
 			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
-				const result = instance.getAllDefinitionsDGNode(nodeName)
+				const result = instance.getAllDefinitionsDGNode(nodeName, filename)
 				assert.deepEqual(result, output)
 			})
 		}
@@ -702,7 +702,7 @@ class ValueInferenceFileManager_UnitTests {
 			const nodeName : string = input.nodeName
 			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
-				const result = instance.getAllDefinitionsDGNode(nodeName)
+				const result = instance.getAllDefinitionsDGNode(nodeName, filename)
 				assert.deepEqual(result, output)
 			})
 		}
