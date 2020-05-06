@@ -41,37 +41,24 @@ import {
 	flatten, 
 	docChange2Edit
 } from '../../src/Utils';
+import {
+	PolicyModelsLanguage,
+	parsersInfo,
+	getLanguageByExtension,
+	PolicyModelEntityType,
+	PolicyModelEntityCategory,
+	PolicyModelEntity,
+	DecisionGraphServices,
+	PolicySpaceServices,
+	ValueInferenceServices
+} from '../../src/LanguageUtils'
 
-//TODO: this is duplicate code - need to move it to some library
-const parsersInfo = 	//TODO: maybe extract this info from package.json
-[ 
-	{ 
-		fileExtentsions : ['dg'],
-		language : TestTarget.PolicyModelsLanguage.DecisionGraph,
-		wasm : 'tree-sitter-decisiongraph.wasm',
-	},
-	{ 
-		fileExtentsions : ['pspace', 'ps', 'ts'],
-		language : TestTarget.PolicyModelsLanguage.PolicySpace,
-		wasm : 'tree-sitter-policyspace.wasm',
-	},
-	{ 
-		fileExtentsions :  ['vi'],
-		language : TestTarget.PolicyModelsLanguage.ValueInference,
-		wasm : 'tree-sitter-valueinference.wasm',
-	}
-]
+
 
 function getTextFromUri(uri : string) : string | null {
 	let dataEntry = TestData.data.find(e => e.uri === uri)
 	if(isNullOrUndefined(dataEntry)) {return null}
 	return dataEntry.text
-}
-
-function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage | null {
-	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
-	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
-	return correspondingInfo[0].language
 }
 
 function getParserWasmPathByExtension(extension : string) : string | null {

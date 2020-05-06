@@ -54,8 +54,6 @@ export function uniqueArray(arr : any[]) : any[] {
 	return result
 }
 
-
-
 export function point2Position(p : Parser.Point) : Position {
 	return Position.create(p.row, p.column)
 }

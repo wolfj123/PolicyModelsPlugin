@@ -4,6 +4,17 @@
 
 
 import * as TestTarget from "../../src/LanguageServices";
+import {
+	PolicyModelsLanguage,
+	parsersInfo,
+	getLanguageByExtension,
+	PolicyModelEntityType,
+	PolicyModelEntityCategory,
+	PolicyModelEntity,
+	DecisionGraphServices,
+	PolicySpaceServices,
+	ValueInferenceServices
+} from '../../src/LanguageUtils'
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
 import { isNullOrUndefined, inspect } from "util";
@@ -41,35 +52,15 @@ import {
 	docChange2Edit
 } from '../../src/Utils';
 import { TextDocWithChanges } from '../../src/DocumentChangesManager';
-
 import * as assert from 'assert';
 import * as mocha from 'mocha'; 
 import { PMTextDocument } from "../../src/Documents";
+
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const chai = require('chai');
 const expect = chai.expect;
 chai.use(deepEqualInAnyOrder);
 
-
-//TODO: this is duplicate code - need to move it to some library
-const parsersInfo = 	//TODO: maybe extract this info from package.json
-[ 
-	{ 
-		fileExtentsions : ['dg'],
-		language : TestTarget.PolicyModelsLanguage.DecisionGraph,
-		wasm : 'tree-sitter-decisiongraph.wasm',
-	},
-	{ 
-		fileExtentsions : ['pspace', 'ps', 'ts'],
-		language : TestTarget.PolicyModelsLanguage.PolicySpace,
-		wasm : 'tree-sitter-policyspace.wasm',
-	},
-	{ 
-		fileExtentsions :  ['vi'],
-		language : TestTarget.PolicyModelsLanguage.ValueInference,
-		wasm : 'tree-sitter-valueinference.wasm',
-	}
-]
 
 function getTextFromUri(uri : string) : string | null {
 	let dataEntry = TestData.data.find(e => e.uri === uri)
@@ -77,11 +68,6 @@ function getTextFromUri(uri : string) : string | null {
 	return dataEntry.text
 }
 
-function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage | null {
-	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
-	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
-	return correspondingInfo[0].language
-}
 
 function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
 	let result : PMTextDocument = {
@@ -327,7 +313,7 @@ class LanguageServices_UnitTests {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
 				},
-				output: {name : 'n1', type : TestTarget.PolicyModelEntityType.DGNode}
+				output: {name : 'n1', type : PolicyModelEntityType.DGNode}
 			}
 		]
 
@@ -513,7 +499,7 @@ class LanguageServicesFacade_UnitTests {
 						newRange : {start: {character: 0, line: 0},end: {character: 8, line: 0}},
 					}
 				},
-				output: {name: 'new_name' , type : TestTarget.PolicyModelEntityType.Slot}
+				output: {name: 'new_name' , type : PolicyModelEntityType.Slot}
 			}
 		]
 
@@ -792,7 +778,7 @@ class LanguageServicesFacade_UnitTests {
 }
 
 class DecisionGraphServices_UnitTests {
-	testTargetClass = TestTarget.DecisionGraphServices
+	testTargetClass = DecisionGraphServices
 
 	static runTests() {
 		let self = new DecisionGraphServices_UnitTests()
@@ -825,7 +811,7 @@ class DecisionGraphServices_UnitTests {
 			return getTree(testCase.input).then(tree => {
 				let uri : DocumentUri = testCase.input
 				const output = testCase.output
-				const result = TestTarget.DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
+				const result = DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
 					return {
 						name: e.getName(),
 						type: e.getType(),
@@ -852,6 +838,6 @@ DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
-//LanguageServicesWithCache_UnitTests.runTests()
+LanguageServicesWithCache_UnitTests.runTests()
 
 
