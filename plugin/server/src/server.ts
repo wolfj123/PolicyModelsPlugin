@@ -67,9 +67,7 @@ let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 
 
-connection.onInitialize((params: InitializeParams): InitializeResult => {
-	//logger.http(`onInitialize`,params);
-	
+connection.onInitialize((params: InitializeParams): InitializeResult => {	
 
 	// console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
 	// connection.console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
@@ -118,7 +116,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				{
 			 		openClose:true,
 			 		change:TextDocumentSyncKind.Full
-				 },
+				},
 				 
 				to check:
 				documentHighlightProvider, - to check with others
@@ -136,7 +134,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			},
 			
 			definitionProvider: true,
-			foldingRangeProvider: true,
+			//foldingRangeProvider: true,
 			referencesProvider: true,
 			renameProvider: {
 				prepareProvider: true
@@ -318,9 +316,9 @@ function runModel(param : string[]) : string {
 	console.log("server is running the model")
 	let cliJar: string = path.join(__dirname,"/../../cli/DataTagsLib.jar");
 	if (folderFS === undefined){
-		child_process.execSync(`start cmd.exe /K java -jar "${cliJar}"`);
+		child_process.exec(`start cmd.exe /K java -jar "${cliJar}"`);
 	}else{
-		child_process.execSync(`start cmd.exe /K java -jar "${cliJar}" "${folderFS}"`);
+		child_process.exec(`start cmd.exe /K java -jar "${cliJar}" "${folderFS}"`);
 	}
 	return "execute ends";
 }
