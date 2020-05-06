@@ -186,7 +186,6 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 }
 
 
-
 //****Language Specific Static Services****/
 
 const mainNodesTypes : string[] = [
@@ -222,10 +221,8 @@ const subNodesTypes : string[] = [
 const nodeTypes : string[] = mainNodesTypes.concat(subNodesTypes)
 
 
-
-export class DecisionGraphServices {
-	
-	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri, importMap : Map<string, string>= undefined) : PolicyModelEntity | null {
+export class DecisionGraphServices {	
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri, importMap : Map<string, string> = undefined) : PolicyModelEntity | null {
 		let name : string
 		let source : DocumentUri
 		let category : PolicyModelEntityCategory
