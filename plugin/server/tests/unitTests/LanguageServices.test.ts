@@ -186,25 +186,63 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'sanity node',
+				title: 'dg->node def',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'} // >n1<
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 				]
-			},
+			},			
 			{
-				title: 'sanity pspace',
+				title: 'dg->slot def',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'}
+					location: {range: {start: {character: 15, line: 8},end: {character: 15, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'}
+				]
+			},			
+			{
+				title: 'dg->slotvalue def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 30, line: 8},end: {character: 30, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'}
+				]
+			}
+			,{
+				title: 'pspace->slot def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'} // aggregate_slot
 				},
 				output: [
 					{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'}
+				]
+			}
+			,{
+				title: 'pspace->slotvalue def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'ps_ws_1.pspace'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'}
+				]
+			}
+			,{
+				title: 'vi->slot def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'vi_ws_1.vi'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'}
 				]
 			}
 		]
@@ -241,12 +279,19 @@ class LanguageServices_UnitTests {
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
 				]
 			}
+			// ,{
+			// 	title: 'sanity value inference',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'vi_ws_1.vi'}
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'}
+			// 	]
+			// }
 		]
 
 		async function test(testCase) : Promise<void> {
@@ -838,6 +883,6 @@ DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
-LanguageServicesWithCache_UnitTests.runTests()
+//LanguageServicesWithCache_UnitTests.runTests()
 
 

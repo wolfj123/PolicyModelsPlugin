@@ -158,7 +158,7 @@ text :
 uri : "vi_ws_1.vi",
 text : 
 `
-[DataTag: atomic_slot1
+[atomic_slot1: support
 	[atomic_slot2=atomic_slot1_val2; aggregate_slot+=aggregate_slot_slotval1 -> atomic_slot1_val1 ]]
 `	
 }
