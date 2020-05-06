@@ -41,7 +41,7 @@ export function activate(context: ExtensionContext) {
     }
   };
 
-  let documentSelectorOptions :DocumentSelector = 
+  let documentSelectorOptions :DocumentSelector =
 		[
 			{
 				language:'policyspace',
@@ -79,7 +79,7 @@ export function activate(context: ExtensionContext) {
 
   client.onReady().then(_ => {
     client.sendRequest("setPluginDir",context.extensionPath);
-    
+
     client.onRequest("getPluginDir",(a)=>{
       console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
       console.log(`${JSON.stringify(a)}`);
@@ -139,7 +139,9 @@ function addLocalizationCommand(context: vscode.ExtensionContext){
   const {subscriptions} = context;
   let disposable = vscode.commands.registerCommand(localizationCommand, () => {
     const extensionPath = context.extensionPath;
-    const localization = new LocalizationController({ extensionPath });
+    const extensionRootPath = vscode.workspace.rootPath;
+    const onError = e => vscode.window.showErrorMessage(e);
+    const localization = new LocalizationController({ extensionPath },extensionRootPath,onError);
     localization.activateLocalization();
   });
   subscriptions.push(disposable);

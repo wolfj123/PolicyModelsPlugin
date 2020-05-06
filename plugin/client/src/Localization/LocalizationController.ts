@@ -1,6 +1,5 @@
-import * as vscode from 'vscode';
-import ViewLoader from '../view/ViewLoader';
 import { LanguageData, File } from '../view/Types/model';
+import FileService from './FileService';
 
 var fs = require('fs');
 var PATH = require('path');
@@ -12,16 +11,24 @@ const e = (message, functionName) => console.error(`Localization Error: ${messag
 export default class LocalizationController {
   _localizationPath: string;
   _extensionProps: any;
+  _fileService: any;
+  _onError: any;
 
-  constructor(extensionProps) {
+  constructor(extensionProps,rootPath,onError) {
     this._extensionProps = extensionProps;
-    const rootPath = vscode.workspace.rootPath;
+    this._fileService = new FileService(e);
     this._localizationPath = rootPath + '/languages';
+    this._onError = onError;
   }
 
   activateLocalization() {
-    vscode.window.showInformationMessage('Localization is active!');
-    const languagesFilesData = this.getLanguagesFilesData();
+    let languagesFilesData;
+    try{
+     languagesFilesData = this.getLanguagesFilesData();
+    }catch(e){
+      this._onError(e);
+    }
+    const ViewLoader = require('../view/ViewLoader').default;   //lazy loading require for testing this component without 'vscode' dependency
     const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile);
   }
 
@@ -38,18 +45,19 @@ export default class LocalizationController {
     return { language: languageDir.name, files: allFiles };
   }
 
-  getAllFiles(path: string): File[] {
-    let direntFiles;
-    try {
-      direntFiles = fs.readdirSync(path, { withFileTypes: true });
-    } catch (err) {
-      if (err) {
-        e(err, 'getAllFiles');
-        return;
-      }
-    }
+  getAllFiles = (path: string): File[] =>  {
+    const directoryContent = this._fileService.getDirectoryContent(path);
+    // let direntFiles;
+    // try {
+    //   direntFiles = fs.readdirSync(path, { withFileTypes: true });
+    // } catch (err) {
+    //   if (err) {
+    //     e(err, 'getAllFiles');
+    //     return;
+    //   }
+    // }
 
-    let filteredFiles = this.filterSystemFiles(direntFiles);
+    let filteredFiles = this.filterSystemFiles(directoryContent);
 
     const filesData = filteredFiles.reduce((dataAcc, dirent) => {
       const { name } = dirent;
@@ -97,16 +105,17 @@ export default class LocalizationController {
   }
 
   getLanguagesFilesData(): LanguageData[] {
-    let direntFiles;
-    try {
-      direntFiles = fs.readdirSync(this._localizationPath, { withFileTypes: true });
-    } catch (err) {
-      if (err) {
-        e(err, 'activateLocalization');
-        return;
-      }
-    }
-    const languages_dirent = this.filterSystemFiles(direntFiles);
+    let languages_dirent = this._fileService.getDirectoryContent(this._localizationPath);
+    // let direntFiles;
+    // try {
+    //   direntFiles = fs.readdirSync(this._localizationPath, { withFileTypes: true });
+    // } catch (err) {
+    //   if (err) {
+    //     e(err, 'activateLocalization');
+    //     return;
+    //   }
+    // }
+    languages_dirent = this.filterSystemFiles(languages_dirent);
     const languagesFilesData = languages_dirent.map(language =>
       language.isDirectory() ? this.createLanguageFilesData(language) : e(`Expected ${language.name} to be language folder`, 'activateLocalization')
     );
