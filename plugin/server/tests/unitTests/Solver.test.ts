@@ -79,6 +79,7 @@ describe('Solver Test Suite', ()=>{
 		expect(ans).deep.equals(expectedAns);
 	});
 
+	/*
 	it('test rename from VI file', ()=> {
 		let inputParams: RenameParams = {
 			textDocument: { uri:uriCreator("valueInference.vi")},
@@ -154,6 +155,7 @@ describe('Solver Test Suite', ()=>{
 		expect(ans).deep.equals(expectedAns);
 
 	});
+	*/
 
 	it('test rename from DG file', ()=> {
 		let inputParams: RenameParams = {
