@@ -229,7 +229,11 @@ export class LanguageServices {
 
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
-		declarations = fm.getAllDefinitions(entity)
+		//declarations = fm.getAllDefinitions(entity)
+		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+			declarations = declarations.concat(fm.getAllDefinitions(entity))
+		});
+
 		
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
 			references = references.concat(fm.getAllReferences(entity))
