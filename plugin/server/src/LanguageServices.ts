@@ -21,23 +21,15 @@ import {
 	TextDocumentIdentifier,
 	TextDocumentChangeEvent,
 	DidChangeWatchedFilesParams,
+	PrepareRenameParams,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
 import { TextEdit } from 'vscode-languageserver-textdocument';
-import { TextDocWithChanges } from './DocumentChangesManager';
 import { Analyzer } from './Analyzer';
-import { 
-	getFileExtension, 
-	point2Position, 
-	position2Point, 
-	position2Location,
-	newRange, 
-	newLocation, 
-	flatten, 
-	docChange2Edit
-} from './Utils';
+import * as Utils from './Utils'
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
+import { PMTextDocument } from './Documents';
 
 
 //https://www.npmjs.com/package/web-tree-sitter
@@ -46,19 +38,26 @@ import { isNullOrUndefined } from 'util';
 //https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
 
-
 export class LanguageServicesFacade {
 	services : LanguageServices
 
-	constructor(docs : TextDocWithChanges[]) {
-		this.services = new LanguageServices(docs)
+	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
+		let instance : LanguageServicesFacade = new LanguageServicesFacade
+		let services : LanguageServices = await LanguageServices.init(docs, pluginDir)
+		instance.services = services
+		return instance
 	}
 
-	addDocs(docs : TextDocWithChanges[]) {
+	//TODO: it has to be async
+	// constructor(docs : TextDocWithChanges[]) {
+	// 	this.services = new LanguageServices(docs)
+	// }
+
+	addDocs(docs : PMTextDocument[]) {
 		this.services.addDocs(docs)
 	}
 
-	updateDoc(doc : TextDocWithChanges){
+	updateDoc(doc : PMTextDocument){
 		this.services.updateDoc(doc)
 	}
 
@@ -67,7 +66,7 @@ export class LanguageServicesFacade {
 	}
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		let locations : Location[] = this.services.getDeclarations(location)
 		
 		let result : LocationLink[] = locations.map(loc =>{
@@ -75,8 +74,8 @@ export class LanguageServicesFacade {
 			if(isNullOrUndefined(rangeOfDoc)) {return null}
 			return {
 				targetUri : loc.uri,
-				targetRange: loc.range,
-				targetSelectionRange: rangeOfDoc
+				targetSelectionRange: loc.range,
+				targetRange: rangeOfDoc
 			}
 		})
 		return result.filter(loc => !isNullOrUndefined(loc))
@@ -84,22 +83,22 @@ export class LanguageServicesFacade {
 
 	// these functions are called when the request is first made from the server
 	onReferences(params : ReferenceParams):  Location[] {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		return this.services.getReferences(location)
 	}
 
-	onPrepareRename(params : RenameParams): Range | null {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+	onPrepareRename(params : PrepareRenameParams): Range | null {
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		let entity : PolicyModelEntity = this.services.createPolicyModelEntity(location)
 		if(isNullOrUndefined(entity)) {return null}
-		let pos1 : Position = point2Position(entity.syntaxNode.startPosition)
-		let pos2 : Position = point2Position(entity.syntaxNode.endPosition)
-		let range : Range = newRange(pos1, pos2)
+		let pos1 : Position = Utils.point2Position(entity.syntaxNode.startPosition)
+		let pos2 : Position = Utils.point2Position(entity.syntaxNode.endPosition)
+		let range : Range = Utils.newRange(pos1, pos2)
 		return range
 	}
 
 	onRenameRequest(params : RenameParams) : Location[]	{		//WorkspaceEdit {
-		let location : Location = position2Location(params.position, params.textDocument.uri)
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		return this.services.getReferences(location)
 	}
 
@@ -149,38 +148,60 @@ export class LanguageServices {
 		}
 	]
 
-	constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
-		this.initParsers()
-		this.fileManagers = new Map()
+	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
+		let instance : LanguageServices = new LanguageServices();
+		// let fullPath:string = process.cwd();
+		// let idx: number = fullPath.indexOf("plugin");
+		// let pluginPath: string;
+		// if (idx === -1){
+		// 	pluginPath = fullPath;
+		// }else {
+		// 	pluginPath = fullPath.substring(0,  idx + 6);
+		// }
+		// console.log(`plugin path in facade ${pluginPath}`);
+		// let parsersPath: string = path.join(pluginPath,"parsers");
+		
+		//console.log(`language facade init plugin dir is: ${pluginDir}`);
+
+		let parsersPath: string = path.join(pluginDir,"parsers");
+		await instance.initParsers(parsersPath)
+		instance.fileManagers = new Map()
+		instance.populateMaps(docs)
+		return instance
+	}
+
+	//TODO: async
+	// constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
+	// 	this.initParsers()
+	// 	this.fileManagers = new Map()
+	// 	this.populateMaps(docs)
+	// }
+
+	addDocs(docs : PMTextDocument[]) {
 		this.populateMaps(docs)
 	}
 
-	addDocs(docs : TextDocWithChanges[]) {
-		this.populateMaps(docs)
-	}
-
-	updateDoc(doc : TextDocWithChanges){
-		let fileManager : FileManager = this.fileManagers.get(doc.textDocument.uri)
+	updateDoc(doc : PMTextDocument){
+		let fileManager : FileManager = this.fileManagers.get(doc.uri)
 		if(isNullOrUndefined(fileManager)) return
-		let parser : Parser = this.getParserByExtension(getFileExtension(doc.textDocument.uri))
-		const edits : Parser.Edit[] = doc.changes.map(change => docChange2Edit(change))
+		let parser : Parser = this.getParserByExtension(Utils.getFileExtension(doc.uri))
+		const edits : Parser.Edit[] = doc.lastChanges.map(change => Utils.changeInfo2Edit(change))
 		let tree : Parser.Tree = fileManager.tree
 		edits.forEach((edit : Parser.Edit) => {
 			tree.edit(edit)
-			fileManager.updateTree(parser.parse(doc.textDocument.getText())) //TODO: hopefully passing whole text with several changes doesn't break it
+			fileManager.updateTree(parser.parse(doc.getText())) //TODO: hopefully passing whole text with several changes doesn't break it
 		});
 	}
 
 	removeDoc(doc : DocumentUri) {
-		//TODO:
+		this.fileManagers.delete(doc)
 	}
 
 	//maybe this map should be global singleton?
-	async initParsers() {
+	async initParsers(parserPath: string) {
 		this.parsers = new Map()
 		for(let info of this.parsersInfo) {
-			const wasm = info.wasm
-			//const absolute = path.join(context.extensionPath, 'parsers', wasm
+			const wasm = path.join(parserPath,info.wasm);
 			await Parser.init()
 			const parser = new Parser()
 			const lang = await Parser.Language.load(wasm)
@@ -201,11 +222,22 @@ export class LanguageServices {
 		return this.parsers.get(language)
 	}
 
-	populateMaps(docs : TextDocWithChanges[]) {
-		for (let doc of docs){
-			let fileManager : FileManager = FileManagerFactory.create(doc, this.getParserByExtension, this.getLanguageByExtension)
-			this.fileManagers.set(doc.textDocument.uri, fileManager)
+	populateMaps(docs : PMTextDocument[]) {
+		for (let doc of docs) {
+			const uri = doc.uri //doc.textDocument.uri
+			const extension = Utils.getFileExtension(uri)
+			// let fileManager : FileManager = FileManagerFactory.create(doc, 
+			// 	this.getParserByExtension(extension), 
+			// 	this.getLanguageByExtension(extension))
+			let fileManager : FileManager = this.getFileManager(doc, extension)
+			this.fileManagers.set(doc.uri, fileManager)
 		}
+	}
+
+	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+		return FileManagerFactory.create(doc, 
+			this.getParserByExtension(extension), 
+			this.getLanguageByExtension(extension))
 	}
 
 	getFileManagerByLocation(location : Location) : FileManager {
@@ -221,9 +253,11 @@ export class LanguageServices {
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
 			result = result.concat(fm.getAllDefinitions(entity))
 		});
+		//let result = fm.getAllDefinitions(entity)
 		return result
 	}
 
+	/*
 	getReferences(location : Location) : Location[] {
 		let result : Location[] = []
 		let declarations : Location[] = []
@@ -233,6 +267,7 @@ export class LanguageServices {
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
 
+		//get all the declarations of the entity and their source files
 		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {	
 			let locs : Location[] = fm.getAllDefinitions(entity)
 			declarations = declarations.concat(locs)
@@ -241,32 +276,54 @@ export class LanguageServices {
 			}
 		});
 		
+		//if no source file, then just get all the references
 		if(docsWithDeclaration.length == 0){
 			this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
 				references = references.concat(fm.getAllReferences(entity))
 			});
 		}
+		//if there is a source file, then get all the references from that source
 		else {
 			docsWithDeclaration.forEach((uri: DocumentUri) => {	
 				entity.setSource(uri)
 				this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
-					references.concat(fm.getAllReferences(entity))
+					references = references.concat(fm.getAllReferences(entity))
 				});
 			});
 		}
-		
-		//TODO: we need to make sure the array contains unique values only
+
 		result = result.concat(declarations) //we include declarations in this query
 		result = result.concat(references)
+		result = Utils.uniqueArray(result)
+		return result
+	}
+	*/
+
+	getReferences(location : Location) : Location[] {
+		let result : Location[] = []
+		let declarations : Location[] = []
+		let references : Location[] = []
+
+		let fm : FileManager = this.getFileManagerByLocation(location)
+		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
+		declarations = fm.getAllDefinitions(entity)
+		
+		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+			references = references.concat(fm.getAllReferences(entity))
+		});
+	
+		result = result.concat(declarations) //we include declarations in this query
+		result = result.concat(references)
+		result = Utils.uniqueArray(result)
 		return result
 	}
 
 	getRangeOfDoc(uri : DocumentUri) : Range | null {
 		let fm : FileManager = this.fileManagers.get(uri)
 		if(isNullOrUndefined(fm)) {return null}
-		let pos1 : Position = point2Position(fm.tree.rootNode.startPosition)
-		let pos2 : Position = point2Position(fm.tree.rootNode.endPosition)
-		let range : Range = newRange(pos1, pos2)
+		let pos1 : Position = Utils.point2Position(fm.tree.rootNode.startPosition)
+		let pos2 : Position = Utils.point2Position(fm.tree.rootNode.endPosition)
+		let range : Range = Utils.newRange(pos1, pos2)
 		return range
 	}
 
@@ -301,7 +358,15 @@ export class LanguageServices {
 export enum PolicyModelEntityType {
 	DGNode,
 	Slot,
-	SlotValue
+	SlotValue,
+	ValueInference,
+	InferencePair
+}
+
+export enum PolicyModelEntityCategory {
+	FoldRange,
+	Declaration,
+	Reference
 }
 
 export class PolicyModelEntity {
@@ -309,14 +374,27 @@ export class PolicyModelEntity {
 	name : string
 	source? : DocumentUri
 	syntaxNode : Parser.SyntaxNode
+	location : Location
+	category : PolicyModelEntityCategory
 
-	constructor(name : string , type : PolicyModelEntityType, syntaxNode : Parser.SyntaxNode, source : DocumentUri = undefined){
+	constructor(
+			name : string , 
+			type : PolicyModelEntityType, 
+			syntaxNode : Parser.SyntaxNode, 
+			source : DocumentUri, 
+			uri : DocumentUri,
+			category){
 		this.name = name
 		this.type = type
 		this.syntaxNode = syntaxNode
-		if(source){
-			this.source = source
-		}
+		this.location = Utils.newLocation(
+			//source, 
+			uri,
+			Utils.newRange(
+				Utils.point2Position(syntaxNode.startPosition), 
+				Utils.point2Position(syntaxNode.endPosition)))
+		this.source = source
+		this.category = category
 	}
 
 	getType() : PolicyModelEntityType {
@@ -334,15 +412,17 @@ export class PolicyModelEntity {
 	setSource(uri : DocumentUri) {
 		this.source = uri
 	}
-}
 
+	getCategory() : PolicyModelEntityCategory {
+		return this.category
+	}
+}
 
 
 //****File Managers****/
 export abstract class FileManager {
 	tree : Parser.Tree
 	uri : DocumentUri
-	//TODO: maybe some sort of cache?
 
 	constructor(tree : Parser.Tree, uri : DocumentUri){
 		this.tree = tree
@@ -361,38 +441,45 @@ export abstract class FileManager {
 	getNodeFromLocation(location : Location) : Parser.SyntaxNode | null {
 		if(!this.isLocationInDoc(location)) return null
 		const position : Position = location.range.start
-	 	return this.tree.walk().currentNode().namedDescendantForPosition(position2Point(position))
+	 	return this.tree.walk().currentNode().namedDescendantForPosition(Utils.position2Point(position))
 	}
 
 	rangeArray2LocationArray(ranges : Range[]) : Location[] {
-		return ranges.map(range => newLocation(this.uri, range))
+		return ranges.map(range => Utils.newLocation(this.uri, range))
 	}
 
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
-
-		let funcMap = {
-			DGNode: this.getAllDefinitionsDGNode,
-			Slot: this.getAllDefinitionsSlot,
-			SlotValue: this.getAllDefinitionsSlotValue
+		switch(entity.getType()){
+			case PolicyModelEntityType.DGNode: 
+				return this.getAllDefinitionsDGNode(entity.getName(), entity.getSource())
+			case PolicyModelEntityType.Slot: 
+				return this.getAllDefinitionsSlot(entity.getName())
+			case PolicyModelEntityType.SlotValue: 
+				return this.getAllDefinitionsSlotValue(entity.getName())
+			default:
+				return undefined
 		}
-		return funcMap[entity.getType().toString()](entity.getName())
+
 	}
 
 	getAllReferences(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
-
-		let funcMap = {
-			DGNode: this.getAllReferencesDGNode,
-			Slot: this.getAllReferencesSlot,
-			SlotValue: this.getAllReferencesSlotValue
+		switch(entity.getType()){
+			case PolicyModelEntityType.DGNode: 
+				return this.getAllReferencesDGNode(entity.getName(), entity.source)
+			case PolicyModelEntityType.Slot: 
+				return this.getAllReferencesSlot(entity.getName(), entity.source)
+			case PolicyModelEntityType.SlotValue: 
+				return this.getAllReferencesSlotValue(entity.getName(), entity.source)
+			default:
+				return undefined
 		}
-		return funcMap[entity.getType().toString()](entity.getName(), entity.source)
 	}
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
 
-	abstract getAllDefinitionsDGNode(name : string) : Location[]
+	abstract getAllDefinitionsDGNode(name : string, source : DocumentUri) : Location[]
 	abstract getAllDefinitionsSlot(name : string) : Location[]
 	abstract getAllDefinitionsSlotValue(name : string) : Location[]
 
@@ -406,21 +493,21 @@ export abstract class FileManager {
 }
 
 export class FileManagerFactory {
-	static create(doc : TextDocWithChanges, getParserByExtension : (string) => Parser, getLanguageByExtension : (string) => PolicyModelsLanguage) : FileManager | null {
-		const uri = doc.textDocument.uri
-		const extension = getFileExtension(uri)
-		let parser = getParserByExtension(extension)
-		let language = getLanguageByExtension(extension)
-		let tree : Parser.Tree = parser.parse(doc.textDocument.getText()) 
+	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
+		const uri = doc.uri
+		const extension = Utils.getFileExtension(uri)
+		//let parser = getParserByExtension(extension)
+		//let language = getLanguageByExtension(extension)
+		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
-				return new DecisionGraphFileManager(tree, uri)
+				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, uri) : new DecisionGraphFileManager(tree, uri)
 
 			case PolicyModelsLanguage.PolicySpace:
-				return new PolicySpaceFileManager(tree, uri)	
+				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, uri) : new PolicySpaceFileManager(tree, uri)	
 						
 			case PolicyModelsLanguage.ValueInference:
-				return new ValueInferenceFileManager(tree, uri)	
+				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, uri) : new ValueInferenceFileManager(tree, uri)
 				
 			default:
 				return null
@@ -432,35 +519,14 @@ export class DecisionGraphFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
-		let name : string
-		switch(node.type) {
-			case 'node_id':
-			case 'node_id_value':
-				//let name : string
-				let nodeWithText : Parser.SyntaxNode
-				if(node.type === 'node_id') {
-					nodeWithText = node.descendantsOfType('node_id_value')[0]
-				}
-				else { //node.type === 'node_id_value'
-					nodeWithText = node
-				}
-				name = nodeWithText.text
-
-				let source : DocumentUri = (nodeWithText.parent.type === 'node_reference') ? undefined : this.uri ;
-				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, nodeWithText, source)
-			case 'slot_identifier':
-				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node)
-					
-			case 'slot_value':
-				name = node.text
-				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node)	
-		}
-		return null
+		return DecisionGraphServices.createEntityFromNode(node, location.uri)
 	}
-	getAllDefinitionsDGNode(name: string): Location[] {
-		let ranges : Range[] = DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, this.tree)
-		return this.rangeArray2LocationArray(ranges)
+	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
+		if(source === this.uri) {
+			let ranges : Range[] = DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, this.tree)
+			return this.rangeArray2LocationArray(ranges)
+		}
+		return []
 	}
 	getAllDefinitionsSlot(name: string): Location[] {
 		return []
@@ -494,20 +560,9 @@ export class PolicySpaceFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
-		let name : string
-		if(node.type === 'identifier_value') {
-			name = node.text
-			switch(node.parent.type) {
-				case 'identifier':
-				case 'compound_values':					
-					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node)					
-				case 'slot_value':
-					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node)	
-			}
-		}
-		return null
+		return PolicySpaceServices.createEntityFromNode(node, location.uri)
 	}
-	getAllDefinitionsDGNode(name: string): Location[] {
+	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
 		return []
 	}
 	getAllDefinitionsSlot(name: string): Location[] {
@@ -543,19 +598,9 @@ export class ValueInferenceFileManager extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
-		let name : string
-		if(node.type === 'slot_identifier') {
-			name = node.text
-			switch(node.parent.type) {
-				case 'slot_reference':				
-					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node)					
-				case 'slot_value':
-					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node)	
-			}
-		}
-		return null
+		return ValueInferenceServices.createEntityFromNode(node, location.uri)
 	}
-	getAllDefinitionsDGNode(name: string): Location[] {
+	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
 		return []
 	}
 	getAllDefinitionsSlot(name: string): Location[] {
@@ -588,8 +633,229 @@ export class ValueInferenceFileManager extends FileManager {
 
 
 
-//****Language Specific Services****/
+//****Cache variant****/
+
+export class LanguageServicesWithCache extends LanguageServices {
+	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServicesWithCache> {
+		let instance : LanguageServicesWithCache = new LanguageServicesWithCache();
+		//console.log(`language facade init plugin dir is: ${pluginDir}`);
+		let parsersPath: string = path.join(pluginDir,"parsers");
+		await instance.initParsers(parsersPath)
+		instance.fileManagers = new Map()
+		instance.populateMaps(docs)
+		return instance
+	}
+
+	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+		return FileManagerFactory.create(doc, 
+			this.getParserByExtension(extension), 
+			this.getLanguageByExtension(extension), true)
+	}
+}
+
+export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
+	cache : PolicyModelEntity[]
+
+	constructor(tree : Parser.Tree, uri : DocumentUri){
+		super(tree, uri)
+		this.cache = DecisionGraphServices.getAllEntitiesInDoc(tree, uri)
+	}
+
+	updateTree(newTree : Parser.Tree) {
+		this.tree = newTree
+		this.cache = DecisionGraphServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+
+	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
+		return CacheQueries.getAllDefinitionsDGNode(this.cache, name)
+	}
+
+	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
+		return CacheQueries.getAllReferencesDGNode(this.cache, name, source)
+	}
+	
+	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
+	}
+
+	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
+	}
+
+	getFoldingRanges(): Location[] {
+		return CacheQueries.getFoldingRanges(this.cache)
+	}
+	getAutoComplete(location: Location) {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+}
+
+export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
+	cache : PolicyModelEntity[]
+
+	constructor(tree : Parser.Tree, uri : DocumentUri){
+		super(tree, uri)
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, uri)
+	}
+
+	updateTree(newTree : Parser.Tree) {
+		this.tree = newTree
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+
+	getAllDefinitionsSlot(name: string): Location[] {
+		return CacheQueries.getAllDefinitionsSlot(this.cache, name)
+	}
+
+	getAllDefinitionsSlotValue(name: string): Location[] {
+		return CacheQueries.getAllDefinitionsSlotValue(this.cache, name)
+	}
+
+	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
+	}
+
+	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
+	}
+
+	getFoldingRanges(): Location[] {
+		return CacheQueries.getFoldingRanges(this.cache)
+	}
+
+	getAutoComplete(location: Location) {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+}
+
+export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManager {
+	cache : PolicyModelEntity[]
+
+	constructor(tree : Parser.Tree, uri : DocumentUri){
+		super(tree, uri)
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, uri)
+	}
+
+	updateTree(newTree : Parser.Tree) {
+		this.tree = newTree
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+	getAllReferencesSlot(name: string, source: string): Location[] {
+		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
+	}
+
+	getAllReferencesSlotValue(name: string, source: string): Location[] {
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
+	}
+
+	getFoldingRanges(): Location[] {
+		return CacheQueries.getFoldingRanges(this.cache)
+	}
+}
+
+
+
+//****Language Specific Static Services****/
 export class DecisionGraphServices {
+	static nodeTypes : string[] = [
+		'ask_node',
+		'continue_node',
+		'todo_node',
+		'call_node',
+		'reject_node',
+		'set_node',
+		'section_node',
+		'part_node',
+		'consider_node',
+		'when_node',
+		'import_node',
+		'end_node',
+		'text_sub_node',
+		'terms_sub_node',
+		'term_sub_node',
+		'answers_sub_node',
+		'answer_sub_node',
+		'slot_sub_node',
+		'consider_options_sub_node',
+		'consider_option_sub_node',
+		'else_sub_node',
+		'when_answer_sub_node',
+		'info_sub_node',
+		'continue_node',
+	]
+
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri, importMap : Map<string, string>= undefined) : PolicyModelEntity | null {
+		let name : string
+		let source : DocumentUri
+		let category : PolicyModelEntityCategory
+		switch(node.type) {
+			//case 'node_id':
+			case 'node_id_value':	
+			 	name = node.text
+				switch(node.parent.type){
+					case 'node_reference':
+						category = PolicyModelEntityCategory.Reference
+						let parent = node.parent
+						let graph_name_node = parent.descendantsOfType('decision_graph_name')
+						if(isNullOrUndefined(graph_name_node) || graph_name_node.length == 0) {
+							source = uri
+						} 
+						else {
+							source = isNullOrUndefined(importMap) ? 
+								undefined : 
+								//importMap[graph_name_node[0].text.trim()]
+								importMap.get(graph_name_node[0].text.trim())
+						}
+
+						break;
+					case 'node_id':
+						category = PolicyModelEntityCategory.Declaration
+						source = uri
+						break;
+				}
+				return new PolicyModelEntity(name, PolicyModelEntityType.DGNode, node, source, uri, category)
+			case 'slot_identifier':
+				name = node.text
+				return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, undefined, uri, PolicyModelEntityCategory.Reference)
+			case 'slot_value':
+				name = node.text
+				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, undefined, uri, PolicyModelEntityCategory.Reference)	
+			default:
+				return null
+		}
+	}
+
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
+		let result : PolicyModelEntity[] = []
+		let imports : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
+		let importMap : Map<string, string>
+		
+		if (imports.length > 0) {
+			//	imports.forEach
+			importMap = new Map()
+			imports.forEach(imp => {
+				let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
+				let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
+				importMap.set(graphname, filename)
+			})
+		}
+
+		for (let node of nextNode(tree)) {
+			if(this.nodeTypes.indexOf(node.type) > -1) {
+				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, uri, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else {
+				let entity = DecisionGraphServices.createEntityFromNode(node, uri, importMap)
+				if(!isNullOrUndefined(entity)) {
+					result.push(entity)
+				}
+			}
+		}
+		return result
+	}
+
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
@@ -623,16 +889,16 @@ export class DecisionGraphServices {
 			{
 				return ref.descendantsOfType("node_id_value")[0].text === name &&
 					(!(importedGraphName) || (importedGraphName &&
-					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text == importedGraphName))
+					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text === importedGraphName))
 			}	
-		)
+		).map(ref => {return ref.descendantsOfType("node_id_value")[0]})
 		return getRangesOfSyntaxNodes(relevantReferences)
 	}
 
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_reference")
-		let slotIdentifiers : Parser.SyntaxNode[] = flatten(slotRefs.map(ref => ref.descendantsOfType("slot_identifier")))
+		let slotIdentifiers : Parser.SyntaxNode[] = Utils.flatten(slotRefs.map(ref => ref.descendantsOfType("slot_identifier")))
 		let relevant = slotIdentifiers.filter(id => id.text === name)
 		return getRangesOfSyntaxNodes(relevant)
 	}
@@ -645,36 +911,11 @@ export class DecisionGraphServices {
 	}
 
 	static getAllNodesInDocument(tree : Parser.Tree) : Range[] {
-		const nodeTypes : string[] = [
-			'ask_node',
-			'continue_node',
-			'todo_node',
-			'call_node',
-			'reject_node',
-			'set_node',
-			'section_node',
-			'part_node',
-			'consider_node',
-			'when_node',
-			'import_node',
-			'end_node',
-			'text_sub_node',
-			'terms_sub_node',
-			'term_sub_node',
-			'answers_sub_node',
-			'answer_sub_node',
-			'slot_sub_node',
-			'consider_options_sub_node',
-			'consider_option_sub_node',
-			'else_sub_node',
-			'when_answer_sub_node',
-			'info_sub_node',
-			'continue_node',
-		]
+		
 		//let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = []
 		for (let node of nextNode(tree)) {
-			if(nodeTypes.indexOf(node.type) > -1){
+			if(this.nodeTypes.indexOf(node.type) > -1){
 				result.push(node)
 			}
 		}
@@ -683,12 +924,48 @@ export class DecisionGraphServices {
 }
 
 export class PolicySpaceServices {
+	
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri) : PolicyModelEntity | null {
+		let name : string
+		if(node.type === 'identifier_value') {
+			name = node.text
+			switch(node.parent.type) {
+				case 'identifier':
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, uri, uri, PolicyModelEntityCategory.Declaration)	
+				case 'compound_values':					
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, uri, uri, PolicyModelEntityCategory.Reference)					
+				case 'slot_value':
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, uri, uri, PolicyModelEntityCategory.Declaration)
+				default:
+					return null	
+			}
+		}
+		return null
+	} 
+
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
+		let result : PolicyModelEntity[] = []
+		for (let node of nextNode(tree)) {
+			if(node.type === "slot") {
+				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.Slot, node, uri, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else {
+				let entity = PolicySpaceServices.createEntityFromNode(node, uri)
+				if(!isNullOrUndefined(entity)) {
+					result.push(entity)
+				}
+			}
+		}
+		return result
+	}
+	
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
 		let relevantSlots = slots
 			.map(slot => slot.children.find(child => child.type === "identifier"))
 			.filter(id => id && id.descendantsOfType("identifier_value")[0].text === name)
+			.map(id => id.descendantsOfType("identifier_value")[0])
 		return getRangesOfSyntaxNodes(relevantSlots)
 	}
 
@@ -719,9 +996,44 @@ export class PolicySpaceServices {
 }
 
 export class ValueInferenceServices {
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri) : PolicyModelEntity | null {
+		let name : string
+		if(node.type === 'slot_identifier') {
+			name = node.text
+			switch(node.parent.type) {
+				case 'slot_reference':				
+					return new PolicyModelEntity(name, PolicyModelEntityType.Slot, node, undefined, uri, PolicyModelEntityCategory.Reference)					
+				case 'slot_value':
+					return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, undefined, uri, PolicyModelEntityCategory.Reference)	
+				default:
+					return null
+			}
+		}
+		return null
+	} 
+
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
+		let result : PolicyModelEntity[] = []
+		for (let node of nextNode(tree)) {
+			if(node.type === "value_inference") {
+				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.ValueInference, node, uri, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else if(node.type === "inference_pair") {
+				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.InferencePair, node, uri, uri, PolicyModelEntityCategory.FoldRange))
+			}
+			else {
+				let entity = ValueInferenceServices.createEntityFromNode(node, uri)
+				if(!isNullOrUndefined(entity)) {
+					result.push(entity)
+				}
+			}
+		}
+		return result
+	}
+
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let identifiers : Parser.SyntaxNode[] = flatten(root.descendantsOfType("slot_reference")
+		let identifiers : Parser.SyntaxNode[] = Utils.flatten(root.descendantsOfType("slot_reference")
 			.map(id => id.descendantsOfType("slot_identifier")))
 		let relevantIdentifiers = identifiers.filter(ref => ref.text === name)
 		return getRangesOfSyntaxNodes(relevantIdentifiers)
@@ -747,6 +1059,64 @@ export class ValueInferenceServices {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = root.descendantsOfType("inference_pair")
 		return getRangesOfSyntaxNodes(result)
+	}
+}
+
+export class CacheQueries {
+	static getAllDefinitionsDGNode(cache : PolicyModelEntity[], name: string): Location[] {
+		const type = PolicyModelEntityType.DGNode
+		const category = PolicyModelEntityCategory.Declaration
+		return cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllReferencesDGNode(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.DGNode
+		const category1 = PolicyModelEntityCategory.Reference
+		//const category2 = PolicyModelEntityCategory.Declaration
+		return cache
+			.filter(e => e.getName() === name && (e.getCategory() == category1 /*||  e.getCategory() == category2*/) && e.getType() == type && e.source == source) 
+			.map(e => e.location)
+	}
+
+	static getAllDefinitionsSlot(cache : PolicyModelEntity[],name: string): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Declaration
+		return cache
+			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllReferencesSlot(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Reference
+		return cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getAllDefinitionsSlotValue(cache : PolicyModelEntity[],name: string): Location[] {
+		const type = PolicyModelEntityType.SlotValue
+		const category = PolicyModelEntityCategory.Reference
+		return cache
+			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
+			.map(e => e.location)
+	}
+	
+	static getAllReferencesSlotValue(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+		const type = PolicyModelEntityType.Slot
+		const category = PolicyModelEntityCategory.Reference
+		return cache
+			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.map(e => e.location)
+	}
+
+	static getFoldingRanges(cache : PolicyModelEntity[]): Location[] {
+		const category = PolicyModelEntityCategory.FoldRange
+		return cache
+			.filter(e => e.getCategory() == category )
+			.map(e => e.location)
 	}
 }
 
@@ -802,257 +1172,8 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 	return nodes.map(
 		id => {
-			return newRange(point2Position(id.startPosition), point2Position(id.endPosition))
+			return Utils.newRange(Utils.point2Position(id.startPosition), Utils.point2Position(id.endPosition))
 		}
 	)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*************DEMO*********/
-//demoDecisionGraphGetAllReferencesOfNodeInDocument()
-//demoDecisionGraphGetAllDefinitionsOfNodeInDocument()
-//demoDecisionGraphGetAllReferencesOfSlotInDocument()
-//demoDecisionGraphGetAllReferencesOfSlotValueInDocument()
-//demoDecisionGraphGetAllNodesInDocument()
-//demoPolicySpaceGetAllDefinitionsOfSlotInDocument()
-//demoPolicySpaceGetAllReferencesOfSlotInDocument()
-//demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument()
-//demoValueInferenceAllReferencesOfSlotValueInDocument()
-
-async function demoDecisionGraphGetAllReferencesOfNodeInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	//Then you can parse some source code,
-	sourceCode = `
-	[>bb< ask:
-	{>asd< text: Do the data contain health information?}
-	{answers:
-	  {yes: [ >yo< call: asd]}}]
-	`;
-	// tree = parser.parse(sourceCode);
-	// result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree)
-	// console.log(result)
-
-	sourceCode = `[#import dg : file.dg]
-	[>bb< ask:
-	{text: Do the data contain health information?}
-	{answers:
-	  {yes: [ >yo< call: dg>asd]}}]
-	`;
-	tree = parser.parse(sourceCode);
-	result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree, "file.dg")
-	console.log(result)
-
-	
-	sourceCode = ` [#import dg : file.dg]
-	[>bb< ask:
-	{text: Do the data contain health information?}
-	{answers:
-	  {yes: [ >yo< call: dg2>asd]}}]
-	`;
-	tree = parser.parse(sourceCode);
-	result = DecisionGraphServices.getAllReferencesOfNodeInDocument("asd", tree, "file.dg")
-	console.log(result)
-}
-
-async function demoDecisionGraphGetAllDefinitionsOfNodeInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = ` [#import dg : file.dg]
-	[>asd< ask:
-	{text: Do the data contain health information?}
-	{answers:
-	  {yes: [ >yo< call: dg>asd]}}]
-	`;
-	tree = parser.parse(sourceCode);
-	result = DecisionGraphServices.getAllDefinitionsOfNodeInDocument("asd", tree)
-	console.log(result)
-	result = DecisionGraphServices.getAllDefinitionsOfNodeInDocument("yo", tree)
-	console.log(result)
-}
-
-async function demoDecisionGraphGetAllReferencesOfSlotInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `[set: 
-	DataTags/Mid1/Bottom1=b1a; 
-	DataTags/Mid2/Mid1+=
-	{b2b, b2c}]`;
-	tree = parser.parse(sourceCode);
-	result = DecisionGraphServices.getAllReferencesOfSlotInDocument("Mid1", tree)
-	console.log(result)
-}
-
-async function demoDecisionGraphGetAllReferencesOfSlotValueInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `[set: 
-	DataTags/Mid1/Bottom1=b1a; 
-	DataTags/Mid2/Mid1+= {b2b, b1a}]`;
-	tree = parser.parse(sourceCode);
-	result = DecisionGraphServices.getAllReferencesOfSlotValueInDocument("b1a", tree)
-	console.log(result)
-}
-
-async function demoDecisionGraphGetAllNodesInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `[section:
-		{title: Health Data}
-		[ask:
-		  {text: Are there any related health issues?}
-		  {answers:
-			{no: [continue]}
-		  }
-		]
-	  
-	  ]`;
-	tree = parser.parse(sourceCode);
-	result = DecisionGraphServices.getAllNodesInDocument(tree)
-	console.log(result)
-}
-
-async function demoPolicySpaceGetAllDefinitionsOfSlotInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-policyspace.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `Storage: one of clear, serverEncrypt, clientEncrypt, doubleEncrypt.
-	Handling: consists of Storage, Transit, Authentication.
-	IntellecualProperty: TODO.
-	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
-	`;
-	tree = parser.parse(sourceCode);
-	result = PolicySpaceServices.getAllDefinitionsOfSlotInDocument("IntellecualProperty", tree)
-	console.log(result)
-}
-
-async function demoPolicySpaceGetAllReferencesOfSlotInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-policyspace.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `Storage: one of clear, serverEncrypt, Authentication, doubleEncrypt.
-	Handling: consists of Storage, Transit, Authentication.
-	IntellecualProperty: TODO.
-	myslot[descriptions1] : some of something [description2], somethingElse [else thingy!], evenMoreSomething [much else?].
-	`;
-	tree = parser.parse(sourceCode);
-	result = PolicySpaceServices.getAllReferencesOfSlotInDocument("Storage", tree)
-	console.log(result)
-}
-
-async function demoPolicySpaceGetAllDefinitionsOfSlotValueInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-policyspace.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `Storage: one of clear, serverEncrypt, Authentication, doubleEncrypt.
-	Handling: consists of Storage, Transit, Authentication.
-	IntellecualProperty: TODO.
-	myslot[descriptions1] : some of something [description2], Authentication [else thingy!], evenMoreSomething [much else?].
-	`;
-	tree = parser.parse(sourceCode);
-	result = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument("Authentication", tree)
-	console.log(result)
-}
-
-async function demoValueInferenceAllReferencesOfSlotValueInDocument() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-valueinference.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
-
-	sourceCode = `[DataTag: support
-		[ Encrypt=None;   DUA_AM=Implied -> Blue    ]
-		[ Encrypt=Quick;  DUA_AM=Click   -> Yellow  ]
-		[ Encrypt=Hard;   DUA_AM=Click   -> DUA_AM   ]
-		[ Encrypt=Double; DUA_AM=Type    -> Red     ]
-		[ Encrypt=Double; DUA_AM=Sign    -> DUA_AM ]
-	  ]
-	  `;
-	tree = parser.parse(sourceCode);
-	result = ValueInferenceServices.getAllReferencesOfSlotInDocument("DUA_AM", tree)
-	console.log(result)
-
-	tree = parser.parse(sourceCode);
-	result = ValueInferenceServices.getAllReferencesOfSlotValueInDocument("Click", tree)
-	console.log(result)
-
-	tree = parser.parse(sourceCode);
-	result = ValueInferenceServices.getAllReferencesOfSlotValueInDocument("DUA_AM", tree)
-	console.log(result)
-}
-
 

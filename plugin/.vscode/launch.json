@@ -14,6 +14,9 @@
 				"999999",
 				"--colors",
 				"${workspaceFolder}/server/tests/unitTests/LanguageServices.test.ts",
+				"${workspaceFolder}/server/tests/unitTests/PolicyModelFileManager.test.ts",
+				"${workspaceFolder}/server/tests/unitTests/documentManager.test.ts",
+				"${workspaceFolder}/server/tests/unitTests/Solver.test.ts",
 			],
 			"console": "integratedTerminal",
 			"internalConsoleOptions": "neverOpen",
@@ -39,7 +42,7 @@
 			"name": "Attach to Server",
 			"port": 6009,
 			"restart": true,
-			"timeout": 15000,
+			"timeout": 32000,
 			"outFiles": ["${workspaceRoot}/server/out/**/*.js"]
 		},
 		{

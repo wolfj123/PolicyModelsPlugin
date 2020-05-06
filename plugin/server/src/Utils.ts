@@ -16,23 +16,45 @@ import {
 	TextDocumentContentChangeEvent,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter'
-import { isNullOrUndefined } from 'util';
-
+import * as _ from 'underscore'
+import { changeInfo } from './Documents';
 export enum languagesIds {
 	policyspace =  0,
 	decisiongraph =  1,
 	valueinference = 2
 }
-export declare type allParamsTypes = ReferenceParams | DeclarationParams | RenameParams | TextDocumentPositionParams | 
-							  CompletionItem | FoldingRangeParams | string;
-export declare type allSolutionTypes = Location[] | WorkspaceEdit | CompletionList | CompletionItem | FoldingRange[] |
-								LocationLink[] | Range;
 
+const psExt:string = "ps";
+const pspaceExt:string = "pspace";
+const dgExt:string = "dg";
+const viExt:string = "vi";
+
+const allFileExtensions: string [] = [psExt, pspaceExt, dgExt, viExt];
+
+
+//Array functions
 export function flatten (arr: any [][]): any [] {
 	let ans: any[] = [];
 	arr.forEach(x=> x.forEach(y=> ans.push(y))   );
 	return ans;
 }
+
+export function uniqueArray(arr : any[]) : any[] {
+	let result = []
+	let clone = arr.slice()  
+	while(clone.length > 0){
+		let element = clone.shift()
+		if(clone.find(e => _.isEqual(e, element))){
+			continue
+		}
+		else {
+			result.push(element)
+		}
+	}
+	return result
+}
+
+
 
 export function point2Position(p : Parser.Point) : Position {
 	return Position.create(p.row, p.column)
@@ -64,6 +86,27 @@ export function getFileExtension(filename : string) : string {
 	return re.exec(filename)[1];   
 }
 
+
+/*
+export interface changeInfo{
+	oldRange: Range,
+	newRange: Range
+}
+*/
+export function changeInfo2Edit(change : changeInfo) {
+	const result =  
+	{
+		startIndex: change.oldRange.start.character,
+		oldEndIndex: change.oldRange.end.character, 
+		newEndIndex: change.newRange.end.character,
+		startPosition: {row: change.oldRange.start.line, column: change.oldRange.start.character},
+		oldEndPosition: {row: change.oldRange.end.line, column: change.oldRange.end.character}, 
+		newEndPosition: {row: change.newRange.end.line, column: change.newRange.end.character} 
+	}
+	return result
+}
+
+//old interface
 export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser.Edit {
 	if ("range" in change) {
 		const range : Range = change.range
@@ -84,6 +127,18 @@ export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser
 }
 
 function getEndRowAndColumnOfString(str : string) : {row: number, column: number} {
-	TODO:
-	return null
+	//TODO:
+	throw new Error("Method not implemented.");
+}
+
+//Mixins helper function
+//https://www.youtube.com/watch?v=LvjNGo5ALyQ
+function applyMixins(derivedCtor: any, baseCtors: any[]) {
+    baseCtors.forEach(baseCtor => {
+        Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
+             if (name !== 'constructor') {
+                derivedCtor.prototype[name] = baseCtor.prototype[name];
+            }
+        });
+    });
 }
