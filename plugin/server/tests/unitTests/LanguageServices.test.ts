@@ -272,7 +272,7 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'node sanity',
+				title: 'dg->node ref',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
@@ -281,7 +281,22 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
 				]
-			}
+			},
+			{
+				title: 'dg->slotvalue ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 15, line: 8},end: {character: 15, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
+				]
+			},
 			// ,{
 			// 	title: 'sanity value inference',
 			// 	input: {
@@ -387,7 +402,7 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'node sanity',
+				title: 'dg sanity',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: 'dg1_ws_1.dg'
