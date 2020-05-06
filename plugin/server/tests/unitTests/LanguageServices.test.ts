@@ -338,17 +338,35 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
 				]
 			},
-
-			// ,{
-			// 	title: 'sanity value inference',
-			// 	input: {
-			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-			// 		location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'vi_ws_1.vi'}
-			// 	},
-			// 	output: [
-			// 		{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'}
-			// 	]
-			// }
+			{
+				title: 'vi->slot ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'vi_ws_1.vi'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
+				]
+			},
+			{
+				title: 'vi->slotvalue ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 79, line: 2},end: {character: 79, line: 2}}, uri: 'vi_ws_1.vi'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
+				]
+			}
 		]
 
 		async function test(testCase) : Promise<void> {
