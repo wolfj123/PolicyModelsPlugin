@@ -40,7 +40,6 @@ import {
 	flatten, 
 	docChange2Edit
 } from '../../src/Utils';
-import { TextDocWithChanges } from '../../src/DocumentChangesManager';
 
 import * as assert from 'assert';
 import * as mocha from 'mocha'; 
@@ -139,21 +138,21 @@ function runMochaTestCases(title : string,  testCases, testFunction) {
 }
 
 //old interface
-function createTextDocFromUrl(uri : string) : TextDocWithChanges {
-	let text : string = getTextFromUri(uri)	
-	return {
-		textDocument : {
-			uri: uri,
-			languageId: null,
-			version : null,
-			getText : function() {return text},
-			positionAt : null,
-			offsetAt : null,
-			lineCount : null
-		},
-		changes : [{text : text}]
-	}
-}
+// function createTextDocFromUrl(uri : string) : TextDocWithChanges {
+// 	let text : string = getTextFromUri(uri)	
+// 	return {
+// 		textDocument : {
+// 			uri: uri,
+// 			languageId: null,
+// 			version : null,
+// 			getText : function() {return text},
+// 			positionAt : null,
+// 			offsetAt : null,
+// 			lineCount : null
+// 		},
+// 		changes : [{text : text}]
+// 	}
+// }
 
 function createPMTextDocFromUrl(uri : string) : PMTextDocument {
 	let text : string = getTextFromUri(uri)	
