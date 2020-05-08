@@ -1,28 +1,29 @@
-import * as vscode from 'vscode';
-import ViewLoader from '../view/ViewLoader';
 import { LanguageData, File } from '../view/Types/model';
+import FileService from './FileService';
 
-var fs = require('fs');
 var PATH = require('path');
 
 const systemFilesNameToFilter = ['.DS_Store'];
 const supportedExtensions = ['.md', '.txt'];
-const e = (message, functionName) => console.error(`Localization Error: ${message}. \n Function: ${functionName}`);
+const localizationRootFolder = '/languages';
 
 export default class LocalizationController {
   _localizationPath: string;
   _extensionProps: any;
+  _fileService: any;
+  _onError: any;
 
-  constructor(extensionProps) {
+  constructor(extensionProps, rootPath, onError) {
     this._extensionProps = extensionProps;
-    const rootPath = vscode.workspace.rootPath;
-    this._localizationPath = rootPath + '/languages';
+    this._fileService = new FileService();
+    this._localizationPath = rootPath + localizationRootFolder;
+    this._onError = onError;
   }
 
-  activateLocalization() {
-    vscode.window.showInformationMessage('Localization is active!');
+  activateLocalization({ onError }) {
     const languagesFilesData = this.getLanguagesFilesData();
-    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile);
+    const ViewLoader = require('../view/ViewLoader').default; //lazy loading require for testing this component without 'vscode' dependency
+    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile, onError);
   }
 
   filterSystemFiles(direntFiles) {
@@ -34,81 +35,58 @@ export default class LocalizationController {
   }
 
   createLanguageFilesData(languageDir): LanguageData {
-    const allFiles = this.getAllFiles(this._localizationPath + '/' + languageDir.name);
+    const allFiles = this.getFiles(this._localizationPath + '/' + languageDir.name);
     return { language: languageDir.name, files: allFiles };
   }
 
-  getAllFiles(path: string): File[] {
-    let direntFiles;
+  getFiles = (path: string): File[] => {
+    let directoryContent;
     try {
-      direntFiles = fs.readdirSync(path, { withFileTypes: true });
+      directoryContent = this._fileService.getDirectoryContent(path);
     } catch (err) {
-      if (err) {
-        e(err, 'getAllFiles');
-        return;
-      }
+      this._onError(err);
+      return;
     }
-
-    let filteredFiles = this.filterSystemFiles(direntFiles);
-
+    let filteredFiles = this.filterSystemFiles(directoryContent);
     const filesData = filteredFiles.reduce((dataAcc, dirent) => {
       const { name } = dirent;
       const filePath = path + '/' + name;
-      let currData;
+      let currData = [];
       if (dirent.isFile()) {
-        if (this.isSupportedFile(filePath)) {
-          const content = this.readFromFile(filePath);
+        if(this.isSupportedFile(filePath)){
+        try {
+          const content = this._fileService.readFromFile(filePath);
           currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath) }];
-        } else {
-          currData = [];
+        } catch (err) {
+          this._onError(err);
         }
+      }
       } else if (dirent.isDirectory()) {
-        currData = this.getAllFiles(filePath);
+        currData = this.getFiles(filePath);
       } else {
-        e(` File ${path}/ ${name} is not directory or regular file`, 'getAllFiles');
+        this._onError(`${path}/ ${name} is not directory or text file`);
       }
       return dataAcc.concat(currData);
     }, []);
     return filesData || [];
-  }
-
-  writeToFile(path, newData) {
-    try {
-      fs.writeFileSync(path, newData);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  };
 
   onSaveFile = (path, newData) => {
-    this.writeToFile(path, newData);
+    this._fileService.writeToFile(path, newData);
     const newLanguagesFilesData = this.getLanguagesFilesData();
     return newLanguagesFilesData;
   };
 
-  readFromFile(path) {
-    let content = null;
-    try {
-      content = fs.readFileSync(path, 'utf8');
-    } catch (error) {
-      e(error, 'readFromFile');
-    }
-    return content;
-  }
-
   getLanguagesFilesData(): LanguageData[] {
-    let direntFiles;
+    let languages_dirent;
     try {
-      direntFiles = fs.readdirSync(this._localizationPath, { withFileTypes: true });
-    } catch (err) {
-      if (err) {
-        e(err, 'activateLocalization');
-        return;
-      }
+      languages_dirent = this._fileService.getDirectoryContent(this._localizationPath);
+    } catch (e) {
+      throw new Error('Cannot read main localization folder.');
     }
-    const languages_dirent = this.filterSystemFiles(direntFiles);
+    languages_dirent = this.filterSystemFiles(languages_dirent);
     const languagesFilesData = languages_dirent.map(language =>
-      language.isDirectory() ? this.createLanguageFilesData(language) : e(`Expected ${language.name} to be language folder`, 'activateLocalization')
+      language.isDirectory() ? this.createLanguageFilesData(language) : this._onError(`Expected ${language.name} to be language folder`)
     );
     return languagesFilesData;
   }

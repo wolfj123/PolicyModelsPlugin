@@ -8,7 +8,7 @@ export default class ViewLoader {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
 
-  constructor(languageFilesData, extensionProps, onSave) {
+  constructor(languageFilesData, extensionProps, onSave,onError) {
     const { extensionPath } = extensionProps;
     this._extensionPath = extensionPath;
     this._panel = vscode.window.createWebviewPanel('Localization', 'Localization', vscode.ViewColumn.One, {
@@ -23,9 +23,12 @@ export default class ViewLoader {
       (command: ICommand) => {
         switch (command.action) {
           case CommandAction.Save:
+            try{
             const newLanguageFilesData = onSave(command.additionalInfo.path, command.content);
             this.updateLanguageFilesData(newLanguageFilesData);
-
+            }catch(err){
+              onError(err);
+            }
             return;
         }
       },
