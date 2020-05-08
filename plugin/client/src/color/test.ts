@@ -6,6 +6,10 @@ type Assert = [string, string|{not:string}]
 type TestCase = [string, ...Assert[]]
 
 
+
+// ['entity.name.type', slots],
+// ['constant.numeric', slotValues],
+
 const policyspaceTests: TestCase[] = [
     [
         `Storage : one of clear, serverEncrypt.`, 
@@ -56,14 +60,14 @@ const policyspaceTests: TestCase[] = [
 
 
 
-/*
-    ['variable', nodeIds],
-    ['constant.numeric', slotValues],
-    ['entity.name.type', slots],
-    ['keyword.control', freeTextAnswerTerm],
-    ['string', freeTexts],
-    ['keyword', nodeTypes]
-*/
+
+// ['variable', nodeIds],
+// ['constant.numeric', slotValues],
+// ['entity.name.type', slots],
+// ['keyword.control', freeTextAnswerTerm],
+// ['string', freeTexts],
+// ['keyword', nodeTypes]
+
 
 const decisiongrapTests: TestCase[] = [
     [
@@ -108,10 +112,35 @@ const decisiongrapTests: TestCase[] = [
 ]
 
 
+// ['entity.name.type', slots],
+// ['constant.numeric', slotValues],
+// ['keyword', keywords]
+
+const valueinferenceTests: TestCase[] = [
+    [
+        `[DataTag: support
+            [ Encrypt1=None;   DUA_AM1=Implied -> Blue ]
+            [ Encrypt2=Quick;  DUA_AM2+=Click   -> Yellow ]
+          ]`, 
+        ['DataTag', 'entity.name.type'], 
+        ['support', 'keyword'], 
+        ['Encrypt1', 'entity.name.type'],
+        ['None', 'constant.numeric'],
+        ['DUA_AM1', 'entity.name.type'],
+        ['Implied', 'constant.numeric'],
+        ['Blue', 'constant.numeric'],
+        ['Encrypt2', 'entity.name.type'],
+        ['Quick', 'constant.numeric'],
+        ['DUA_AM2', 'entity.name.type'],
+        ['Click', 'constant.numeric'],
+        ['Yellow', 'constant.numeric'],
+    ],
+]
+
 console.log("Running Color unit tests:")
 test(decisiongrapTests, 'parsers/tree-sitter-decisiongraph.wasm', colors.colorDecisionGraph, "DecisionGraph color")
 test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace, "PolicySpace color")
-
+test(valueinferenceTests, 'parsers/tree-sitter-valueinference.wasm', colors.colorValueInference, "Value Inference color")
 
 
 
