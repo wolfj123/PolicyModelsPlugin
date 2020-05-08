@@ -29,7 +29,7 @@ export default class LocalizationController {
       this._onError(e);
     }
     const ViewLoader = require('../view/ViewLoader').default;   //lazy loading require for testing this component without 'vscode' dependency
-    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile);
+    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile,this._onError);
   }
 
   filterSystemFiles(direntFiles) {
@@ -47,18 +47,7 @@ export default class LocalizationController {
 
   getAllFiles = (path: string): File[] =>  {
     const directoryContent = this._fileService.getDirectoryContent(path);
-    // let direntFiles;
-    // try {
-    //   direntFiles = fs.readdirSync(path, { withFileTypes: true });
-    // } catch (err) {
-    //   if (err) {
-    //     e(err, 'getAllFiles');
-    //     return;
-    //   }
-    // }
-
     let filteredFiles = this.filterSystemFiles(directoryContent);
-
     const filesData = filteredFiles.reduce((dataAcc, dirent) => {
       const { name } = dirent;
       const filePath = path + '/' + name;
@@ -84,7 +73,7 @@ export default class LocalizationController {
     try {
       fs.writeFileSync(path, newData);
     } catch (err) {
-      console.log(err);
+      throw new Error("Cant write to File: "+path);
     }
   }
 
@@ -106,15 +95,6 @@ export default class LocalizationController {
 
   getLanguagesFilesData(): LanguageData[] {
     let languages_dirent = this._fileService.getDirectoryContent(this._localizationPath);
-    // let direntFiles;
-    // try {
-    //   direntFiles = fs.readdirSync(this._localizationPath, { withFileTypes: true });
-    // } catch (err) {
-    //   if (err) {
-    //     e(err, 'activateLocalization');
-    //     return;
-    //   }
-    // }
     languages_dirent = this.filterSystemFiles(languages_dirent);
     const languagesFilesData = languages_dirent.map(language =>
       language.isDirectory() ? this.createLanguageFilesData(language) : e(`Expected ${language.name} to be language folder`, 'activateLocalization')

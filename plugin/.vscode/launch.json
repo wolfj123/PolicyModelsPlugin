@@ -35,7 +35,7 @@
 				"--colors",
 				"--extensionDevelopmentPath=${workspaceRoot}",
 				"--extensionTestsPath=${workspaceRoot}/client/out/test",
-				"${workspaceFolder}/client/tests/dummy.spec.ts",
+				"${workspaceFolder}/client/tests/localization.spec.ts",
 			],
 			"console": "integratedTerminal",
 			"internalConsoleOptions": "neverOpen",
