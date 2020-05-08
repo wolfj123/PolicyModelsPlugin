@@ -142,7 +142,11 @@ function addLocalizationCommand(context: vscode.ExtensionContext){
     const extensionRootPath = vscode.workspace.rootPath;
     const onError = e => vscode.window.showErrorMessage(e);
     const localization = new LocalizationController({ extensionPath },extensionRootPath,onError);
-    localization.activateLocalization();
+    try{
+    localization.activateLocalization({onError});
+    }catch(e){
+      onError(e);
+    }
   });
   subscriptions.push(disposable);
 
