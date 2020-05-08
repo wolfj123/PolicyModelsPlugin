@@ -13,7 +13,7 @@
 		"vscode": "*"
 	},
 	"scripts": {
-		"test": "mocha -u tdd && cd ../ && node client/out/color/test",
+		"test": "mocha tdd -r  ts-node/register tests/**/*.spec.ts && cd ../ && node client/out/color/test",
 		"update-vscode": "vscode-install",
 		"postinstall": "vscode-install",
 		"test2": "mocha -r ts-node/register tests/**/*.spec.ts"
