@@ -307,7 +307,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		this._finishedReadingFolder = true;
 	}
 
-	private filesCollector(path,filesToParse){
+	private filesCollector(path: string,filesToParse: {name: string, languageId: languagesIds}[]){
 		let filesInDirectory: string[] = fs.readdirSync(path,"utf-8");
 		filesInDirectory.forEach(currDirEntry => {
 			let currFilePath = path + "/" + currDirEntry;
