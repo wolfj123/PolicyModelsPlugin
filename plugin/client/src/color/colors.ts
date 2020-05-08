@@ -189,6 +189,7 @@ export function colorValueInference(root: Parser.Tree, visibleRanges: {start: nu
 
 	const keywordsStrings : string[] = [
 		"support",
+		"comply",
 		"->"
 	]
 
@@ -250,7 +251,6 @@ export function colorValueInference(root: Parser.Tree, visibleRanges: {start: nu
 	])
 }
 
-
 function isVisible(x: Parser.SyntaxNode, visibleRanges: {start: number, end: number}[]) {
 	for (const {start, end} of visibleRanges) {
 		const overlap = x.startPosition.row <= end+1 && start-1 <= x.endPosition.row
@@ -258,6 +258,7 @@ function isVisible(x: Parser.SyntaxNode, visibleRanges: {start: number, end: num
 	}
 	return false
 }
+
 function visible(x: Parser.TreeCursor, visibleRanges: { start: number, end: number }[]) {
 	for (const { start, end } of visibleRanges) {
 		const overlap = x.startPosition.row <= end + 1 && start - 1 <= x.endPosition.row
