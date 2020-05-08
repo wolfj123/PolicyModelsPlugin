@@ -1,21 +1,21 @@
 import * as React from 'react';
-
+import './TextEditor.css';
 interface Props {
 	content: string;
 	onFileChange(content: string): void;
 }
 
 const TextEditor: React.FunctionComponent<Props> = (props) => {
-  const {content} = props;
+	const {content ,onFileChange} = props;
+	const[textAreaContent, setTextAreaContent] = React.useState(content); 	//react bug. needs to handle internal state to prevent textarea bug.
 
-	const textEditorStyle={
-		width: '100%',
-		height: '100vh',
-		backgroundColor: 'transparent',
-		color: 'white'
+	const handleChange = newContent =>{
+		setTextAreaContent(newContent);
+		onFileChange(newContent);
 	}
+
   return <div>
-	 <textarea style={textEditorStyle} value={content} onChange={e => console.log(e)} />
+	 <textarea className="text1" value={textAreaContent} onChange={(e: any) => handleChange(e.target.value)}/>
 	</div>;
 }
 

@@ -8,7 +8,8 @@
 }
 
 .text {
-  padding: 5px;
+  padding-bottom: 10px;
+
 }
 
 .showIconOnHoverWrapper,
@@ -28,4 +29,8 @@
 
 .showIconOnHoverWrapper:hover .icon {
   display: block;
+}
+
+.bold{
+  font-weight: bolder;
 }

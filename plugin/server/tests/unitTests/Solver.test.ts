@@ -3,7 +3,7 @@ import { expect, assert } from 'chai';
 import * as path from 'path';
 import {SolverInt, PMSolver} from '../../src/Solver'
 import { URI } from 'vscode-uri';
-import { RenameParams, WorkspaceEdit } from 'vscode-languageserver';
+import { RenameParams, WorkspaceEdit, TextDocumentEdit } from 'vscode-languageserver';
 import { initLogger } from '../../src/Logger';
 
 describe('Solver Test Suite', ()=>{
@@ -16,6 +16,7 @@ describe('Solver Test Suite', ()=>{
 	const uriCreator = (fileName:string): string =>{
 		return URI.file(path.join(codeFolder,fileName)).toString()
 	}
+
 
 	before(async ()=> {
 		let cwd:string = process.cwd()
@@ -79,73 +80,79 @@ describe('Solver Test Suite', ()=>{
 		expect(ans).deep.equals(expectedAns);
 	});
 
+	
 	it('test rename from VI file', ()=> {
 		let inputParams: RenameParams = {
-			textDocument: { uri:uriCreator("valueInference.vi")},
+			textDocument: { uri: uriCreator("valueInference.vi")},
 			position:{line:3,character:6},
 			newName:"Harm2"
 		}
 
 		let expectedAns: WorkspaceEdit ={
 			documentChanges: [
-			{ 
-				edits: [
-					{
-						range:{start:{line:0,character:26},end:{line:0,character:30}},
-						newText:"Harm2"
-					},
-					{
-						range:{start:{line:23,character:27},end:{line:23,character:31}},
-						newText:"Harm2"
-					},
-					{
-						range:{start:{line:24,character:21},end:{line:24,character:25}},
-						newText:"Harm2"
-					},
-					{
-						range:{start:{line:25,character:17},end:{line:25,character:21}},
-						newText:"Harm2"
+				{
+					edits:
+					[
+						{
+							range: {start: {line:2, character:0}, end: {line: 2, character: 4}},
+							newText: "Harm2"
+						},
+						{ 
+							range:{ start:{ line:0, character:34}, end:{ line:0, character:38}},
+							 newText: "Harm2"
+						},
+	
+					],
+					textDocument: { 
+						uri:uriCreator("policy-space.pspace"), 
+						version:null
 					}
-				],
-				textDocument:{
-					uri:uriCreator("decision-graph.dg"),
-					version:null
-				}
-			},
-			{
-				edits:
-				[
-					{ 
-						range:{ start:{ line:0, character:34}, end:{ line:0, character:38}},
-						 newText:"Harm2"
+				},
+				{ 
+					edits: [
+						{
+							range: { start: {line:0,character:26},end:{line:0,character:30}},
+							newText:"Harm2"
+						},
+						{
+							range: {start:{line:23,character:27},end:{line:23,character:31}},
+							newText:"Harm2"
+						},
+						{
+							range: {start:{line:24,character:21},end:{line:24,character:25}},
+							newText:"Harm2"
+						},
+						{
+							range: {start:{line:25,character:17},end:{line:25,character:21}},
+							newText:"Harm2"
+						}
+					],
+					textDocument:{
+						uri:uriCreator("decision-graph.dg"),
+						version:null
 					}
-				],
-				textDocument: { 
-					uri:uriCreator("policy-space.pspace"), 
-					version:null
-				}
-			},
-			{ 
-				edits:
-				[
-					{ 
-						range:{ start:{ line:1, character:4}, end:{ line:1, character:8}}, 
-						newText:"Harm2"
-					},
-					{
-						range:{ start:{ line:2, character:4}, end:{ line:2, character:8}}, 
-						newText:"Harm2"
-					},
-					{
-						range:{ start:{ line:3, character:4}, end:{ line:3, character:8}}, 
-						newText:"Harm2"
+				},
+				{ 
+					edits:
+					[
+						{ 
+							range:{ start:{ line:1, character:4}, end:{ line:1, character:8}}, 
+							newText:"Harm2"
+						},
+						{
+							range:{ start:{ line:2, character:4}, end:{ line:2, character:8}}, 
+							newText:"Harm2"
+						},
+						{
+							range:{ start:{ line:3, character:4}, end:{ line:3, character:8}}, 
+							newText:"Harm2"
+						}
+					], 
+					textDocument:{
+						uri:uriCreator("valueInference.vi"), 
+						version:null
 					}
-				], 
-				textDocument:{
-					 uri:uriCreator("valueInference.vi"), 
-					 version:null
 				}
-			}
 			]
 		}
 
@@ -154,6 +161,7 @@ describe('Solver Test Suite', ()=>{
 		expect(ans).deep.equals(expectedAns);
 
 	});
+	
 
 	it('test rename from DG file', ()=> {
 		let inputParams: RenameParams = {

@@ -59,7 +59,7 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
     });
 
     const backButton = (
-      <Text key={'back'} onClick={() => setPanelType(PANELS_TYPES.LANGUAGES)} color={'cadetblue'} size={'smaller'}>
+      <Text key={'back'} onClick={() => setPanelType(PANELS_TYPES.LANGUAGES)} color={'#bfbfbf'} size={'smaller'}>
         {'< Languages'}
       </Text>
     );

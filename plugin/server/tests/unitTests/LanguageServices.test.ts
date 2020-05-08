@@ -4,6 +4,17 @@
 
 
 import * as TestTarget from "../../src/LanguageServices";
+import {
+	PolicyModelsLanguage,
+	parsersInfo,
+	getLanguageByExtension,
+	PolicyModelEntityType,
+	PolicyModelEntityCategory,
+	PolicyModelEntity,
+	DecisionGraphServices,
+	PolicySpaceServices,
+	ValueInferenceServices
+} from '../../src/LanguageUtils'
 import * as TestData from "./testFixture/LanguageServicesTestFixtureData";
 import * as Parser from 'web-tree-sitter';
 import { isNullOrUndefined, inspect } from "util";
@@ -40,35 +51,15 @@ import {
 	flatten, 
 	docChange2Edit
 } from '../../src/Utils';
-
 import * as assert from 'assert';
 import * as mocha from 'mocha'; 
 import { PMTextDocument } from "../../src/Documents";
+
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const chai = require('chai');
 const expect = chai.expect;
 chai.use(deepEqualInAnyOrder);
 
-
-//TODO: this is duplicate code - need to move it to some library
-const parsersInfo = 	//TODO: maybe extract this info from package.json
-[ 
-	{ 
-		fileExtentsions : ['dg'],
-		language : TestTarget.PolicyModelsLanguage.DecisionGraph,
-		wasm : 'tree-sitter-decisiongraph.wasm',
-	},
-	{ 
-		fileExtentsions : ['pspace', 'ps', 'ts'],
-		language : TestTarget.PolicyModelsLanguage.PolicySpace,
-		wasm : 'tree-sitter-policyspace.wasm',
-	},
-	{ 
-		fileExtentsions :  ['vi'],
-		language : TestTarget.PolicyModelsLanguage.ValueInference,
-		wasm : 'tree-sitter-valueinference.wasm',
-	}
-]
 
 function getTextFromUri(uri : string) : string | null {
 	let dataEntry = TestData.data.find(e => e.uri === uri)
@@ -76,11 +67,6 @@ function getTextFromUri(uri : string) : string | null {
 	return dataEntry.text
 }
 
-function getLanguageByExtension(extension : string) : TestTarget.PolicyModelsLanguage | null {
-	const correspondingInfo = parsersInfo.filter(info => info.fileExtentsions.indexOf(extension) != -1)
-	if(!(correspondingInfo) || correspondingInfo.length == 0) return null
-	return correspondingInfo[0].language
-}
 
 function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
 	let result : PMTextDocument = {
@@ -199,25 +185,63 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'sanity node',
+				title: 'dg->node def',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
+					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'} // >n1<
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 				]
-			},
+			},			
 			{
-				title: 'sanity pspace',
+				title: 'dg->slot def',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'}
+					location: {range: {start: {character: 15, line: 8},end: {character: 15, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'}
+				]
+			},			
+			{
+				title: 'dg->slotvalue def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 30, line: 8},end: {character: 30, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'}
+				]
+			}
+			,{
+				title: 'pspace->slot def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'} // aggregate_slot
 				},
 				output: [
 					{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'}
+				]
+			}
+			,{
+				title: 'pspace->slotvalue def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'ps_ws_1.pspace'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'}
+				]
+			}
+			,{
+				title: 'vi->slot def',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'vi_ws_1.vi'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'}
 				]
 			}
 		]
@@ -247,17 +271,99 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'node sanity',
+				title: 'dg->node ref',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
 				},
 				output: [
 					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
+				]
+			},
+			{
+				title: 'dg->slot ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 15, line: 8},end: {character: 15, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
+				]
+			},
+			{
+				title: 'dg->slotvalue ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 30, line: 8},end: {character: 30, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
+				]
+			},
+			{
+				title: 'pspace->slot ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'} // aggregate_slot
+				},
+				output: [
+					{range: {start: {character: 76, line: 15},end: {character: 90, line: 15}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 15, line: 9},end: {character: 29, line: 9}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 34, line: 2},end: {character: 48, line: 2}}, uri: 'vi_ws_1.vi'},
+				]
+			},
+			{
+				title: 'pspace->slotvalue ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'ps_ws_1.pspace'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
+				]
+			},
+			{
+				title: 'vi->slot ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'vi_ws_1.vi'} // atomic_slot1
+				},
+				output: [
+					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
+				]
+			},
+			{
+				title: 'vi->slotvalue ref',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 79, line: 2},end: {character: 79, line: 2}}, uri: 'vi_ws_1.vi'} // atomic_slot1_val1
+				},
+				output: [
+					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
 				]
 			}
 		]
@@ -326,7 +432,7 @@ class LanguageServices_UnitTests {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: {range: {start: {character: 2, line: 4},end: {character: 2, line: 4}}, uri: 'dg1_ws_1.dg'}
 				},
-				output: {name : 'n1', type : TestTarget.PolicyModelEntityType.DGNode}
+				output: {name : 'n1', type : PolicyModelEntityType.DGNode}
 			}
 		]
 
@@ -355,7 +461,7 @@ class LanguageServices_UnitTests {
 		const testCases = 
 		[
 			{
-				title: 'node sanity',
+				title: 'dg sanity',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
 					location: 'dg1_ws_1.dg'
@@ -512,7 +618,7 @@ class LanguageServicesFacade_UnitTests {
 						newRange : {start: {character: 0, line: 0},end: {character: 8, line: 0}},
 					}
 				},
-				output: {name: 'new_name' , type : TestTarget.PolicyModelEntityType.Slot}
+				output: {name: 'new_name' , type : PolicyModelEntityType.Slot}
 			}
 		]
 
@@ -791,7 +897,7 @@ class LanguageServicesFacade_UnitTests {
 }
 
 class DecisionGraphServices_UnitTests {
-	testTargetClass = TestTarget.DecisionGraphServices
+	testTargetClass = DecisionGraphServices
 
 	static runTests() {
 		let self = new DecisionGraphServices_UnitTests()
@@ -824,7 +930,7 @@ class DecisionGraphServices_UnitTests {
 			return getTree(testCase.input).then(tree => {
 				let uri : DocumentUri = testCase.input
 				const output = testCase.output
-				const result = TestTarget.DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
+				const result = DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
 					return {
 						name: e.getName(),
 						type: e.getType(),

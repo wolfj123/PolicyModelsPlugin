@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as mocha from 'mocha';
 import { getDocUri, activate, openFileForEditing, sleep, appendTextToEndOfFile  } from './helper';
 
-mocha.suite('Extension Test Suite', () => {
+describe('Extension Test Suite', () => {
 
 	// mocha.before(()=>{
 	// 	console.log("1");
