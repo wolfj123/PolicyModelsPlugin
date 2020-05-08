@@ -52,42 +52,74 @@ const policyspaceTests: TestCase[] = [
         ['evenMoreSomething', 'entity.name.type']
     ],
 ]
-test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace)
 
 
 
 
-// const decisiongrapTests: TestCase[] = [
-//     [
-//         `[ask:
-//             {text: Do the data concern living persons?}
-//             {answers:
-//               {yes ?: [set: livingPersons=yes][call: privacySection ] }
-//               {no: [call: nonHuman] }}]
-//           [ask:
-//             {text: Do the data contain personally identifying information, as defined under HIPAA?}
-//             {terms:
-//               {Personally identifying information: This means the name, address, fingerprints...}
-//               {HIPAA: Health Insurance Portability and Accountability Act}}
-//             {answers:
-//               {yes: [set: livingPersons=yes][call: privacySection ] }
-//               {no: [call: nonHuman] }}]`, 
+/*
+    ['variable', nodeIds],
+    ['constant.numeric', slotValues],
+    ['entity.name.type', slots],
+    ['keyword.control', freeTextAnswerTerm],
+    ['string', freeTexts],
+    ['keyword', nodeTypes]
+*/
 
-//         ['ask', 'entity.name.type'], 
-//         ['clear', 'constant.numeric'], 
-//         ['serverEncrypt', 'constant.numeric']
-//     ],
-// ]
-// test(policyspaceTests, 'parsers/tree-sitter-decisiongraph.wasm', colors.colorDecisionGraph)
+const decisiongrapTests: TestCase[] = [
+    [
+        `[ask:
+            {text: Do the data concern living persons?}
+            {answers:
+              {yes?: [todo] }
+              {no: [todo] }}]`, 
+
+        ['ask', 'keyword'],
+        ['Do the data concern living persons?', 'string'],
+        ['text', 'keyword'],
+        ['answers', 'keyword'],
+        ['yes?', 'keyword.control'],
+        ['todo', 'keyword'],
+        ['no', 'keyword.control']
+    ],
+    [
+        `[when:
+            {Subjects+=livingPresons: [call: privacy]}
+            {Subjects+=deceasedPresons; Domains += medical: [call: privacy]}
+            {else:
+              [call: open-data]
+            }
+          ]`, 
+
+        ['when', 'keyword'],
+        ['Subjects', 'entity.name.type'],
+        ['livingPresons', 'constant.numeric'],
+        ['call', 'keyword'],
+        ['privacy', 'variable'],
+        ['Subjects', 'entity.name.type'],
+        ['deceasedPresons', 'constant.numeric'],
+        ['Domains', 'entity.name.type'],
+        ['medical', 'constant.numeric'],
+        ['call', 'keyword'],
+        ['privacy', 'variable'],
+        ['else', 'keyword'],
+        ['call', 'keyword'],
+        ['open-data', 'variable'],
+    ],
+]
+
+
+console.log("Running Color unit tests:")
+test(decisiongrapTests, 'parsers/tree-sitter-decisiongraph.wasm', colors.colorDecisionGraph, "DecisionGraph color")
+test(policyspaceTests, 'parsers/tree-sitter-policyspace.wasm', colors.colorPolicySpace, "PolicySpace color")
 
 
 
 
-
-async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunction) {
+async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunction, testDescription : string) {
     await Parser.init()
     const parser = new Parser() 
-    console.log(__dirname)
+    //console.log(testDescription)
+    //console.log(__dirname)
     const lang = await Parser.Language.load(wasm)
     parser.setLanguage(lang) 
     for (const [src, ...expect] of testCases) {
@@ -138,7 +170,9 @@ async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunc
             }
         }
     }
+    console.log("\t" + testDescription + " tests passed ("+testCases.length.toString()+" tests in total)")
 }
+
 function index(code: string, point: Parser.Point): number {
     let row = 0
     let column = 0
