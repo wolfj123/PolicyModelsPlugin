@@ -1,7 +1,8 @@
 @startuml
 
 'skinparam style strictuml
-top to bottom direction
+'top to bottom direction
+left to right direction
 allowmixing
 
 package LanguageUtils #DDDDDD {
@@ -65,16 +66,24 @@ package LanguageUtils #DDDDDD {
 }
 
 package Parsers {
-    class DecisionGraphParser
-    class PolicySpaceParser
-    class ValueInferenceParser
+    component DecisionGraphParser
+    component PolicySpaceParser
+    component ValueInferenceParser
+    class Tree
 }
 
-note "External Libraries" as n_ext
-n_ext .right. Parsers
+' note "External Libraries" as n_ext
+' n_ext .right. Parsers
 
-DecisionGraphServices -up-> DecisionGraphParser
-PolicySpaceServices -up-> PolicySpaceParser
-ValueInferenceServices -up-> ValueInferenceParser
+' DecisionGraphServices -right-> DecisionGraphParser
+' PolicySpaceServices -right-> PolicySpaceParser
+' ValueInferenceServices -right-> ValueInferenceParser
+DecisionGraphServices --> Tree : "uses"
+PolicySpaceServices --> Tree : uses
+ValueInferenceServices --> Tree : uses
+DecisionGraphParser --> Tree : "creates"
+PolicySpaceParser --> Tree : "creates"
+ValueInferenceParser --> Tree : "creates"
+
 
 @enduml
