@@ -248,7 +248,7 @@ class FullTextDocument implements PMTextDocument {
 		return Math.max(Math.min(lineOffset + position.character, nextLineOffset), lineOffset);
 	}
 
-	public get lineCount() {
+	public get lineCount(): number {
 		return this.getLineOffsets().length;
 	}
 
