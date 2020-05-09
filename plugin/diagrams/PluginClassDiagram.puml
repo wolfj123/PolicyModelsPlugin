@@ -1,10 +1,10 @@
 @startuml
 
-package vscode-languageclient #DDDDDD {
+package vscode-languageclient  {
 	class LanguageClient
 }
 
-package vscode-languageserver #DDDDDD {
+package vscode-languageserver  {
 	class Connection {
 
 	}
@@ -31,6 +31,7 @@ package Server #DDDDDD {
 note "External Library" as n_ext
 n_ext .. Connection
 n_ext .. LanguageClient
+n_ext .. Parsers
 
 package Client #DDDDDD {
     class Client {
@@ -38,6 +39,13 @@ package Client #DDDDDD {
         deactivate(): Thenable<void> | undefined
     }
 }
+
+package Parsers {
+    class DecisionGraphParser
+    class PolicySpaceParser
+    class ValueInferenceParser
+}
+
 
 LanguageClient <-left-> Connection : communicates
 Client -up-|> LanguageClient : extends

@@ -64,7 +64,7 @@ package LanguageUtils #DDDDDD {
     }
 }
 
-component Parsers {
+package Parsers {
     class DecisionGraphParser
     class PolicySpaceParser
     class ValueInferenceParser
