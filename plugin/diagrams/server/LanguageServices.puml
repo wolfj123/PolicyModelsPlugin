@@ -4,6 +4,8 @@
 'top to bottom direction
 'left to right direction
 
+allowmixing
+
 package LanguageServices #DDDDDD {
 
     class LanguageServicesFacade {
@@ -101,6 +103,8 @@ package LanguageServices #DDDDDD {
         class ValueInferenceServices
     }
 
+ 
+
     LanguageServicesFacade *-- LanguageServices
     FileManagerFactory --> FileManager : "creates"
     LanguageServices -->  FileManagerFactory : "uses"
@@ -108,9 +112,14 @@ package LanguageServices #DDDDDD {
 }
 
 
+note "External Library" as n_ext
+n_ext .. Parsers
+
+
 DecisionGraphFileManager -> DecisionGraphServices : "uses"
 PolicySpaceFileManager -> PolicySpaceServices : "uses"
 ValueInferenceFileManager -> ValueInferenceServices : "uses"
+
 
 
 
