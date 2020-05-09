@@ -4,11 +4,15 @@ package Server #DDDDDD {
 
     package LanguageServices {
         class LanguageServicesFacade
+        class LanguageServices
+        LanguageServices -right-* LanguageServicesFacade
     }
 
     package Documents{
         interface PMTextDocument
         interface TextDocumentManagerInt 
+
+        TextDocumentManagerInt *-- PMTextDocument
     }
 
     class SolverInt
@@ -23,7 +27,7 @@ package Server #DDDDDD {
     
 
     SolverInt *-- TextDocumentManagerInt
-    TextDocumentManagerInt *-- PMTextDocument
+    
 }
 
 
