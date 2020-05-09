@@ -111,14 +111,9 @@ package LanguageServices #DDDDDD {
     LanguageServices --> "*" FileManager
 }
 
-
-note "External Library" as n_ext
-n_ext .. Parsers
-
-
-DecisionGraphFileManager -> DecisionGraphServices : "uses"
-PolicySpaceFileManager -> PolicySpaceServices : "uses"
-ValueInferenceFileManager -> ValueInferenceServices : "uses"
+DecisionGraphFileManager -down-> DecisionGraphServices : "uses"
+PolicySpaceFileManager -down-> PolicySpaceServices : "uses"
+ValueInferenceFileManager -down-> ValueInferenceServices : "uses"
 
 
 
