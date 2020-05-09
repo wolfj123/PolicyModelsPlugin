@@ -13,12 +13,15 @@
 		"vscode": "*"
 	},
 	"scripts": {
-		"test": "cd ../ && node client/out/color/test",
+		"test": "mocha -r ts-node/register tests/**/*.spec.ts && cd ../ && node client/out/color/test",
 		"update-vscode": "vscode-install",
-		"postinstall": "vscode-install"
+		"postinstall": "vscode-install",
+		"clean": "rm -rf node_modules && rm -rf package-lock.json",
+		"reinstall": "npm run clean && npm i"
 	},
 	"dependencies": {
 		"jsonc-parser": "^2.2.1",
+		"mock-fs": "^4.12.0",
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1",
 		"react-markdown": "^4.3.1",
@@ -26,13 +29,18 @@
 		"vscode-languageclient": "^6.1.3"
 	},
 	"devDependencies": {
+		"@types/chai": "^4.2.11",
+		"@types/mocha": "^7.0.2",
 		"@types/node": "^8.10.59",
 		"@types/react": "^16.9.25",
 		"@types/react-dom": "^16.9.5",
+		"chai": "^4.2.0",
 		"css-loader": "^3.4.2",
+		"mocha": "^7.1.2",
 		"npm-run-all": "^4.1.5",
 		"style-loader": "^1.1.3",
 		"ts-loader": "^6.2.2",
+		"ts-node": "^8.10.1",
 		"tslint": "^6.1.0",
 		"typescript": "^3.8.3",
 		"vsce": "^1.74.0",

@@ -20,7 +20,7 @@
 	"scripts": {
 		"test-filemanager": "mocha -r ts-node/register server/tests/unitTests/FileManager.test.ts",
 		"test-languageservices": "mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts",
-		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts && cd ../ && mocha -r ts-node/register server/tests/unitTests/PolicyModelFileManager.test.ts && mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts && mocha -r ts-node/register server/tests/unitTests/documentManager.test.ts"
+		"test": "mocha -r ts-node/register tests/unitTests/server.spec.ts && cd ../ && mocha -r ts-node/register server/tests/unitTests/PolicyModelFileManager.test.ts && mocha -r ts-node/register server/tests/unitTests/LanguageServices.test.ts && mocha -r ts-node/register server/tests/unitTests/documentManager.test.ts && mocha -r ts-node/register server/tests/unitTests/Solver.test.ts "
 	},
 	"devDependencies": {
 		"@types/chai": "^4.2.11",

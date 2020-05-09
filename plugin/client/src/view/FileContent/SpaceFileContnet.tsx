@@ -77,23 +77,21 @@ const SpaceFileContnet: React.FunctionComponent<Props> = props => {
         <h1>{slot}</h1>
         <form>
           <label>
-            Name
-            <br />
-            <input type="text" value={name} onChange={e => onChangeInput(e, i, 'name')} />
+          <p> Name</p>
+            <input  style={{ width: '60%'}} type="text" value={name} onChange={e => onChangeInput(e, i, 'name')} />
           </label>
         </form>
         <form>
           <label>
-            Short Note
-            <br />
-            <input type="text" value={shortNote} onChange={e => onChangeInput(e, i, 'shortNote')} />
+          <p>Short Note</p>
+            <input style={{ width: '60%'}} type="text" value={shortNote} onChange={e => onChangeInput(e, i, 'shortNote')} />
           </label>
         </form>
         <form>
           <label>
-            Long Note
+            <p>Long Note</p>
             <p>
-              <textarea style={{ width: '100%', height: '150px' }} value={longNote} onChange={e => onChangeInput(e, i, 'longNote')} />
+              <textarea style={{ width: '95%', height: '150px' }} value={longNote} onChange={e => onChangeInput(e, i, 'longNote')} />
             </p>
           </label>
         </form>

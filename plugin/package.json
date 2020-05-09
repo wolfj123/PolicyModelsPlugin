@@ -157,8 +157,7 @@
 		"tslint": "^5.20.1",
 		"typescript": "^3.8.3",
 		"webpack": "^4.43.0",
-		"webpack-cli": "^3.3.11",
-		"winston": "^3.2.1"
+		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
 		"deep-equal-in-any-order": "^1.0.27",
@@ -166,6 +165,7 @@
 		"tree-sitter": "^0.16.1",
 		"ts-node": "^8.10.1",
 		"underscore": "^1.10.2",
-		"web-tree-sitter": "^0.16.2"
+		"web-tree-sitter": "^0.16.2",
+		"winston": "^3.2.1"
 	}
 }
