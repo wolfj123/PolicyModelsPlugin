@@ -6,11 +6,22 @@ package Server #DDDDDD {
         class LanguageServicesFacade
     }
 
-    package Solver {
-        class PMSolver
+    package Documents{
+        interface PMTextDocument
+        interface TextDocumentManagerInt 
     }
 
-    PMSolver -> LanguageServicesFacade : "uses"
+    class SolverInt
+    class Connection
+    class Server
+
+    SolverInt -> LanguageServicesFacade : "uses"
+    Server *-- SolverInt
+    Server *-- Connection
+    
+
+    SolverInt *-- TextDocumentManagerInt
+    TextDocumentManagerInt *-- PMTextDocument
 }
 
 

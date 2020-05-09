@@ -1,0 +1,95 @@
+@startuml
+interface changeInfo {
+    +oldRange: Range
+    +newRange: Range
+}
+interface PMTextDocument {
+    +uri: string
+    +languageId: languagesIds
+    +version: number
+    +lineCount: number
+    +lastChanges: changeInfo[]
+    +getText(range?: Range): string
+    +positionAt(offset: number): Position
+    +offsetAt(position: Position): number
+    +isEqual(other: PMTextDocument): boolean
+    +update(changes: TextDocumentContentChangeEvent[], version: number): changeInfo[]
+}
+class FullTextDocument implements PMTextDocument {
+    -_uri: string
+    -_languageId: languagesIds
+    -_version: number
+    -_content: string
+    -_lineOffsets: number[]
+    -_lastChanges: changeInfo[]
+    +lastChanges: changeInfo[]
+    +uri: string
+    +languageId: languagesIds
+    +get version: number
+    +set version(version: number): number
+    +lineCount: number
+    +isEqual(other: PMTextDocument): boolean
+    -getLineOffsets(): number[]
+    -{static} isIncremental(event: TextDocumentContentChangeEvent): boolean
+    -{static} isFull(event: TextDocumentContentChangeEvent): boolean
+}
+enum CharCode {
+    LineFeed
+    CarriageReturn
+}
+enum languagesIds {
+    policyspace
+    decisiongraph
+    valueinference
+}
+interface DocumentManagerResult {
+    +type: documentManagerResultTypes
+    +result?: any
+}
+enum documentManagerResultTypes {
+    noChange
+    newFile
+    removeFile
+    updateFile
+}
+interface TextDocumentManagerInt {
+    +folderMode: boolean
+    +allDocumnets: PMTextDocument[]
+
+    +openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult[]>
+    +closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult>
+    +changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>
+    +deletedDocument(deletedFile: string): Promise<DocumentManagerResult>
+    +clientCreatedNewFile(newFileUri: string): Promise<DocumentManagerResult>
+    +openedFolder(pathUri: string): void
+    +getDocument(uri: string): PMTextDocument
+}
+class TextDocumentManager implements TextDocumentManagerInt {
+    -_finishedReadingFolder: boolean
+    -_noOpenFolderMode: boolean
+    -_allDocuments: PMTextDocument[]
+
+    +folderMode: boolean
+    +allDocumnets: PMTextDocument[]
+    +getDocument(uri: string): PMTextDocument
+    +openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult[]>
+    +closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult>
+    +changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>
+    +deletedDocument(deletedFile: string): Promise<DocumentManagerResult>
+    +clientCreatedNewFile(newFileUri: string): Promise<DocumentManagerResult>
+    +openedFolder(pathUri: string): void
+    -createAndAddNewFile(newFileUri?: string, textDocument?: TextDocumentItem): PMTextDocument
+    -filesCollector(path: string, filesToParse: { name: string; languageId: languagesIds; }[]): void
+    -getLangugeIdFromUri(uri: string): languagesIds
+}
+
+class DocumenManagerGlobal {
+    +getWellformedRange(range: Range): Range
+    +createNewTextDocument (ur: string,languageId: any,version: number,content: string): PMTextDocument
+    +createNewTextDocumentItem(textDocItem: TextDocumentItem): PMTextDocument
+}
+
+FullTextDocument --> DocumenManagerGlobal: uses
+TextDocumentManagerInt "0..." o-- "1...1" PMTextDocument 
+
+@enduml
