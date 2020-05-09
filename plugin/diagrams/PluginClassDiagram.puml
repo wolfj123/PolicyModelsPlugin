@@ -1,0 +1,56 @@
+@startuml
+
+package vscode-languageclient  {
+	class LanguageClient
+}
+
+package vscode-languageserver  {
+	class Connection {
+
+	}
+}
+
+package Server #DDDDDD {
+
+	class Server {
+		onInitialize(handler: RequestHandler<InitializeParams, InitializeResult, InitializeError>): void;
+		onInitialized(handler: NotificationHandler<InitializedParams>): void;
+		onDidOpenTextDocument(handler: NotificationHandler<DidOpenTextDocumentParams>): void;		
+		sendDiagnostics(params: PublishDiagnosticsParams): void;
+		onCompletion(handler: RequestHandler<CompletionParams, CompletionItem[] | CompletionList | undefined | null, void>): void;
+		onCompletionResolve(handler: RequestHandler<CompletionItem, CompletionItem, void>): void;
+		onReferences(handler: RequestHandler<ReferenceParams, Location[] | undefined | null, void>): void;
+		onRenameRequest(handler: RequestHandler<RenameParams, WorkspaceEdit | undefined | null, void>): void;
+		onPrepareRename(handler: RequestHandler<TextDocumentPositionParams, Range | {range: Range; placeholder: string;} | undefined | null, void>): void;
+		onFoldingRanges(handler: RequestHandler<FoldingRangeParams, FoldingRange[] | undefined | null, void>): void;
+		onExecuteCommand(handler: RequestHandler<ExecuteCommandParams, any | undefined | null, void>): void;
+	}
+}
+
+
+note "External Library" as n_ext
+n_ext .. Connection
+n_ext .. LanguageClient
+n_ext .. Parsers
+
+package Client #DDDDDD {
+    class Client {
+        activate(context: ExtensionContext)
+        deactivate(): Thenable<void> | undefined
+    }
+}
+
+package Parsers {
+    class DecisionGraphParser
+    class PolicySpaceParser
+    class ValueInferenceParser
+}
+
+
+LanguageClient <-left-> Connection : communicates
+Client -up-|> LanguageClient : extends
+Server -up-|> Connection : extends
+
+
+
+@enduml

@@ -4,6 +4,8 @@
 'top to bottom direction
 'left to right direction
 
+allowmixing
+
 package LanguageServices #DDDDDD {
 
     class LanguageServicesFacade {
@@ -101,16 +103,18 @@ package LanguageServices #DDDDDD {
         class ValueInferenceServices
     }
 
+ 
+
     LanguageServicesFacade *-- LanguageServices
     FileManagerFactory --> FileManager : "creates"
     LanguageServices -->  FileManagerFactory : "uses"
     LanguageServices --> "*" FileManager
 }
 
+DecisionGraphFileManager -down-> DecisionGraphServices : "uses"
+PolicySpaceFileManager -down-> PolicySpaceServices : "uses"
+ValueInferenceFileManager -down-> ValueInferenceServices : "uses"
 
-DecisionGraphFileManager -> DecisionGraphServices : "uses"
-PolicySpaceFileManager -> PolicySpaceServices : "uses"
-ValueInferenceFileManager -> ValueInferenceServices : "uses"
 
 
 

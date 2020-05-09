@@ -1,7 +1,8 @@
 @startuml
 
 'skinparam style strictuml
-'top to bottom direction
+top to bottom direction
+allowmixing
 
 package LanguageUtils #DDDDDD {
     enum PolicyModelsLanguage {
@@ -62,5 +63,18 @@ package LanguageUtils #DDDDDD {
         +{static} getAllInferencePairsInDocument(tree: Tree): Range[]
     }
 }
+
+package Parsers {
+    class DecisionGraphParser
+    class PolicySpaceParser
+    class ValueInferenceParser
+}
+
+note "External Libraries" as n_ext
+n_ext .right. Parsers
+
+DecisionGraphServices -up-> DecisionGraphParser
+PolicySpaceServices -up-> PolicySpaceParser
+ValueInferenceServices -up-> ValueInferenceParser
 
 @enduml
