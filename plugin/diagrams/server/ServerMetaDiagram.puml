@@ -1,0 +1,18 @@
+@startuml
+
+package Server #DDDDDD {
+
+    package LanguageServices {
+        class LanguageServicesFacade
+    }
+
+    package Solver {
+        class PMSolver
+    }
+
+    PMSolver -> LanguageServicesFacade : "uses"
+}
+
+
+
+@enduml
