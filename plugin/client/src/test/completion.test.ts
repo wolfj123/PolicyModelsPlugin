@@ -18,19 +18,19 @@ import {
 	getWordFinishPositionFromLine} from './helper';
 
 var testCounter: number = 0
-var testFixtureFolderPath: String = 'complition/'
+var testFixtureFolderPath: String = 'completion/'
 let defaultPosition: vscode.Position = new vscode.Position(0,0)
 export type CompletionResolve = vscode.CompletionList;
 
-describe('Complition test Policy Space', () => {
+describe('Completion test Policy Space', () => {
 	const docUri = getDocUri(testFixtureFolderPath + 'ps.pspace');
 
 	it('Hu Test' + testCounter.toString(), async () => {
 		await activate(docUri);
 		let position : vscode.Position = getWordFinishPositionFromLine("Hu", 1);
 		
-		let complitionWordList = ["Human", "HumanDataType"]
-		await testDefinition(docUri, position, complitionWordList);
+		let completionWordList = ["Human", "HumanDataType"]
+		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;
 
@@ -38,35 +38,35 @@ describe('Complition test Policy Space', () => {
 		await activate(docUri);
 		let position : vscode.Position = getWordFinishPositionFromLine("H", 1);
 		
-		let complitionWordList = ["Human", "HumanDataType", "Harm"]
-		await testDefinition(docUri, position, complitionWordList);
+		let completionWordList = ["Human", "HumanDataType", "Harm"]
+		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;
 });
 
 
-describe('Complition test Decision Graph', () => {
+describe('Completion test Decision Graph', () => {
 	const docUri = getDocUri(testFixtureFolderPath + 'dg.dg');
 
 	it('a Test' + testCounter.toString(), async () => {
 		await activate(docUri);
 		let position : vscode.Position = getWordFinishPositionFromLine("a", 1);
 		
-		let complitionWordList = ["ask", "answers"]
-		await testDefinition(docUri, position, complitionWordList);
+		let completionWordList = ["ask", "answers"]
+		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;
 });
 
-describe('Complition test Value Inference', () => {
+describe('Completion test Value Inference', () => {
 	const docUri = getDocUri(testFixtureFolderPath + 'vi.vi');
 
 	it('Harm= Test' + testCounter.toString(), async () => {
 		await activate(docUri);
 		let position : vscode.Position = getWordFinishPositionFromLine("Harm=", 2);
 		
-		let complitionWordList = ["none", "minor", "medium", "major"]
-		await testDefinition(docUri, position, complitionWordList);
+		let completionWordList = ["none", "minor", "medium", "major"]
+		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;
 });
