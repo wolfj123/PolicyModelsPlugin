@@ -199,7 +199,7 @@ async function testDefinition(
 
 	expectedDefinitionList.forEach((expectedItem, i) => {
 		const actualItem = actualDefinitionList[i];
-		assert.equal(actualItem.uri.path, expectedItem.targetUri.path);
+		assert.equal(actualItem.uri.toString(), expectedItem.targetUri.toString());
 		assert(actualItem.range.isEqual(expectedItem.targetSelectionRange));
 	});
 }
