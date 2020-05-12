@@ -1,35 +1,50 @@
 import * as React from 'react';
+import Select from '../Select';
+import Text from '../Text/Text';
+import { File } from '../Types/model';
+import AnswersPreview from './AnswersPreview';
+import Page from '../Page/Page';
 const ReactMarkdown = require('react-markdown');
-import Select from 'react-select';
-
-interface ContentData {
-  name: string;
-  content: string;
-  extension: string;
-}
 
 interface Props {
-  contentData: ContentData;
+  previewFile: File;
   languages: string[];
   onSelectLanguage: any;
+  previewLanguageName: string;
 }
 
-const CompareToPanel: React.FunctionComponent<Props> = (props) => {
-  const { contentData, languages } = props;
-  const { name, content, extension } = contentData;
+const CompareToPanel: React.FunctionComponent<Props> = props => {
+  const { previewFile, languages, onSelectLanguage, previewLanguageName } = props;
+  const { content,name } = previewFile;
 
-  const languagesOptions = languages.map((language) => {
-    return { value: language, label: language };
-  });
-  return (
-    <>
-      <div style={{ minWidth: '225px', color: 'black' }}>
-        <Select options={languagesOptions} value={languages[0]} />
+  const renderHeader = () => {
+    return (
+      <div>
+        <Text bold color={'white'} key={'pr'} size={'25px'}>
+          Preview
+        </Text>
+        <Text key={''} size={'smaller'}>
+          choose language: <Select options={languages} selected={previewLanguageName} onSelect={onSelectLanguage} />
+        </Text>
       </div>
-      {name}
-      {extension}
-      <ReactMarkdown source={content} />
-    </>
+    );
+  };
+
+  let RendererComponent;
+  switch (name) {
+    case 'answers.txt':
+      RendererComponent = <AnswersPreview content={content}/>;
+      break;
+    default:
+      RendererComponent = <ReactMarkdown source={content}/>;
+      break;
+  }
+
+  return (
+    <Page
+      header={renderHeader()}
+      content={RendererComponent}
+    />
   );
 };
 

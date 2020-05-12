@@ -8,12 +8,13 @@ export default class ViewLoader {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
 
-  constructor(languageFilesData, extensionProps, onSave) {
+  constructor(languageFilesData, extensionProps, onSave,onError) {
     const { extensionPath } = extensionProps;
     this._extensionPath = extensionPath;
     this._panel = vscode.window.createWebviewPanel('Localization', 'Localization', vscode.ViewColumn.One, {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'configViewer'))]
+      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'configViewer'))],
+      retainContextWhenHidden: true,
     });
 
     this._panel.webview.html = this.getWebviewContent(languageFilesData);
@@ -22,9 +23,12 @@ export default class ViewLoader {
       (command: ICommand) => {
         switch (command.action) {
           case CommandAction.Save:
+            try{
             const newLanguageFilesData = onSave(command.additionalInfo.path, command.content);
             this.updateLanguageFilesData(newLanguageFilesData);
-
+            }catch(err){
+              onError(err);
+            }
             return;
         }
       },
@@ -34,7 +38,7 @@ export default class ViewLoader {
   }
 
   private updateLanguageFilesData(newLanguageFilesData) {
-    this._panel.webview.postMessage({ languageFilesData: newLanguageFilesData });
+    this._panel.webview.postMessage({ action: CommandAction.Respone, content: { languageFilesData: newLanguageFilesData } });
   }
 
   private getWebviewContent(languageFilesData): string {

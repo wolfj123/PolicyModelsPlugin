@@ -10,9 +10,8 @@ import * as Parser from 'web-tree-sitter';
 import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
-import ViewLoader from './view/ViewLoader';
 
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
 let client: LanguageClient;
 
@@ -22,7 +21,6 @@ export function activate(context: ExtensionContext) {
   // The commandId parameter must match the command field in package.json
 
   addLocalizationCommand(context);
-
 
   activateSyntaxColoring(context);
 
@@ -43,10 +41,25 @@ export function activate(context: ExtensionContext) {
     }
   };
 
+  let documentSelectorOptions :DocumentSelector =
+		[
+			{
+				language:'policyspace',
+				pattern:"**/*.{ps,pspace}"
+      },
+      {
+				language:'valueinference',
+				pattern:"**/*.{vi}"
+      },
+			{
+				language:'decisiongraph',
+				pattern:"**/*.{dg}"
+			}
+    ]
   // Options to control the language client
   let clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: [{ scheme: 'file', language: 'policyspace' }],
+    //register all relevant file types
+    documentSelector: documentSelectorOptions,
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
@@ -59,9 +72,29 @@ export function activate(context: ExtensionContext) {
 
   addRunCommand(context);
 
+
+
   // Start the client. This will also launch the server
   client.start();
+
+  client.onReady().then(_ => {
+    client.sendRequest("setPluginDir",context.extensionPath);
+
+    client.onRequest("getPluginDir",(a)=>{
+      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
+      console.log(`${JSON.stringify(a)}`);
+      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
+
+      return context.extensionPath;
+    });
+  });
+
+
+
 }
+
+
+
 
 export function deactivate(): Thenable<void> | undefined {
   if (!client) {
@@ -106,8 +139,14 @@ function addLocalizationCommand(context: vscode.ExtensionContext){
   const {subscriptions} = context;
   let disposable = vscode.commands.registerCommand(localizationCommand, () => {
     const extensionPath = context.extensionPath;
-    const localization = new LocalizationController({ extensionPath });
-    localization.activateLocalization();
+    const extensionRootPath = vscode.workspace.rootPath;
+    const onError = e => vscode.window.showErrorMessage(e);
+    const localization = new LocalizationController({ extensionPath },extensionRootPath,onError);
+    try{
+    localization.activateLocalization({onError});
+    }catch(e){
+      onError(e);
+    }
   });
   subscriptions.push(disposable);
 

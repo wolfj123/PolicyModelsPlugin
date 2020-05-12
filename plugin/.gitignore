@@ -5,3 +5,4 @@ client/server
 !cli/*
 !cli/lib/*
 .idea
+configViewer/configViewer.js

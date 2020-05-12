@@ -1,12 +1,36 @@
-.selectedText{
-	font-weight: bold;
-	color: #b89090;
+.selectedText {
+  font-weight: bold;
+  color: #b89090;
 }
 
 .clickable:hover {
-	cursor:pointer;
- }
+  cursor: pointer;
+}
 
- .text{
-	 padding: 5px;
- }
+.text {
+  padding-bottom: 10px;
+
+}
+
+.showIconOnHoverWrapper,
+.showIconWrapper {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+
+.showIconWrapper .icon {
+  display: block;
+}
+
+.showIconOnHoverWrapper .icon {
+  display: none;
+}
+
+.showIconOnHoverWrapper:hover .icon {
+  display: block;
+}
+
+.bold{
+  font-weight: bolder;
+}

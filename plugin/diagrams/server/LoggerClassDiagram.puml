@@ -1,0 +1,47 @@
+@startuml
+enum logSources {
+    server
+    serverHttp
+    documents
+    parser
+}
+
+card ext [
+    <<external library>>
+    \tWinston
+]
+
+interface Logger {
+    +error(msg: string, moreData?: any): any
+    +warn(msg: string, moreData?: any): any
+    +info(msg: string, moreData?: any): any
+    +http(funcName: string, funcParmas?: any): any
+}
+class Logger1 implements Logger {
+    -_log: Logger
+    -_type: logSources
+    +error(msg: string, moreData?: any): Promise<void>
+    +warn(msg: string, moreData?: any): Promise<void>
+    +info(msg: string, moreData?: any): Promise<void>
+    +http(funcName: string, funcParmas?: any): Promise<void>
+}
+
+class LoggerGlobal{
+    +logFolder: string
+    +serverLogFileName: string
+    +serverHttpLogFileName: string
+    +documentsLogFileName: string
+    +parserLogFileName: string
+    +allLogs: {logSources, string} []
+    +allLoggers: {logSources, Logger} []
+    +globalLog: Winston.Logger
+    +printFormat({string, string, string}): string
+    +logsFormat(Winston.Format []) : Format
+    +initLogger(string): void
+}
+
+Logger1 o-- "1...1" ext
+
+LoggerGlobal "0...*" o-- "5...5" Logger
+
+@enduml

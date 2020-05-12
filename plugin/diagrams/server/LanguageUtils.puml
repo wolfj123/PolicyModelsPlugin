@@ -1,0 +1,88 @@
+@startuml
+
+'skinparam style strictuml
+'top to bottom direction
+left to right direction
+allowmixing
+
+package LanguageUtils #DDDDDD {
+    enum PolicyModelsLanguage {
+        PolicySpace
+        DecisionGraph
+        ValueInference
+    }
+    enum PolicyModelEntityType {
+        DGNode
+        Slot
+        SlotValue
+        ValueInference
+        InferencePair
+    }
+    enum PolicyModelEntityCategory {
+        FoldRange
+        Declaration
+        Reference
+    }
+    class PolicyModelEntity {
+        +type: PolicyModelEntityType
+        +name: string
+        +source?: string
+        +syntaxNode: SyntaxNode
+        +location: Location
+        +category: PolicyModelEntityCategory
+        +getType(): PolicyModelEntityType
+        +getName(): string
+        +getSource(): string
+        +setSource(uri: string): void
+        +getCategory(): PolicyModelEntityCategory
+    }
+    class DecisionGraphServices {
+        +{static} createEntityFromNode(node: SyntaxNode, uri: string, importMap?: Map<string, string>): PolicyModelEntity
+        +{static} getAllEntitiesInDoc(tree: Tree, uri: string): PolicyModelEntity[]
+        +{static} getAllDefinitionsOfNodeInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllReferencesOfNodeInDocument(name: string, tree: Tree, decisiongraphSource?: string): Range[]
+        +{static} getAllReferencesOfSlotInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllReferencesOfSlotValueInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllNodesInDocument(tree: Tree): Range[]
+        +{static} getCompletion(tree: Tree, range: Range): PolicyModelEntityType
+    }
+    class PolicySpaceServices {
+        +{static} createEntityFromNode(node: SyntaxNode, uri: string): PolicyModelEntity
+        +{static} getAllEntitiesInDoc(tree: Tree, uri: string): PolicyModelEntity[]
+        +{static} getAllDefinitionsOfSlotInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllReferencesOfSlotInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllDefinitionsOfSlotValueInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllSlotsInDocument(tree: Tree): Range[]
+    }
+    class ValueInferenceServices {
+        +{static} createEntityFromNode(node: SyntaxNode, uri: string): PolicyModelEntity
+        +{static} getAllEntitiesInDoc(tree: Tree, uri: string): PolicyModelEntity[]
+        +{static} getAllReferencesOfSlotInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllReferencesOfSlotValueInDocument(name: string, tree: Tree): Range[]
+        +{static} getAllValueInferencesInDocument(tree: Tree): Range[]
+        +{static} getAllInferencePairsInDocument(tree: Tree): Range[]
+    }
+}
+
+package Parsers {
+    component DecisionGraphParser
+    component PolicySpaceParser
+    component ValueInferenceParser
+    class Tree
+}
+
+' note "External Libraries" as n_ext
+' n_ext .right. Parsers
+
+' DecisionGraphServices -right-> DecisionGraphParser
+' PolicySpaceServices -right-> PolicySpaceParser
+' ValueInferenceServices -right-> ValueInferenceParser
+DecisionGraphServices --> Tree : "uses"
+PolicySpaceServices --> Tree : uses
+ValueInferenceServices --> Tree : uses
+DecisionGraphParser --> Tree : "creates"
+PolicySpaceParser --> Tree : "creates"
+ValueInferenceParser --> Tree : "creates"
+
+
+@enduml

@@ -102,3 +102,5 @@ fabric.properties
 jonathan/lsp_samples/cli/lib/desktop.ini
 !plugins/cli/*
 !utils/*
+plugin/cli/java
+*.png

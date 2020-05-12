@@ -1,0 +1,91 @@
+@startuml
+
+enum PolicyModelsLanguage {
+    PolicySpace
+    DecisionGraph
+    ValueInference
+}
+
+interface SolverInt {
+    +facadeIsReady(): boolean
+    +onCompletion(params: TextDocumentPositionParams): CompletionList
+    +onCompletionResolve(params: CompletionItem): CompletionItem
+    +onDefinition(params: DeclarationParams): LocationLink[]
+    +onPrepareRename(params: PrepareRenameParams): Range
+    +onRenameRequest(params: RenameParams): WorkspaceEdit
+    +onReferences(params: ReferenceParams): Location[]
+    +onFoldingRanges(params: FoldingRangeParams): FoldingRange[]
+    +onDidOpenTextDocument(opendDocParam: TextDocumentItem): any
+    +onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier): any
+    +onDidChangeTextDocument(params: DidChangeTextDocumentParams): any
+    +onDeleteFile(deletedFile: string): any
+    +onCreatedNewFile(newFileUri: string): any
+    +onOpenFolder(pathUri: string): any
+    +initParser(pluginDir: string): any
+}
+class PMSolver implements SolverInt {
+    -_documentManager: TextDocumentManagerInt
+    -_languageFacade: LanguageServicesFacade
+    +facadeIsReady(): boolean
+    +onCompletion(params: TextDocumentPositionParams): CompletionList
+    +onCompletionResolve(params: CompletionItem): CompletionItem
+    +onDefinition(params: DeclarationParams): LocationLink[]
+    +onPrepareRename(params: PrepareRenameParams): Range
+    +onRenameRequest(params: RenameParams): WorkspaceEdit
+    +onReferences(params: ReferenceParams): Location[]
+    +onFoldingRanges(params: FoldingRangeParams): FoldingRange[]
+    +onDidOpenTextDocument(opendDocParam: TextDocumentItem): Promise<void>
+    +onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier): Promise<void>
+    +onDidChangeTextDocument(params: DidChangeTextDocumentParams): Promise<void>
+    +onDeleteFile(deletedFile: string): Promise<void>
+    +onCreatedNewFile(newFileUri: string): Promise<void>
+    +onOpenFolder(pathUri: string): Promise<void>
+    +initParser(pluginDir: string): Promise<void>
+}
+
+class Server {
+    + connection: Connection
+    + fodlerFS: string
+    + solver:SolverInt
+    + clientSupportsWatchedFiles: boolean
+    + hasWorkspaceFolderCapability: boolean
+    + runModel(string []): string
+}
+
+rectangle extConnection [
+    <<External Library>>
+    \tConnection
+]
+
+class Connection implements extConnection{
+    + onInitialize(InitializeParams): InitializeResult
+    + onInitialized():void
+    + onExit(): void
+    + onCompletion:(TextDcoumentPosition): CompletionList
+    + onCompletionResolve(CompletionItem): CompletionItem
+    + onDefinition(DeclarationParams): LocationLink []
+    + onFoldingRange(FoldingRangeParams): FoldingRange []
+    + onRefernces(ReferenceParmas): Location []
+    + onPrepareRename(PrepareRenameParams): boolean
+    + onRenameRequest(RenameParams): WorkspaceEdit
+    + onDidChangeWatchedFiles(DidChangeWatchedFilesParams): void
+    + onDidChangeTextDocument(DidChangeTextDocumentParams): void
+    + onDidCloseTextDocument(DidCloseTextDocumentParams): void
+    + onDidOpenTextDocument(DidOpenTextDocumentParams): void
+    + onRequestRunModel()
+    + onRequestSetPluginDir()
+}
+
+interface TextDocumentManagerInt {
+}
+
+interface LanguageServicesFacade {
+}
+
+Server "1...1" *-- "1...1" Connection
+Server "1...1" *-- "1...1" PMSolver
+
+PMSolver o-- "1...*" LanguageServicesFacade
+PMSolver *-- "1...1" TextDocumentManagerInt
+
+@enduml
