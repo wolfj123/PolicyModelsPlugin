@@ -201,7 +201,8 @@ async function testDefinition(
 		const actualItem = actualDefinitionList[i];
 		if(actualItem.uri !== undefined && expectedItem.targetUri !== undefined)
 			assert.equal(actualItem.uri.path, expectedItem.targetUri.path);
-		assert(actualItem.range.isEqual(expectedItem.targetSelectionRange));
+		if(actualItem.range !== undefined && expectedItem.targetSelectionRange !== undefined)
+			assert(actualItem.range.isEqual(expectedItem.targetSelectionRange));
 	});
 }
 
