@@ -590,12 +590,12 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 
 	constructor(tree : Parser.Tree, uri : DocumentUri){
 		super(tree, uri)
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, uri)
+		this.cache = ValueInferenceServices.getAllEntitiesInDoc(tree, uri)
 	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+		this.cache = ValueInferenceServices.getAllEntitiesInDoc(newTree, this.uri)
 	}
 	getAllReferencesSlot(name: string, source: string): Location[] {
 		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
