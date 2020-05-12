@@ -15,11 +15,11 @@ import {
 import { print } from 'util';
 
 var testCounter: number = 0
-var testFixtureFolderPath: String = 'InferrerExample\\'
+var testFixtureFolderPath: String = 'InferrerExample/'
 let defaultPosition: vscode.Position = new vscode.Position(0,0)
 export type RenameResolve = vscode.WorkspaceEdit;
 
-describe('Rename test Sanity', () => {
+describe('Rename E2E tests', () => {
 	const docUriPS = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
 	const docUriDG = getDocUri(testFixtureFolderPath + 'decision-graph.dg');
 	const docUriVI = getDocUri(testFixtureFolderPath + 'valueInference.vi');
