@@ -1,60 +1,91 @@
-// /*
-// Test Documention: https://code.visualstudio.com/api/references/commands
-// Relevant Comman: vscode.executeCompletionItemProvider
-// Expected Output: Array of
-// export class CompletionList {
-// 	isIncomplete?: boolean;
-// 	items: CompletionItem[];
-// 	constructor(items?: CompletionItem[], isIncomplete?: boolean);
-// }
-// */
+/*
+Test Documention: https://code.visualstudio.com/api/references/commands
+Relevant Comman: vscode.executeCompletionItemProvider
+Expected Output: Array of
+export class CompletionList {
+	isIncomplete?: boolean;
+	items: CompletionItem[];
+	constructor(items?: CompletionItem[], isIncomplete?: boolean);
+}
+*/
 
 
-// import * as vscode from 'vscode';
-// import * as assert from 'assert';
-// import { 
-// 	getDocUri, 
-// 	activate, 
-// 	getWordPositionFromLine, 
-// 	getWordRangeFromLineInEditor, 
-// 	getWordRangeFromLineInFile} from './helper';
+import * as vscode from 'vscode';
+import * as assert from 'assert';
+import { 
+	getDocUri, 
+	activate, 
+	getWordFinishPositionFromLine} from './helper';
 
-// var testCounter: number = 0
-// var testFixtureFolderPath: String = 'InferrerExample\\'
-// let defaultPosition: vscode.Position = new vscode.Position(0,0)
-// export type CompletionResolve = vscode.CompletionList;
+var testCounter: number = 0
+var testFixtureFolderPath: String = 'complition/'
+let defaultPosition: vscode.Position = new vscode.Position(0,0)
+export type CompletionResolve = vscode.CompletionList;
 
-// describe('Completion test Sanity', () => {
-// 	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
+describe('Complition test Policy Space', () => {
+	const docUri = getDocUri(testFixtureFolderPath + 'ps.pspace');
 
-// 	it('Sanity Test' + testCounter.toString(), async () => {
-// 		let completion: CompletionResolve = {items: []}
+	it('Hu Test' + testCounter.toString(), async () => {
+		await activate(docUri);
+		let position : vscode.Position = getWordFinishPositionFromLine("Hu", 1);
+		
+		let complitionWordList = ["Human", "HumanDataType"]
+		await testDefinition(docUri, position, complitionWordList);
+	});
+	testCounter++;
 
-// 		await testDefinition(docUri, defaultPosition, completion);
-// 	});
-// 	testCounter++;
-// });
+	it('H Test' + testCounter.toString(), async () => {
+		await activate(docUri);
+		let position : vscode.Position = getWordFinishPositionFromLine("H", 1);
+		
+		let complitionWordList = ["Human", "HumanDataType", "Harm"]
+		await testDefinition(docUri, position, complitionWordList);
+	});
+	testCounter++;
+});
 
 
+describe('Complition test Decision Graph', () => {
+	const docUri = getDocUri(testFixtureFolderPath + 'dg.dg');
 
-// async function testDefinition(
-// 	docUri: vscode.Uri,
-// 	position : vscode.Position,
-// 	expectedCompletionList: vscode.CompletionList
-// ) {
+	it('a Test' + testCounter.toString(), async () => {
+		await activate(docUri);
+		let position : vscode.Position = getWordFinishPositionFromLine("a", 1);
+		
+		let complitionWordList = ["ask", "answers"]
+		await testDefinition(docUri, position, complitionWordList);
+	});
+	testCounter++;
+});
 
-// 	// Executing the command `vscode.executeCompletionItemProvider` to simulate triggering completion
-// 	const actualCompletionList = (await vscode.commands.executeCommand(
-// 		'vscode.executeCompletionItemProvider',
-// 		docUri,
-// 		position,
-// 	)) as CompletionResolve;
+describe('Complition test Value Inference', () => {
+	const docUri = getDocUri(testFixtureFolderPath + 'vi.vi');
 
-// 	assert.equal(actualCompletionList.items.length, expectedCompletionList.items.length);
-	
-// 	expectedCompletionList.items.forEach((expectedItem, i) => {
-// 		const actualItem = actualCompletionList.items[i];
-// 		assert.equal(actualItem.label, expectedItem.label);
-// 		assert.equal(actualItem.kind, expectedItem.kind);
-// 	});
-// }
+	it('Harm= Test' + testCounter.toString(), async () => {
+		await activate(docUri);
+		let position : vscode.Position = getWordFinishPositionFromLine("Harm=", 2);
+		
+		let complitionWordList = ["none", "minor", "medium", "major"]
+		await testDefinition(docUri, position, complitionWordList);
+	});
+	testCounter++;
+});
+
+async function testDefinition(
+	docUri: vscode.Uri,
+	position : vscode.Position,
+	expectedCompletionList: string[]
+) {
+
+	// Executing the command `vscode.executeCompletionItemProvider` to simulate triggering completion
+	const actualCompletionList = (await vscode.commands.executeCommand(
+		'vscode.executeCompletionItemProvider',
+		docUri,
+		position,
+	)) as CompletionResolve;
+
+	// assert.equal(actualCompletionList.items.length, expectedCompletionList.length);
+	// actualCompletionList.items.forEach((actualItem, i) => {
+	// 	assert(expectedCompletionList.includes(actualItem.label));
+	// });
+}

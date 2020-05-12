@@ -153,6 +153,13 @@ export const getWordPositionFromLine = (word: string, line:number, shiftig = 0) 
 	var firstLine = editor.document.lineAt(line);
 	return editor.document.positionAt(editor.document.offsetAt(firstLine.range.start) + firstLine.text.indexOf(word) + 1 + shiftig);
 }
+
+export const getWordFinishPositionFromLine = (word: string, line:number, shiftig = 0) : vscode.Position => {
+	if(shiftig===undefined)
+		shiftig=0;
+	var firstLine = editor.document.lineAt(line);
+	return editor.document.positionAt(editor.document.offsetAt(firstLine.range.start) + firstLine.text.indexOf(word) + 1 + shiftig + word.length);
+}
   
 export function readAllCodeFilesInDirectory(dir:string) {
 	const fs = require('fs');
