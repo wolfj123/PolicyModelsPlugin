@@ -590,12 +590,12 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 
 	constructor(tree : Parser.Tree, uri : DocumentUri){
 		super(tree, uri)
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, uri)
+		this.cache = ValueInferenceServices.getAllEntitiesInDoc(tree, uri)
 	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+		this.cache = ValueInferenceServices.getAllEntitiesInDoc(newTree, this.uri)
 	}
 	getAllReferencesSlot(name: string, source: string): Location[] {
 		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
@@ -646,17 +646,18 @@ export class CacheQueries {
 
 	static getAllDefinitionsSlotValue(cache : PolicyModelEntity[],name: string): Location[] {
 		const type = PolicyModelEntityType.SlotValue
-		const category = PolicyModelEntityCategory.Reference
+		const category = PolicyModelEntityCategory.Declaration
 		return cache
 			.filter(e => e.getName() === name && (e.getCategory() == category) && e.getType() == type)
 			.map(e => e.location)
 	}
 	
 	static getAllReferencesSlotValue(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
-		const type = PolicyModelEntityType.Slot
-		const category = PolicyModelEntityCategory.Reference
+		const type = PolicyModelEntityType.SlotValue
+		const category1 = PolicyModelEntityCategory.Declaration
+		const category2 = PolicyModelEntityCategory.Reference
 		return cache
-			.filter(e => e.getName() === name && e.getCategory() == category && e.getType() == type)
+			.filter(e => e.getName() === name && (e.getCategory() == category1 || e.getCategory() == category2) && e.getType() == type)
 			.map(e => e.location)
 	}
 
