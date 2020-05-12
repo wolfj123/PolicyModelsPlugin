@@ -29,6 +29,10 @@ import * as path from 'path';
 import { isNullOrUndefined } from 'util';
 import { PMTextDocument } from './Documents';
 import {
+	entity2CompletionItem,
+	DecisionGraphKeywords,
+	PolicySpaceKeywords,
+	ValueInferenceKeywords,
 	PolicyModelsLanguage,
 	parsersInfo,
 	getLanguageByExtension,
@@ -266,7 +270,7 @@ export class LanguageServices {
 		return fm.getFoldingRanges()
 	}
 
-	getCompletion(location : Location) : Location[] {
+	getCompletion(location : Location) : CompletionList[] {
 		//TODO:
 		//return []
 		throw new Error("Method not implemented.");
@@ -344,7 +348,7 @@ export abstract class FileManager {
 
 	abstract getFoldingRanges() : Location[]
 
-	abstract getAutoComplete(location : Location)
+	abstract getAutoComplete(location : Location) : CompletionList
 }
 
 export class FileManagerFactory {
@@ -403,7 +407,7 @@ export class DecisionGraphFileManager extends FileManager {
 		let ranges : Range[] = DecisionGraphServices.getAllNodesInDocument(this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAutoComplete(location: Location) {
+	getAutoComplete(location: Location) : CompletionList {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
@@ -441,7 +445,7 @@ export class PolicySpaceFileManager extends FileManager {
 		let ranges : Range[] = PolicySpaceServices.getAllSlotsInDocument(this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAutoComplete(location: Location) {
+	getAutoComplete(location: Location) : CompletionList {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
@@ -479,7 +483,7 @@ export class ValueInferenceFileManager extends FileManager {
 		ranges = ranges.concat(ValueInferenceServices.getAllInferencePairsInDocument(this.tree))
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAutoComplete(location: Location) {
+	getAutoComplete(location: Location) : CompletionList {
 		throw new Error("Method not implemented.");
 	}
 }
@@ -507,6 +511,7 @@ export class LanguageServicesWithCache extends LanguageServices {
 
 export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
 	cache : PolicyModelEntity[]
+	imports : DocumentUri[]
 
 	constructor(tree : Parser.Tree, uri : DocumentUri){
 		super(tree, uri)
@@ -540,9 +545,10 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	getFoldingRanges(): Location[] {
 		return CacheQueries.getFoldingRanges(this.cache)
 	}
-	getAutoComplete(location: Location) {
-		//TODO:
-		throw new Error("Method not implemented.");
+	getAutoComplete(location: Location) : CompletionList {
+		let importMap : Map<string,DocumentUri> = DecisionGraphServices.getAllImports(this.tree)
+		let importUris : DocumentUri[] = Array.from(importMap.values())
+		return CacheQueries.getAutoCompleteDecisionGraph(this.cache, importUris)
 	}
 }
 
@@ -579,9 +585,8 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 		return CacheQueries.getFoldingRanges(this.cache)
 	}
 
-	getAutoComplete(location: Location) {
-		//TODO:
-		throw new Error("Method not implemented.");
+	getAutoComplete(location: Location) : CompletionList {
+		return CacheQueries.getAutoCompletePolicySpace(this.cache)
 	}
 }
 
@@ -607,6 +612,10 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 
 	getFoldingRanges(): Location[] {
 		return CacheQueries.getFoldingRanges(this.cache)
+	}
+
+	getAutoComplete(location: Location) : CompletionList {
+		return CacheQueries.getAutoCompleteValueInference(this.cache)
 	}
 }
 
@@ -666,5 +675,57 @@ export class CacheQueries {
 		return cache
 			.filter(e => e.getCategory() == category )
 			.map(e => e.location)
+	}
+
+	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], imports : DocumentUri[] = undefined) : CompletionList {
+		let nodes : PolicyModelEntity[]
+		let slots : PolicyModelEntity[]
+		let slotvalues : PolicyModelEntity[]
+		let keywords : CompletionItem[] = PolicySpaceKeywords
+
+		nodes = cache
+				.filter(function (e) {
+					if(e.getType() != PolicyModelEntityType.DGNode) {return false}
+					return (e.getCategory() == PolicyModelEntityCategory.Declaration || 
+							(e.getCategory() == PolicyModelEntityCategory.Reference && !isNullOrUndefined(imports) && imports.indexOf(e.getSource()) >= 0))
+				})
+		slots = cache
+				.filter(e => e.getType() == PolicyModelEntityType.Slot)
+
+		slotvalues = cache
+				.filter(e => e.getType() == PolicyModelEntityType.Slot)
+		
+		let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
+		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+
+		let result = {
+			isIncomplete: false,
+			items: items
+		}
+		return result		
+	}
+
+	static getAutoCompletePolicySpace(cache : PolicyModelEntity[]) : CompletionList {		
+		let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
+		let keywords : CompletionItem[] = PolicySpaceKeywords
+		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+
+		let result = {
+			isIncomplete: false,
+			items: items
+		}
+		return result		
+	}
+
+	static getAutoCompleteValueInference(cache : PolicyModelEntity[]) : CompletionList {		
+		let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
+		let keywords : CompletionItem[] = ValueInferenceKeywords
+		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+
+		let result = {
+			isIncomplete: false,
+			items: items
+		}
+		return result	
 	}
 }
