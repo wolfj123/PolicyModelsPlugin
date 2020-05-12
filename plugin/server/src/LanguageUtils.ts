@@ -24,8 +24,6 @@ import {
 	PrepareRenameParams,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
-import { TextEdit } from 'vscode-languageserver-textdocument';
-import { Analyzer } from './Analyzer';
 import * as Utils from './Utils'
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
