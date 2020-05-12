@@ -957,6 +957,6 @@ DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
 LanguageServicesFacade_UnitTests.runTests()
 
-//LanguageServicesWithCache_UnitTests.runTests()
+LanguageServicesWithCache_UnitTests.runTests()
 
 
