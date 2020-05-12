@@ -1,4 +1,4 @@
 
-[Encryption: support
-  [ Harm=;   HumanDataType=none       -> clear         ]
+[BigEncryption: support
+  [ BigHarm= ;   BigHumanDataType=bnone       -> bclear         ]
 ]

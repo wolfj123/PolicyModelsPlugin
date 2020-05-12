@@ -25,20 +25,20 @@ export type CompletionResolve = vscode.CompletionList;
 describe('Completion test Policy Space', () => {
 	const docUri = getDocUri(testFixtureFolderPath + 'ps.pspace');
 
-	it('Hu Test' + testCounter.toString(), async () => {
+	it('BigHu Test' + testCounter.toString(), async () => {
 		await activate(docUri);
-		let position : vscode.Position = getWordFinishPositionFromLine("Hu", 1);
+		let position : vscode.Position = getWordFinishPositionFromLine("BigHu", 1);
 		
-		let completionWordList = ["Human", "HumanDataType"]
+		let completionWordList = ["BigHuman", "BigHumanDataType"]
 		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;
 
-	it('H Test' + testCounter.toString(), async () => {
+	it('BigH Test' + testCounter.toString(), async () => {
 		await activate(docUri);
-		let position : vscode.Position = getWordFinishPositionFromLine("H", 1);
+		let position : vscode.Position = getWordFinishPositionFromLine("BigH", 1);
 		
-		let completionWordList = ["Human", "HumanDataType", "Harm"]
+		let completionWordList = ["BigHuman", "BigHumanDataType", "BigHarm"]
 		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;
@@ -48,9 +48,9 @@ describe('Completion test Policy Space', () => {
 describe('Completion test Decision Graph', () => {
 	const docUri = getDocUri(testFixtureFolderPath + 'dg.dg');
 
-	it('a Test' + testCounter.toString(), async () => {
+	it(' a Test' + testCounter.toString(), async () => {
 		await activate(docUri);
-		let position : vscode.Position = getWordFinishPositionFromLine("a", 1);
+		let position : vscode.Position = getWordFinishPositionFromLine(" a", 1);
 		
 		let completionWordList = ["ask", "answers"]
 		await testDefinition(docUri, position, completionWordList);
@@ -61,11 +61,11 @@ describe('Completion test Decision Graph', () => {
 describe('Completion test Value Inference', () => {
 	const docUri = getDocUri(testFixtureFolderPath + 'vi.vi');
 
-	it('Harm= Test' + testCounter.toString(), async () => {
+	it('BigHarm= Test' + testCounter.toString(), async () => {
 		await activate(docUri);
-		let position : vscode.Position = getWordFinishPositionFromLine("Harm=", 2);
+		let position : vscode.Position = getWordFinishPositionFromLine("BigHarm=", 2);
 		
-		let completionWordList = ["none", "minor", "medium", "major"]
+		let completionWordList = ["bnone", "bminor", "bmedium", "bmajor"]
 		await testDefinition(docUri, position, completionWordList);
 	});
 	testCounter++;

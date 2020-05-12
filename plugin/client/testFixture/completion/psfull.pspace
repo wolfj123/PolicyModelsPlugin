@@ -1,4 +1,4 @@
-Human: consists of HumanDataType, Harm, Encryption.
-HumanDataType: one of none, aggregated, anonymized, identifiable.
-Harm: one of none, minor, medium, major.
-Encryption: one of clear, serverSide, doubleEncrypt.
+BigHuman: consists of BigHumanDataType, BigHarm, BigEncryption.
+BigHumanDataType: one of bnone, baggregated, banonymized, bidentifiable.
+BigHarm: one of bnone, bminor, bmedium, bmajor.
+BigEncryption: one of bclear, bserverSide, bdoubleEncrypt.
