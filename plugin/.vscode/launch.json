@@ -36,6 +36,7 @@
 				"--extensionDevelopmentPath=${workspaceRoot}",
 				"--extensionTestsPath=${workspaceRoot}/client/out/test",
 				"${workspaceFolder}/client/tests/localization.spec.ts",
+				"${workspaceFolder}/client/tests/policyModelLibApi.spec.ts",
 			],
 			"console": "integratedTerminal",
 			"internalConsoleOptions": "neverOpen",
