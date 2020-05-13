@@ -1,0 +1,87 @@
+@startuml
+
+interface AdditionalInfo {
+    +path: string
+}
+interface ICommand {
+    +action: CommandAction
+    +content: JSON
+    +additionalInfo?: AdditionalInfo
+}
+enum CommandAction {
+    Save
+    Respone
+}
+interface File {
+    +name: string
+    +content: string
+    +extension: string
+    +path: string
+    +id: string
+}
+interface LanguageData {
+    +files: File[]
+    +language: string
+}
+interface ItemMenuData {
+    +isSelected: boolean
+    +onClick(): void
+    +text: string
+}
+
+class ViewLoader {
+    -_panel: WebviewPanel
+    -_extensionPath: string
+    -_disposables: Disposable[]
+    -updateLanguageFilesData(newLanguageFilesData: any): void
+    -getWebviewContent(languageFilesData: any): string
+}
+
+
+class LocalizationController {
+    +_localizationPath: string
+    +_extensionProps: any
+    +_fileService: any
+    +_onError: any
+    +activateLocalization(__0: { onError: any; }): void
+    +filterSystemFiles(direntFiles: any): any
+    +isSupportedFile(path: any): boolean
+    +createLanguageFilesData(languageDir: any): LanguageData
+    +getFiles: (path: string) => File[]
+    +onSaveFile: (path: any, newData: any) => LanguageData[]
+    +getLanguagesFilesData(): LanguageData[]
+}
+
+LocalizationController *-- FileService
+LocalizationController --- ViewLoader
+
+
+
+class FileService {
+    +getDirectoryContent(dirPath: any): any
+    +writeToFile(path: any, newData: any): void
+    +readFromFile(path: any): any
+}
+
+
+package "WebView React" #DDDDDD {
+ ViewLoader <|--Index
+  class Index {}
+  class LocalizationContainer{}
+  class Page{}
+  class SideBarMenu{}
+  class CompareToPanel{}
+  class Text{}
+  class FileContent{}
+
+  Index <|-- LocalizationContainer
+  LocalizationContainer --- Page
+  LocalizationContainer --- SideBarMenu
+  LocalizationContainer --- CompareToPanel
+  LocalizationContainer --- Text
+  LocalizationContainer --- FileContent
+}
+@enduml
+
+
+
