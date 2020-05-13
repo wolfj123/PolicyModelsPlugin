@@ -62,14 +62,14 @@ export function getLanguageByExtension(extension : string) : PolicyModelsLanguag
 }
 
 
+
 //****Entities****/
 export enum PolicyModelEntityType {
 	DGNode,
 	Slot,
 	SlotValue,
 	ValueInference,
-	InferencePair,
-	Keyword
+	InferencePair
 }
 
 export enum PolicyModelEntityCategory {
@@ -126,6 +126,57 @@ export class PolicyModelEntity {
 	}
 }
 
+
+export const DecisionGraphKeywords : CompletionItem[] = [
+	{label: "todo", kind: CompletionItemKind.Keyword},
+	{label: "ask", kind: CompletionItemKind.Keyword},
+	{label: "text", kind: CompletionItemKind.Keyword},
+	{label: "term", kind: CompletionItemKind.Keyword},
+	{label: "answers", kind: CompletionItemKind.Keyword},
+	{label: "call", kind: CompletionItemKind.Keyword},
+	{label: "consider", kind: CompletionItemKind.Keyword},
+	{label: "slot", kind: CompletionItemKind.Keyword},
+	{label: "options", kind: CompletionItemKind.Keyword},
+	{label: "else", kind: CompletionItemKind.Keyword},
+	{label: "when", kind: CompletionItemKind.Keyword},
+	{label: "section", kind: CompletionItemKind.Keyword},
+	{label: "title", kind: CompletionItemKind.Keyword},
+	{label: "end", kind: CompletionItemKind.Keyword},
+	{label: "consider", kind: CompletionItemKind.Keyword},
+	{label: "reject", kind: CompletionItemKind.Keyword},
+	{label: "set", kind: CompletionItemKind.Keyword},
+	{label: "#import", kind: CompletionItemKind.Keyword},
+]
+
+export const PolicySpaceKeywords : CompletionItem[] = [
+	{label: "TODO", kind: CompletionItemKind.Keyword},
+	{label: "of", kind: CompletionItemKind.Keyword},
+	{label: "one", kind: CompletionItemKind.Keyword},
+	{label: "some", kind: CompletionItemKind.Keyword},
+	{label: "consists", kind: CompletionItemKind.Keyword},
+]
+
+export const ValueInferenceKeywords : CompletionItem[] = [
+	{label: "support", kind: CompletionItemKind.Keyword},
+	{label: "comply", kind: CompletionItemKind.Keyword},
+]
+
+export function entity2CompletionItem(entity : PolicyModelEntity) : CompletionItem {
+	let EntityType2CompletionItemKind : CompletionItemKind[]
+	EntityType2CompletionItemKind[PolicyModelEntityType.DGNode] = CompletionItemKind.Variable
+	EntityType2CompletionItemKind[PolicyModelEntityType.Slot] = CompletionItemKind.Enum
+	EntityType2CompletionItemKind[PolicyModelEntityType.SlotValue] = CompletionItemKind.Value
+
+	let kind : CompletionItemKind = EntityType2CompletionItemKind[entity.getType()]
+
+	let result : CompletionItem = {
+		label: entity.getName(),
+		kind: kind,
+	}
+	return result
+}
+
+
 function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 	return nodes.map(
 		id => {
@@ -133,6 +184,7 @@ function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
 		}
 	)
 }
+
 
 function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: number}[] = undefined) {
 	function visible(x: Parser.TreeCursor, visibleRanges: {start: number, end: number}[]) {
@@ -220,7 +272,7 @@ const nodeTypes : string[] = mainNodesTypes.concat(subNodesTypes)
 
 
 export class DecisionGraphServices {	
-	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri, importMap : Map<string, string> = undefined) : PolicyModelEntity | null {
+	static createEntityFromNode(node : Parser.SyntaxNode, uri : DocumentUri, importMap : Map<string, DocumentUri> = undefined) : PolicyModelEntity | null {
 		let name : string
 		let source : DocumentUri
 		let category : PolicyModelEntityCategory
@@ -264,7 +316,7 @@ export class DecisionGraphServices {
 	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
 		let result : PolicyModelEntity[] = []
 		let imports : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
-		let importMap : Map<string, string>
+		let importMap : Map<string, DocumentUri>
 		
 		if (imports.length > 0) {
 			//	imports.forEach
@@ -287,6 +339,20 @@ export class DecisionGraphServices {
 				}
 			}
 		}
+		return result
+	}
+
+	static getAllImports(tree : Parser.Tree) : Map<string, DocumentUri> {
+		let result : Map<string, DocumentUri> = new Map()
+		let root : Parser.SyntaxNode = tree.walk().currentNode()
+		let importNodes : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
+		importNodes.forEach(
+			imp => {
+				let name : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
+				let uri : string = imp.descendantsOfType("file_path")[0].text.trim()
+				result.set(name, uri)
+			})
+
 		return result
 	}
 
