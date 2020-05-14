@@ -93,35 +93,6 @@
 				"configuration": "./decisiongraph-language-configuration.json"
 			},
 			{
-				"id": "policyModelDescription",
-				"aliases": [
-					"policymodelDescription",
-					"policyModeldescription",
-					"policyModel Description",
-					"policy model description"
-				],
-				"firstLine": "<policy-model>",
-				"filenamePatterns": [
-					"policy-model.xml"
-				],
-				"configuration": "./policymodel-xml-file-configuration.json"
-			},
-			{
-				"id": "localizedModel",
-				"firstLine": "<localized-model>",
-				"filenamePatterns": [
-					"localized-model.xml"
-				],
-				"configuration": "./policymodel-xml-file-configuration.json"
-			},
-			{
-				"id": "localiztion",
-				"extensions": [
-					".md"
-				],
-				"configuration": "./pspace-graph-language-configuration.json"
-			},
-			{
 				"id": "valueinference",
 				"extensions": [
 					".vi"
