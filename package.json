@@ -19,6 +19,7 @@
 		"vscode": "^1.41.0"
 	},
 	"activationEvents": [
+		"onLanguage:xml",
 		"onLanguage:policyspace",
 		"onLanguage:decisiongraph",
 		"onLanguage:valueinference",
@@ -69,6 +70,13 @@
 			}
 		],
 		"languages": [
+			{
+				"id": "xml",
+				"extensions": [
+					".xml"
+				],
+				"configuration": "./policymodel-xml-language-configuration.json"
+			},
 			{
 				"id": "policyspace",
 				"aliases": [

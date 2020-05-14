@@ -1,3 +1,6 @@
+//original XML language configurations
+//https://github.com/microsoft/vscode/blob/master/extensions/xml/xml.language-configuration.json
+
 {
     // symbols used as brackets
     "brackets": [
