@@ -3,8 +3,7 @@ public class CreateNewLocalizationhandler extends PolicyModelHttpHandler {
     @Override
     public String handleGetRequest(String params) throws Exception {
         String name = params;
-        PolicyModelService.createNewLocalization(name);
-        return "true";
+        return PolicyModelService.createNewLocalization(name);
     }
 
     @Override

@@ -3,8 +3,7 @@ public class LoadModelHandler extends PolicyModelHttpHandler {
     @Override
     public String handleGetRequest(String params) throws Exception {
         String path = params;
-        PolicyModelService.loadPolicyModel(path);
-        return "true";
+        return PolicyModelService.loadPolicyModel(path);
     }
 
     @Override
