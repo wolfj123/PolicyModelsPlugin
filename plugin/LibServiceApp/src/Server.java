@@ -9,10 +9,16 @@ public class Server {
 
 
     public static void main(String[] args) {
+        Boolean good = true;
         try {
             activeServer();
+
         } catch (IOException e) {
             e.printStackTrace();
+            good = false;
+        }
+        if(good){
+            System.out.print("ready");
         }
     }
 
@@ -24,7 +30,6 @@ public class Server {
         server.createContext("/loc/update", new UpdateLocalizationHandler());
         server.setExecutor(executor);
         server.start();
-        System.out.println("ready");
     }
 }
 
