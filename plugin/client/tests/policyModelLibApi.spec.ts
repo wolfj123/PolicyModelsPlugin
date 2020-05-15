@@ -32,7 +32,7 @@ describe('API Tests', () => {
 	});
 
 	it('should failed build environment cause to wrong path', async () => {
-		api = new PolicyModelLibApi(path+"worngPath", message => console.log(message));
+		api = new PolicyModelLibApi(sampleProjectPath+"wrongPath", message => console.log(message));
 		const serverHasStarted = await api._startServer();
 		expect(serverHasStarted).to.be.true;
 		const modelHasLoaded = await api._loadModel();

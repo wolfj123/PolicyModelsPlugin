@@ -9,17 +9,14 @@ public class Server {
 
 
     public static void main(String[] args) {
-        Boolean good = true;
         try {
             activeServer();
+            System.out.print("ready");
 
         } catch (IOException e) {
             e.printStackTrace();
-            good = false;
         }
-        if(good){
-            System.out.print("ready");
-        }
+
     }
 
     public static void activeServer() throws IOException {
