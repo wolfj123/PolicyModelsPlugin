@@ -24,6 +24,14 @@ matrix:
           echo $v logtail ======================== ; tail -100 $v ;
           done
 
+      - language: java
+      scriptjdk:
+        - oraclejdk8
+        - oraclejdk9
+        - oraclejdk11
+        - openjdk8
+        - openjdk-ea
+
 
 os:
   - linux
