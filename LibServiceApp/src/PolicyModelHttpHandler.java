@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 abstract public class PolicyModelHttpHandler implements HttpHandler {
 
-    public abstract String handleGetRequest(String params) throws Exception;
+    public abstract String handleGetRequest(Map<String, String> params) throws Exception;
 
-    public abstract String handlePostRequest(String params);
+    public abstract String handlePostRequest(String body);
 
 
     @Override
@@ -19,9 +21,9 @@ abstract public class PolicyModelHttpHandler implements HttpHandler {
         String response = null;
         try {
             String httpReqMethod = httpExchange.getRequestMethod();
-            String requestParams = getRequestParams(httpExchange);
 
             if ("GET".equals(httpReqMethod)) {
+                Map<String, String> requestParams = getRequestParams(httpExchange);
                 response = handleGetRequest(requestParams);
             } else if ("POST".equals(httpReqMethod)) {
                 String reqBody = getRequestBody(httpExchange);
@@ -40,17 +42,27 @@ abstract public class PolicyModelHttpHandler implements HttpHandler {
 
     }
 
-    private String getRequestParams(HttpExchange httpExchange) {
-        String params=null;
+    private  Map<String, String> getRequestParams(HttpExchange httpExchange) {
+        Map<String, String> params=null;
         String request = httpExchange.
                 getRequestURI()
                 .toString();
         String[] splittedRequestString = request.split("\\?");
         boolean hasAdditionalParams = splittedRequestString.length >1;
         if(hasAdditionalParams)
-            params = splittedRequestString[1];
+            params = splitQuery(splittedRequestString[1]);
         return params;
 
+    }
+
+    private Map<String, String> splitQuery(String query) {
+        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            query_pairs.put(pair.substring(0, idx), pair.substring(idx + 1));
+        }
+        return query_pairs;
     }
 
     private String getRequestBody(HttpExchange httpExchange) throws IOException {

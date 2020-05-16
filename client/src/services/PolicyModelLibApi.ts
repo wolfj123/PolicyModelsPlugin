@@ -59,7 +59,7 @@ export class PolicyModelLibApi {
   }
 
   async _loadModel(){
-    return await axiosInstance.get(`/load?${this._rootPath}`).then((res:any ) => {
+    return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res:any ) => {
       return res.data === SUCCESS;
     });
   }
@@ -68,7 +68,7 @@ export class PolicyModelLibApi {
     const buildSucceeded = await this._buildEnvironment();
     let isCreateLocalizationSucceeded = false;
     if(buildSucceeded){
-      isCreateLocalizationSucceeded =  await axiosInstance.get(`/loc/new?${name}`).then((res: any) => res.data === SUCCESS);
+      isCreateLocalizationSucceeded =  await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS);
     }
     return isCreateLocalizationSucceeded;
   }
