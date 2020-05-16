@@ -906,7 +906,10 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		[
 			{
 				title: 'dg->autocomplete',
-				input: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'dg1_ws_1.dg'},
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'dg1_ws_1.dg'}
+				},
 				keywords: DecisionGraphKeywords,
 				output: [
 					{label: 'n1', kind: 6},
@@ -924,7 +927,7 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 					{label: 'compound_slot', kind: 13},
 
 					{label: 'atomic_slot1_val1', kind: 12},
-					{label: 'atomic_slot1_val3', kind: 12},
+					{label: 'atomic_slot1_val2', kind: 12},
 					{label: 'atomic_slot1_val3', kind: 12},
 					
 					{label: 'atomic_slot2_val1', kind: 12},
@@ -938,7 +941,10 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 			},
 			{
 				title: 'pspace->autocomplete',
-				input: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'ps_ws_1.pspace'},
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'ps_ws_1.pspace'}
+				},
 				keywords: PolicySpaceKeywords,
 				output: [
 					{label: 'atomic_slot1', kind: 13},
@@ -964,9 +970,11 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
 			const output = testCase.output
-			let instance = await self.create([input.uri])
-			const result = instance.getCompletion(input)
+			const filenames : string[] = input.fileNames
+			const location : Location = input.location
 			let outputWithKeywords = output.concat(testCase.keywords)
+			let instance = await self.create(filenames)
+			const result = instance.getCompletion(location)
 			expect(outputWithKeywords).to.deep.equalInAnyOrder(result.items)
 		}
 

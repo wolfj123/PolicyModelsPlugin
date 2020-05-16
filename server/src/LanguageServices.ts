@@ -271,14 +271,8 @@ export class LanguageServices {
 	}
 
 	getCompletion(location : Location) : CompletionList | null {
-		let uri : DocumentUri = location.uri
-		let fm : FileManager = this.fileManagers.get(uri)
-		if(isNullOrUndefined(fm)) {return null}
-		let caches : PolicyModelEntity[] = 
-			Utils.uniqueArray(Utils.flatten(
-				Array.from(this.fileManagers.values())
-					.map((fm: FileManager) => fm.getCache())))
-		return fm.getAutoComplete(location, caches) 
+		//TODO:
+		throw new Error("Method not implemented.");
 	}
 }
 
@@ -517,6 +511,45 @@ export class LanguageServicesWithCache extends LanguageServices {
 			this.getParserByExtension(extension), 
 			getLanguageByExtension(extension), true)
 	}
+
+	getCompletion(location : Location) : CompletionList | null {
+		let uri : DocumentUri = location.uri
+		let fm : FileManager = this.fileManagers.get(uri)
+		if(isNullOrUndefined(fm)) {return null}
+
+		let pspaceCompletionList : CompletionList = {isIncomplete: false, items: []}
+		this.fileManagers.forEach((fm : FileManager, uri : DocumentUri) => {
+			if(fm instanceof PolicySpaceFileManager) {
+				pspaceCompletionList = Utils.mergeCompletionLists(pspaceCompletionList, fm.getAutoComplete(null, null))
+			}
+		})
+
+		let result : CompletionList = pspaceCompletionList
+		switch(true){
+			case fm instanceof DecisionGraphFileManager: 
+				let caches : PolicyModelEntity[] = 
+				Utils.uniqueArray(Utils.flatten(
+					Array.from(this.fileManagers.values())
+						.map((fm: FileManager) => fm.getCache())))
+				result = Utils.mergeCompletionLists(result,fm.getAutoComplete(location, caches))
+				result.items = result.items.concat(DecisionGraphKeywords)
+				break;	
+	
+			case fm instanceof PolicySpaceFileManager: 
+				result.items = result.items.concat(PolicySpaceKeywords)
+				break;
+
+			case fm instanceof ValueInferenceFileManager: 
+				result.items = result.items.concat(ValueInferenceKeywords)
+				break;
+
+			default:
+				result = {isIncomplete: false, items: []}
+				break;
+		}
+
+		return result
+	}
 }
 
 export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
@@ -639,7 +672,8 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 	}
 
 	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
-		return CacheQueries.getAutoCompleteValueInference(this.cache)
+		//return CacheQueries.getAutoCompleteValueInference(this.cache)
+		return CacheQueries.getAutoCompletePolicySpace(this.cache)
 	}
 }
 
@@ -715,14 +749,15 @@ export class CacheQueries {
 					return (e.getCategory() == PolicyModelEntityCategory.Declaration || 
 							(e.getCategory() == PolicyModelEntityCategory.Reference && !isNullOrUndefined(imports) && imports.indexOf(e.getSource()) >= 0))
 				})
-		slots = cache
-				.filter(e => e.getType() == PolicyModelEntityType.Slot)
+		// slots = cache
+		// 		.filter(e => e.getType() == PolicyModelEntityType.Slot && e.getCategory() != PolicyModelEntityCategory.FoldRange)
 
-		slotvalues = cache
-				.filter(e => e.getType() == PolicyModelEntityType.SlotValue)
-		
-		let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
-		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+		// slotvalues = cache
+		// 		.filter(e => e.getType() == PolicyModelEntityType.SlotValue && e.getCategory() != PolicyModelEntityCategory.FoldRange)		
+		// let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
+		// let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+
+		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e)))
 
 		let result = {
 			isIncomplete: false,
@@ -736,7 +771,7 @@ export class CacheQueries {
 			(e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue) 
 			&& e.getCategory() != PolicyModelEntityCategory.FoldRange)
 		let keywords : CompletionItem[] = PolicySpaceKeywords
-		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)))
 
 		let result = {
 			isIncomplete: false,
@@ -745,15 +780,15 @@ export class CacheQueries {
 		return result		
 	}
 
-	static getAutoCompleteValueInference(cache : PolicyModelEntity[]) : CompletionList {		
-		let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
-		let keywords : CompletionItem[] = ValueInferenceKeywords
-		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+	// static getAutoCompleteValueInference(cache : PolicyModelEntity[]) : CompletionList {		
+	// 	let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
+	// 	let keywords : CompletionItem[] = ValueInferenceKeywords
+	// 	let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
 
-		let result = {
-			isIncomplete: false,
-			items: items
-		}
-		return result	
-	}
+	// 	let result = {
+	// 		isIncomplete: false,
+	// 		items: items
+	// 	}
+	// 	return result	
+	// }
 }
