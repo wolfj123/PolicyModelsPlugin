@@ -29,7 +29,7 @@ export class PolicyModelLibApi {
   }
 
   async _startServer(): Promise<boolean> {
-    const JavaServerJar: string = path.join(__dirname, "./LibServiceApp.jar");
+    const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
     this.child = require('child_process').spawn(
       'java', ['-jar', `${JavaServerJar}`, null]
     );
@@ -58,7 +58,7 @@ export class PolicyModelLibApi {
   async _loadModel() {
     return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res: any) => {
       return res.data === SUCCESS;
-    })/* .catch(this._handleConnectionRejection) */;
+    }).catch(this._handleConnectionRejection);
   }
   _printToScreen(message: string): void {
     this._printToScreenCallback(message);
