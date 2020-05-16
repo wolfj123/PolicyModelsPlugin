@@ -1,13 +1,9 @@
 const axios = require('axios');
-axios.defaults.timeout = 10000;
 const SUCCESS = true;
 const PORT = 5001;
 const BASE_URL = `http://localhost:${PORT}`;
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
-
-
-
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
