@@ -11,6 +11,7 @@ import { ChildProcess } from 'child_process';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
+  timeout: 1500,
 });
 
 export class PolicyModelLibApi {
@@ -18,7 +19,7 @@ export class PolicyModelLibApi {
   child: ChildProcess;
   _printToScreenCallback: any;
 
-  constructor(rootPath,printToScreenCallback) {
+  constructor(rootPath, printToScreenCallback) {
     this._rootPath = rootPath;
     this._printToScreenCallback = printToScreenCallback;
     this.child;
@@ -34,50 +35,67 @@ export class PolicyModelLibApi {
   async _startServer(): Promise<boolean> {
     const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
     this.child = require('child_process').spawn(
-      'java', ['-jar', `${JavaServerJar}`,null]
+      'java', ['-jar', `${JavaServerJar}`, null]
     );
 
-  const serverIsReady = async (): Promise<boolean> => {
-    return new Promise<boolean>((resolve) => {
-      this.child.stdout.on('data', data => {
-        const message:string = data.toString();
-        message === 'ready' ?
-         resolve(true):
-         this.printToScreen(message);
-      });
+    const serverIsReady = async (): Promise<boolean> => {
+      return new Promise<boolean>((resolve) => {
+        this.child.stdout.on('data', data => {
+          const message: string = data.toString();
+          message === 'ready' ?
+            resolve(true) :
+            this._printToScreen(message);
+        });
 
-      this.child.stderr.on("data", data =>  {
-            this.printToScreen(data.toString());
-            this.terminateProcess();
-            resolve(false);
+        this.child.stderr.on("data", data => {
+          this._printToScreen(data.toString());
+          this._terminateProcess();
+          resolve(false);
 
         });
-    });
-};
+      });
+    };
 
-    return  await serverIsReady();
+    return await serverIsReady();
   }
 
-  async _loadModel(){
-    return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res:any ) => {
+  async _loadModel() {
+    return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res: any) => {
       return res.data === SUCCESS;
-    });
+    }).catch(this._handleConnectionRejection);;
   }
-
-  async createNewLocalization(name: string): Promise<boolean> {
-    const buildSucceeded = await this._buildEnvironment();
-    let isCreateLocalizationSucceeded = false;
-    if(buildSucceeded){
-      isCreateLocalizationSucceeded =  await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS);
-    }
-    return isCreateLocalizationSucceeded;
-  }
-
-  printToScreen(message:string): void {
+  _printToScreen(message: string): void {
     this._printToScreenCallback(message);
   }
 
-  terminateProcess(): void {
+  _handleConnectionRejection(err: any): void {
+    this._printToScreen(err.message);
+  }
+
+  _terminateProcess(): void {
     this.child.kill('SIGINT');
+  }
+
+  async _createNewLocalization(name: string): Promise<boolean> {
+    return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
+
+  async _requestsWrapper(requestCallback) {
+    const buildSucceeded = await this._buildEnvironment();
+    let requestAnswer = false;
+    if (buildSucceeded) {
+      requestAnswer = await requestCallback();
+    }
+    this._terminateProcess();
+    return requestAnswer;
+  }
+
+
+  setPrintToScreenCallback(callback) {
+    this._printToScreenCallback = callback;
+  }
+
+  async createNewLocalization(name: string): Promise<boolean> {
+    return await this._requestsWrapper(() => this.createNewLocalization(name));
   }
 }

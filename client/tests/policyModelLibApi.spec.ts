@@ -9,7 +9,7 @@ const timeout = ms =>  {
 }
 const sampleProjectPath: string = path.join(__dirname, "/../testFixture/parts");
 
-describe('API Tests', () => {
+describe('API Environment Tests', () => {
 
 	let api: PolicyModelLibApi;
 	beforeEach(()=>{
@@ -17,7 +17,7 @@ describe('API Tests', () => {
 	})
 
 	afterEach(async () => {
-		api.terminateProcess();
+		api._terminateProcess();
 		await timeout(500);
 	})
 
