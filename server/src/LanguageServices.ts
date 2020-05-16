@@ -54,7 +54,7 @@ export class LanguageServicesFacade {
 
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
-		let services : LanguageServices = await LanguageServices.init(docs, pluginDir)
+		let services : LanguageServices = await LanguageServicesWithCache.init(docs, pluginDir)
 		instance.services = services
 		return instance
 	}
