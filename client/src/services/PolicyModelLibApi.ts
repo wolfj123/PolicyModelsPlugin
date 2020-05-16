@@ -55,6 +55,7 @@ export class PolicyModelLibApi {
     return await serverIsReady();
   }
 
+
   async _loadModel() {
     return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res: any) => {
       return res.data === SUCCESS;
