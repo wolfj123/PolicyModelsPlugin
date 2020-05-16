@@ -19,13 +19,7 @@
 		"vscode": "^1.41.0"
 	},
 	"activationEvents": [
-		"onLanguage:xml",
-		"onLanguage:policyspace",
-		"onLanguage:decisiongraph",
-		"onLanguage:valueinference",
-		"onLanguage:policyModelDescription",
-		"onLanguage:localizedModel",
-		"onLanguage:localiztion"
+		"*"
 	],
 	"main": "./client/out/extension",
 	"contributes": {
