@@ -5,6 +5,9 @@
 
 import * as TestTarget from "../../src/LanguageServices";
 import {
+	DecisionGraphKeywords,
+	PolicySpaceKeywords,
+	ValueInferenceKeywords,
 	PolicyModelsLanguage,
 	parsersInfo,
 	getLanguageByExtension,
@@ -156,6 +159,364 @@ function createPMTextDocFromUrl(uri : string) : PMTextDocument {
 		
 	}
 }
+
+
+
+class LanguageServicesFacade_UnitTests {
+	testTargetClass = TestTarget.LanguageServicesFacade
+
+	static runTests() {
+		let self = new LanguageServicesFacade_UnitTests()
+		describe(self.testTargetClass.name + " unit tests", function() {
+			self.addDocs()
+			self.updateDoc()
+			self.removeDoc()
+			self.onDefinition()
+			self.onReferences()
+			self.onPrepareRename()
+			self.onRenameRequest()
+			self.onFoldingRanges()
+			//self.onCompletion()
+			//self.onCompletionResolve()
+		})
+	}
+
+	async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
+		let docs : PMTextDocument[]
+		docs = filenames.map(createPMTextDocFromUrl)
+		return await TestTarget.LanguageServicesFacade.init(docs,process.cwd());
+	}
+
+	addDocs() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
+					add: ['dg2_ws_1.dg', 'dg3_ws_1.dg']
+				},
+				output: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			const add : string[] = testCase.input.add
+			const output = testCase.output
+			let instance = await self.create(init)
+			instance.addDocs(add.map(createPMTextDocFromUrl))
+			const result = Array.from(instance.services.fileManagers.keys())
+			//assert.deepEqual(result, output)
+			expect(output).to.deep.equalInAnyOrder(result)
+		}
+
+		describe('addDocs', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	updateDoc() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps1.pspace'],
+					update: {
+						url : 'ps1.pspace',
+						text : `new_name [atomic_slot_desc.]: one of` +
+								`	slotval1 [desc],` +
+								`	slotval2 [desc],` +
+								`	slot1val3 [desc].`,
+						oldRange: {start: {character: 0, line: 0},end: {character: 8, line: 0}},
+						newRange : {start: {character: 0, line: 0},end: {character: 8, line: 0}},
+					}
+				},
+				output: {name: 'new_name' , type : PolicyModelEntityType.Slot}
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			let update : PMTextDocument = createPMTextDoc(testCase.input.update.url, testCase.input.update.text, testCase.input.update.oldRange, testCase.input.update.newRange)
+			const output = testCase.output
+			let instance = await self.create(init)
+			instance.updateDoc(update)
+			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
+			assert.equal(result.getName(), output.name)
+			assert.equal(result.getType(), output.type)
+		}
+
+		describe('updateDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	removeDoc() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'sanity',
+				input: {
+					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
+					remove: 'dg1_ws_1.dg'
+				},
+				output: ['ps_ws_1.pspace']
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const init : string[] = testCase.input.init
+			const remove : string = testCase.input.remove
+			const output = testCase.output
+			let instance = await self.create(init)
+			instance.removeDoc(remove)
+			const result = Array.from(instance.services.fileManagers.keys())
+			expect(output).to.deep.equalInAnyOrder(result)
+		}
+
+		describe('removeDoc', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	onDefinition() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'sanity dg->node',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}, targetUri: 'dg1_ws_1.dg', 
+					targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}},
+				]
+			}
+			,{
+				title: 'sanity pspace->slot',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'ps_ws_1.pspace'}, position: {character: 0, line: 0} }
+				},
+				output: [
+					{targetRange: {start: {character: 0, line: 0},end: {character: 0, line: 16}}, targetUri: 'ps_ws_1.pspace', 
+					targetSelectionRange: {start: {character: 0, line: 0},end: {character: 12, line: 0}}},
+				]
+			},
+			{
+				title: 'sanity dg->slot',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 16, line: 8} }
+				},
+				output: [
+					{targetRange: {start: {character: 0, line: 0},end: {character: 0, line: 16}}, targetUri: 'ps_ws_1.pspace', 
+					targetSelectionRange: {start: {character: 0, line: 0},end: {character: 12, line: 0}}},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : DeclarationParams = input.param
+			let instance = await self.create(filenames)
+			const result = instance.onDefinition(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onDefinition', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	// these functions are called when the request is first made from the server
+	onReferences() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : ReferenceParams = input.param
+			let instance = await self.create(filenames)
+			const result = instance.onReferences(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onReferences', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	onPrepareRename() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: {start: {character: 2, line: 4}, end: {character: 4, line: 4}},
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : RenameParams = input.param
+			let instance = await self.create(filenames)
+			const result = instance.onPrepareRename(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onPrepareRename', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	onRenameRequest() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+				},
+				output: [
+					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
+					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
+					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
+					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const input = testCase.input
+			const output = testCase.output
+			const filenames : string[] = input.fileNames
+			const param : RenameParams = input.param
+			let instance = await self.create(filenames)
+			const result = instance.onRenameRequest(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('onRenameRequest', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+	
+	onFoldingRanges() {
+		let self = this
+		const testCases = 
+		[
+			{
+				title: 'node sanity',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					param: {textDocument: {uri: 'dg1_ws_1.dg'}}
+				},
+				output: [
+					{range: {start: {character: 0, line: 1},end: {character: 27, line: 1}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 2},end: {character: 27, line: 2}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 4},end: {character: 17, line: 4}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 5},end: {character: 21, line: 5}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 6},end: {character: 21, line: 6}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
+					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
+				]
+			}
+		]
+
+		async function test(testCase) : Promise<void> {
+			const output = testCase.output
+			const filenames : string[] = testCase.input.fileNames
+			const param : FoldingRangeParams = testCase.input.param
+			let instance = await self.create(filenames)
+			const result = instance.onFoldingRanges(param)
+			assert.deepEqual(result, output)
+		}
+
+		describe('getFoldingRanges', function() {
+			testCases.forEach((testCase, index) => {
+				it(testCase.title , function(done) {
+					test(testCase).then(run => done()).catch(err => done(err))
+				});
+			})
+		})
+	}
+
+	onCompletion() {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+
+	onCompletionResolve() {
+		//TODO:
+		throw new Error("Method not implemented.");
+	}
+}
+
 
 class LanguageServices_UnitTests {
 	testTargetClass = TestTarget.LanguageServices
@@ -523,12 +884,12 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 	static runTests() {
 		let self = new LanguageServicesWithCache_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
-			self.getDeclarations()
-			self.getReferences()
-			self.getRangeOfDoc()
-			self.createPolicyModelEntity()
-			self.getFoldingRanges()
-			//self.getCompletion()
+			// self.getDeclarations()
+			// self.getReferences()
+			// self.getRangeOfDoc()
+			// self.createPolicyModelEntity()
+			// self.getFoldingRanges()
+			self.getCompletion()
 		})
 	}
 
@@ -537,179 +898,97 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServicesWithCache.init(docs,process.cwd());
 	} 
-}
 
-
-
-class LanguageServicesFacade_UnitTests {
-	testTargetClass = TestTarget.LanguageServicesFacade
-
-	static runTests() {
-		let self = new LanguageServicesFacade_UnitTests()
-		describe(self.testTargetClass.name + " unit tests", function() {
-			self.addDocs()
-			self.updateDoc()
-			self.removeDoc()
-			self.onDefinition()
-			self.onReferences()
-			self.onPrepareRename()
-			self.onRenameRequest()
-			self.onFoldingRanges()
-			//self.onCompletion()
-			//self.onCompletionResolve()
-		})
-	}
-
-	async create(filenames : string[]) : Promise<TestTarget.LanguageServicesFacade> {
-		let docs : PMTextDocument[]
-		docs = filenames.map(createPMTextDocFromUrl)
-		return await TestTarget.LanguageServicesFacade.init(docs,process.cwd());
-	}
-
-	addDocs() {
+	//Test
+	getCompletion() {
 		let self = this
 		const testCases = 
 		[
 			{
-				title: 'sanity',
-				input: {
-					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
-					add: ['dg2_ws_1.dg', 'dg3_ws_1.dg']
-				},
-				output: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg']
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const init : string[] = testCase.input.init
-			const add : string[] = testCase.input.add
-			const output = testCase.output
-			let instance = await self.create(init)
-			instance.addDocs(add.map(createPMTextDocFromUrl))
-			const result = Array.from(instance.services.fileManagers.keys())
-			//assert.deepEqual(result, output)
-			expect(output).to.deep.equalInAnyOrder(result)
-		}
-
-		describe('addDocs', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-
-	updateDoc() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'sanity',
-				input: {
-					init: ['ps1.pspace'],
-					update: {
-						url : 'ps1.pspace',
-						text : `new_name [atomic_slot_desc.]: one of` +
-								`	slotval1 [desc],` +
-								`	slotval2 [desc],` +
-								`	slot1val3 [desc].`,
-						oldRange: {start: {character: 0, line: 0},end: {character: 8, line: 0}},
-						newRange : {start: {character: 0, line: 0},end: {character: 8, line: 0}},
-					}
-				},
-				output: {name: 'new_name' , type : PolicyModelEntityType.Slot}
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const init : string[] = testCase.input.init
-			let update : PMTextDocument = createPMTextDoc(testCase.input.update.url, testCase.input.update.text, testCase.input.update.oldRange, testCase.input.update.newRange)
-			const output = testCase.output
-			let instance = await self.create(init)
-			instance.updateDoc(update)
-			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
-			assert.equal(result.getName(), output.name)
-			assert.equal(result.getType(), output.type)
-		}
-
-		describe('updateDoc', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-
-	removeDoc() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'sanity',
-				input: {
-					init: ['ps_ws_1.pspace', 'dg1_ws_1.dg'],
-					remove: 'dg1_ws_1.dg'
-				},
-				output: ['ps_ws_1.pspace']
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const init : string[] = testCase.input.init
-			const remove : string = testCase.input.remove
-			const output = testCase.output
-			let instance = await self.create(init)
-			instance.removeDoc(remove)
-			const result = Array.from(instance.services.fileManagers.keys())
-			expect(output).to.deep.equalInAnyOrder(result)
-		}
-
-		describe('removeDoc', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-
-	onDefinition() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'sanity dg->node',
+				title: 'dg->autocomplete',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
+					location: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'dg1_ws_1.dg'}
 				},
+				keywords: DecisionGraphKeywords,
 				output: [
-					{targetRange: {start: {character: 0, line: 1},end: {character: 0, line: 12}}, targetUri: 'dg1_ws_1.dg', 
-					targetSelectionRange: {start: {character: 2, line: 4},end: {character: 4, line: 4}}},
-				]
-			}
-			,{
-				title: 'sanity pspace->slot',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'ps_ws_1.pspace'}, position: {character: 0, line: 0} }
-				},
-				output: [
-					{targetRange: {start: {character: 0, line: 0},end: {character: 0, line: 16}}, targetUri: 'ps_ws_1.pspace', 
-					targetSelectionRange: {start: {character: 0, line: 0},end: {character: 12, line: 0}}},
+					{label: 'n1', kind: 6},
+					{label: 'n2', kind: 6},
+					{label: 'n3', kind: 6},
+					{label: 'n4', kind: 6},
+					{label: 'n_end', kind: 6},
+					// {label: 'atomic_slot1', kind: 13},
+					// {label: 'compound_slot', kind: 13},
+					// {label: 'aggregate_slot', kind: 13},
+
+					{label: 'atomic_slot1', kind: 13},
+					{label: 'atomic_slot2', kind: 13},
+					{label: 'aggregate_slot', kind: 13},
+					{label: 'compound_slot', kind: 13},
+
+					{label: 'atomic_slot1_val1', kind: 12},
+					{label: 'atomic_slot1_val2', kind: 12},
+					{label: 'atomic_slot1_val3', kind: 12},
+					
+					{label: 'atomic_slot2_val1', kind: 12},
+					{label: 'atomic_slot2_val2', kind: 12},
+					{label: 'atomic_slot2_val3', kind: 12},
+
+					{label: 'aggregate_slot_slotval1', kind: 12},
+					{label: 'aggregate_slot_slotval2', kind: 12},
+					{label: 'aggregate_slot_slotval3', kind: 12},
 				]
 			},
 			{
-				title: 'sanity dg->slot',
+				title: 'pspace->autocomplete',
 				input: {
 					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 16, line: 8} }
+					location: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'ps_ws_1.pspace'}
 				},
+				keywords: PolicySpaceKeywords,
 				output: [
-					{targetRange: {start: {character: 0, line: 0},end: {character: 0, line: 16}}, targetUri: 'ps_ws_1.pspace', 
-					targetSelectionRange: {start: {character: 0, line: 0},end: {character: 12, line: 0}}},
+					{label: 'atomic_slot1', kind: 13},
+					{label: 'atomic_slot2', kind: 13},
+					{label: 'aggregate_slot', kind: 13},
+					{label: 'compound_slot', kind: 13},
+
+					{label: 'atomic_slot1_val1', kind: 12},
+					{label: 'atomic_slot1_val2', kind: 12},
+					{label: 'atomic_slot1_val3', kind: 12},
+					
+					{label: 'atomic_slot2_val1', kind: 12},
+					{label: 'atomic_slot2_val2', kind: 12},
+					{label: 'atomic_slot2_val3', kind: 12},
+
+					{label: 'aggregate_slot_slotval1', kind: 12},
+					{label: 'aggregate_slot_slotval2', kind: 12},
+					{label: 'aggregate_slot_slotval3', kind: 12},
+				]
+			},
+			{
+				title: 'vi->autocomplete',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'vi_ws_1.vi'}
+				},
+				keywords: ValueInferenceKeywords,
+				output: [
+					{label: 'atomic_slot1', kind: 13},
+					{label: 'atomic_slot2', kind: 13},
+					{label: 'aggregate_slot', kind: 13},
+					{label: 'compound_slot', kind: 13},
+
+					{label: 'atomic_slot1_val1', kind: 12},
+					{label: 'atomic_slot1_val2', kind: 12},
+					{label: 'atomic_slot1_val3', kind: 12},
+					
+					{label: 'atomic_slot2_val1', kind: 12},
+					{label: 'atomic_slot2_val2', kind: 12},
+					{label: 'atomic_slot2_val3', kind: 12},
+
+					{label: 'aggregate_slot_slotval1', kind: 12},
+					{label: 'aggregate_slot_slotval2', kind: 12},
+					{label: 'aggregate_slot_slotval3', kind: 12},
 				]
 			}
 		]
@@ -718,183 +997,25 @@ class LanguageServicesFacade_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const param : DeclarationParams = input.param
+			const location : Location = input.location
+			let outputWithKeywords = output.concat(testCase.keywords)
 			let instance = await self.create(filenames)
-			const result = instance.onDefinition(param)
-			assert.deepEqual(result, output)
+			const result = instance.getCompletion(location)
+			expect(outputWithKeywords).to.deep.equalInAnyOrder(result.items)
 		}
 
-		describe('onDefinition', function() {
+		describe('getCompletion', function() {
 			testCases.forEach((testCase, index) => {
 				it(testCase.title , function(done) {
 					test(testCase).then(run => done()).catch(err => done(err))
 				});
 			})
 		})
-	}
-
-	// these functions are called when the request is first made from the server
-	onReferences() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'node sanity',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
-				},
-				output: [
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
-				]
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const input = testCase.input
-			const output = testCase.output
-			const filenames : string[] = input.fileNames
-			const param : ReferenceParams = input.param
-			let instance = await self.create(filenames)
-			const result = instance.onReferences(param)
-			assert.deepEqual(result, output)
-		}
-
-		describe('onReferences', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-
-	onPrepareRename() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'node sanity',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
-				},
-				output: {start: {character: 2, line: 4}, end: {character: 4, line: 4}},
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const input = testCase.input
-			const output = testCase.output
-			const filenames : string[] = input.fileNames
-			const param : RenameParams = input.param
-			let instance = await self.create(filenames)
-			const result = instance.onPrepareRename(param)
-			assert.deepEqual(result, output)
-		}
-
-		describe('onPrepareRename', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-
-	onRenameRequest() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'node sanity',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'dg1_ws_1.dg'}, position: {character: 2, line: 4} }
-				},
-				output: [
-					{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg1_ws_1.dg'},
-					//{range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 2, line: 4},end: {character: 4, line: 4}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
-					// {range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg3_ws_1.dg'}, //TODO: this is a bug
-				]
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const input = testCase.input
-			const output = testCase.output
-			const filenames : string[] = input.fileNames
-			const param : RenameParams = input.param
-			let instance = await self.create(filenames)
-			const result = instance.onRenameRequest(param)
-			assert.deepEqual(result, output)
-		}
-
-		describe('onRenameRequest', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-	
-	onFoldingRanges() {
-		let self = this
-		const testCases = 
-		[
-			{
-				title: 'node sanity',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					param: {textDocument: {uri: 'dg1_ws_1.dg'}}
-				},
-				output: [
-					{range: {start: {character: 0, line: 1},end: {character: 27, line: 1}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 2},end: {character: 27, line: 2}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 4},end: {character: 17, line: 4}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 5},end: {character: 21, line: 5}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 6},end: {character: 21, line: 6}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 7},end: {character: 84, line: 9}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 10},end: {character: 13, line: 10}}, uri: 'dg1_ws_1.dg'},
-				]
-			}
-		]
-
-		async function test(testCase) : Promise<void> {
-			const output = testCase.output
-			const filenames : string[] = testCase.input.fileNames
-			const param : FoldingRangeParams = testCase.input.param
-			let instance = await self.create(filenames)
-			const result = instance.onFoldingRanges(param)
-			assert.deepEqual(result, output)
-		}
-
-		describe('getFoldingRanges', function() {
-			testCases.forEach((testCase, index) => {
-				it(testCase.title , function(done) {
-					test(testCase).then(run => done()).catch(err => done(err))
-				});
-			})
-		})
-	}
-
-	onCompletion() {
-		//TODO:
-		throw new Error("Method not implemented.");
-	}
-
-	onCompletionResolve() {
-		//TODO:
-		throw new Error("Method not implemented.");
 	}
 }
+
+
+
 
 class DecisionGraphServices_UnitTests {
 	testTargetClass = DecisionGraphServices
