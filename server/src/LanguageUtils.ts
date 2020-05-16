@@ -142,7 +142,6 @@ export const DecisionGraphKeywords : CompletionItem[] = [
 	{label: "section", kind: CompletionItemKind.Keyword},
 	{label: "title", kind: CompletionItemKind.Keyword},
 	{label: "end", kind: CompletionItemKind.Keyword},
-	{label: "consider", kind: CompletionItemKind.Keyword},
 	{label: "reject", kind: CompletionItemKind.Keyword},
 	{label: "set", kind: CompletionItemKind.Keyword},
 	{label: "#import", kind: CompletionItemKind.Keyword},
@@ -162,7 +161,7 @@ export const ValueInferenceKeywords : CompletionItem[] = [
 ]
 
 export function entity2CompletionItem(entity : PolicyModelEntity) : CompletionItem {
-	let EntityType2CompletionItemKind : CompletionItemKind[]
+	let EntityType2CompletionItemKind : CompletionItemKind[] = []
 	EntityType2CompletionItemKind[PolicyModelEntityType.DGNode] = CompletionItemKind.Variable
 	EntityType2CompletionItemKind[PolicyModelEntityType.Slot] = CompletionItemKind.Enum
 	EntityType2CompletionItemKind[PolicyModelEntityType.SlotValue] = CompletionItemKind.Value
