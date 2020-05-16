@@ -719,7 +719,7 @@ export class CacheQueries {
 				.filter(e => e.getType() == PolicyModelEntityType.Slot)
 
 		slotvalues = cache
-				.filter(e => e.getType() == PolicyModelEntityType.Slot)
+				.filter(e => e.getType() == PolicyModelEntityType.SlotValue)
 		
 		let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
 		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
@@ -732,7 +732,9 @@ export class CacheQueries {
 	}
 
 	static getAutoCompletePolicySpace(cache : PolicyModelEntity[]) : CompletionList {		
-		let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
+		let entities : PolicyModelEntity[] = cache.filter(e => 
+			(e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue) 
+			&& e.getCategory() != PolicyModelEntityCategory.FoldRange)
 		let keywords : CompletionItem[] = PolicySpaceKeywords
 		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
 

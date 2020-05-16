@@ -947,7 +947,7 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 					{label: 'compound_slot', kind: 13},
 
 					{label: 'atomic_slot1_val1', kind: 12},
-					{label: 'atomic_slot1_val3', kind: 12},
+					{label: 'atomic_slot1_val2', kind: 12},
 					{label: 'atomic_slot1_val3', kind: 12},
 					
 					{label: 'atomic_slot2_val1', kind: 12},
@@ -967,7 +967,7 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 			let instance = await self.create([input.uri])
 			const result = instance.getCompletion(input)
 			let outputWithKeywords = output.concat(testCase.keywords)
-			expect(output).to.deep.equalInAnyOrder(result.items)
+			expect(outputWithKeywords).to.deep.equalInAnyOrder(result.items)
 		}
 
 		describe('getCompletion', function() {

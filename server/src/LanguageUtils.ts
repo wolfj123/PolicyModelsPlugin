@@ -149,10 +149,13 @@ export const DecisionGraphKeywords : CompletionItem[] = [
 
 export const PolicySpaceKeywords : CompletionItem[] = [
 	{label: "TODO", kind: CompletionItemKind.Keyword},
-	{label: "of", kind: CompletionItemKind.Keyword},
-	{label: "one", kind: CompletionItemKind.Keyword},
-	{label: "some", kind: CompletionItemKind.Keyword},
-	{label: "consists", kind: CompletionItemKind.Keyword},
+	{label: "one of", kind: CompletionItemKind.Keyword},
+	{label: "some of", kind: CompletionItemKind.Keyword},
+	{label: "consists of", kind: CompletionItemKind.Keyword},
+	// {label: "of", kind: CompletionItemKind.Keyword},
+	// {label: "one", kind: CompletionItemKind.Keyword},
+	// {label: "some", kind: CompletionItemKind.Keyword},
+	// {label: "consists", kind: CompletionItemKind.Keyword},
 ]
 
 export const ValueInferenceKeywords : CompletionItem[] = [
