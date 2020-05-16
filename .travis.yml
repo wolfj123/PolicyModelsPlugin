@@ -1,40 +1,35 @@
-language: node_js
-node_js:
-  - "stable"
+matrix:
+  include:
+    - language: node_js
+      node_js:
+        - "stable"
+      install:
+        - |
+          if [ $TRAVIS_OS_NAME == "linux" ]; then
+            export DISPLAY=':99.0'
+            /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          fi
+      script:
+        |
+        echo ">>> Compile vscode-test"
+        yarn && yarn compile
+        echo ">>> Compiled vscode-test"
+        cd sample
+        echo ">>> Run sample integration test"
+        yarn && yarn compile && yarn test
 
-jdk:
-  - oraclejdk8
-  - oraclejdk11
-  - openjdk10
-  - openjdk11
+
+      after_failure:
+        - for v in /home/travis/.npm/_logs/*.log ; do
+          echo $v logtail ======================== ; tail -100 $v ;
+          done
+
 
 os:
   - linux
 
 cache:
   - yarn
-
-install:
-  - |
-    if [ $TRAVIS_OS_NAME == "linux" ]; then
-      export DISPLAY=':99.0'
-      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-    fi
-
-script:
-    |
-    echo ">>> Compile vscode-test"
-    yarn && yarn compile
-    echo ">>> Compiled vscode-test"
-    cd sample
-    echo ">>> Run sample integration test"
-    yarn && yarn compile && yarn test
-
-
-after_failure:
-  - for v in /home/travis/.npm/_logs/*.log ; do
-    echo $v logtail ======================== ; tail -100 $v ;
-    done
 
 notifications:
   email:
