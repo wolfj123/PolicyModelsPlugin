@@ -964,6 +964,32 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 					{label: 'aggregate_slot_slotval2', kind: 12},
 					{label: 'aggregate_slot_slotval3', kind: 12},
 				]
+			},
+			{
+				title: 'vi->autocomplete',
+				input: {
+					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+					location: {range: {start: {character: 0, line: 0},end: {character: 0, line: 0}}, uri: 'vi_ws_1.vi'}
+				},
+				keywords: ValueInferenceKeywords,
+				output: [
+					{label: 'atomic_slot1', kind: 13},
+					{label: 'atomic_slot2', kind: 13},
+					{label: 'aggregate_slot', kind: 13},
+					{label: 'compound_slot', kind: 13},
+
+					{label: 'atomic_slot1_val1', kind: 12},
+					{label: 'atomic_slot1_val2', kind: 12},
+					{label: 'atomic_slot1_val3', kind: 12},
+					
+					{label: 'atomic_slot2_val1', kind: 12},
+					{label: 'atomic_slot2_val2', kind: 12},
+					{label: 'atomic_slot2_val3', kind: 12},
+
+					{label: 'aggregate_slot_slotval1', kind: 12},
+					{label: 'aggregate_slot_slotval2', kind: 12},
+					{label: 'aggregate_slot_slotval3', kind: 12},
+				]
 			}
 		]
 
@@ -1048,9 +1074,9 @@ class DecisionGraphServices_UnitTests {
 
 
 
-// DecisionGraphServices_UnitTests.runTests()
-// LanguageServices_UnitTests.runTests()
-// LanguageServicesFacade_UnitTests.runTests()
+DecisionGraphServices_UnitTests.runTests()
+LanguageServices_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()
 
 LanguageServicesWithCache_UnitTests.runTests()
 
