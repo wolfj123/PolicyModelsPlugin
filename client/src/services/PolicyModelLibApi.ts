@@ -58,7 +58,7 @@ export class PolicyModelLibApi {
   async _loadModel() {
     return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res: any) => {
       return res.data === SUCCESS;
-    }).catch(this._handleConnectionRejection);;
+    })/* .catch(this._handleConnectionRejection) */;
   }
   _printToScreen(message: string): void {
     this._printToScreenCallback(message);
