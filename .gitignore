@@ -1,3 +1,13 @@
+out
+node_modules
+client/server
+.vscode-test
+!cli/*
+!cli/lib/*
+.idea
+configViewer/configViewer.js
+
+
 
 # Compiled class file
 *.class
