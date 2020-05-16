@@ -84,13 +84,15 @@ export function getFileExtension(filename : string) : string {
 	return re.exec(filename)[1];   
 }
 
-
-/*
-export interface changeInfo{
-	oldRange: Range,
-	newRange: Range
+export function mergeCompletionLists(cl1 : CompletionList, cl2 : CompletionList) : CompletionList {
+	let items : CompletionItem[] = uniqueArray(cl1.items.concat(cl2.items))
+	let isIncomplete : boolean = cl1.isIncomplete || cl2.isIncomplete
+	return {
+		items: items,
+		isIncomplete: isIncomplete
+	}
 }
-*/
+
 export function changeInfo2Edit(change : changeInfo) {
 	const result =  
 	{

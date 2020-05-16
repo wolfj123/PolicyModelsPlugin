@@ -54,7 +54,7 @@ export class LanguageServicesFacade {
 
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
-		let services : LanguageServices = await LanguageServices.init(docs, pluginDir)
+		let services : LanguageServices = await LanguageServicesWithCache.init(docs, pluginDir)
 		instance.services = services
 		return instance
 	}
@@ -113,12 +113,12 @@ export class LanguageServicesFacade {
 		return this.services.getReferences(location)
 	}
 
-	onCompletion(params : TextDocumentPositionParams): CompletionList { //return a list of labels
-		//TODO:
-		return null
+	onCompletion(params : TextDocumentPositionParams): CompletionList | null { //return a list of labels
+		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
+		return this.services.getCompletion(location)
 	}
 
-	onCompletionResolve(params : CompletionItem): CompletionItem { //we are not supporting  this right now
+	onCompletionResolve(params : CompletionItem): CompletionItem | null { //we are not supporting  this right now
 		//TODO:
 		return null
 	}
@@ -270,9 +270,8 @@ export class LanguageServices {
 		return fm.getFoldingRanges()
 	}
 
-	getCompletion(location : Location) : CompletionList[] {
+	getCompletion(location : Location) : CompletionList | null {
 		//TODO:
-		//return []
 		throw new Error("Method not implemented.");
 	}
 }
@@ -290,6 +289,11 @@ export abstract class FileManager {
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
+	}
+
+	getCache() : PolicyModelEntity[] {
+		//to be overridden in sub classes that contain a cache
+		return []
 	}
 
 	isLocationInDoc(location : Location) : boolean {
@@ -348,7 +352,7 @@ export abstract class FileManager {
 
 	abstract getFoldingRanges() : Location[]
 
-	abstract getAutoComplete(location : Location) : CompletionList
+	abstract getAutoComplete(location : Location, allCaches : PolicyModelEntity[]) : CompletionList
 }
 
 export class FileManagerFactory {
@@ -407,7 +411,7 @@ export class DecisionGraphFileManager extends FileManager {
 		let ranges : Range[] = DecisionGraphServices.getAllNodesInDocument(this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAutoComplete(location: Location) : CompletionList {
+	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
@@ -445,7 +449,7 @@ export class PolicySpaceFileManager extends FileManager {
 		let ranges : Range[] = PolicySpaceServices.getAllSlotsInDocument(this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAutoComplete(location: Location) : CompletionList {
+	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
 		//TODO:
 		throw new Error("Method not implemented.");
 	}
@@ -483,7 +487,7 @@ export class ValueInferenceFileManager extends FileManager {
 		ranges = ranges.concat(ValueInferenceServices.getAllInferencePairsInDocument(this.tree))
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAutoComplete(location: Location) : CompletionList {
+	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
 		throw new Error("Method not implemented.");
 	}
 }
@@ -507,6 +511,45 @@ export class LanguageServicesWithCache extends LanguageServices {
 			this.getParserByExtension(extension), 
 			getLanguageByExtension(extension), true)
 	}
+
+	getCompletion(location : Location) : CompletionList | null {
+		let uri : DocumentUri = location.uri
+		let fm : FileManager = this.fileManagers.get(uri)
+		if(isNullOrUndefined(fm)) {return null}
+
+		let pspaceCompletionList : CompletionList = {isIncomplete: false, items: []}
+		this.fileManagers.forEach((fm : FileManager, uri : DocumentUri) => {
+			if(fm instanceof PolicySpaceFileManager) {
+				pspaceCompletionList = Utils.mergeCompletionLists(pspaceCompletionList, fm.getAutoComplete(null, null))
+			}
+		})
+
+		let result : CompletionList = pspaceCompletionList
+		switch(true){
+			case fm instanceof DecisionGraphFileManager: 
+				let caches : PolicyModelEntity[] = 
+				Utils.uniqueArray(Utils.flatten(
+					Array.from(this.fileManagers.values())
+						.map((fm: FileManager) => fm.getCache())))
+				result = Utils.mergeCompletionLists(result,fm.getAutoComplete(location, caches))
+				result.items = result.items.concat(DecisionGraphKeywords)
+				break;	
+	
+			case fm instanceof PolicySpaceFileManager: 
+				result.items = result.items.concat(PolicySpaceKeywords)
+				break;
+
+			case fm instanceof ValueInferenceFileManager: 
+				result.items = result.items.concat(ValueInferenceKeywords)
+				break;
+
+			default:
+				result = {isIncomplete: false, items: []}
+				break;
+		}
+
+		return result
+	}
 }
 
 export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
@@ -521,6 +564,10 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
 		this.cache = DecisionGraphServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+
+	getCache() : PolicyModelEntity[] {
+		return this.cache
 	}
 
 	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
@@ -545,10 +592,11 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	getFoldingRanges(): Location[] {
 		return CacheQueries.getFoldingRanges(this.cache)
 	}
-	getAutoComplete(location: Location) : CompletionList {
+
+	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
 		let importMap : Map<string,DocumentUri> = DecisionGraphServices.getAllImports(this.tree)
 		let importUris : DocumentUri[] = Array.from(importMap.values())
-		return CacheQueries.getAutoCompleteDecisionGraph(this.cache, importUris)
+		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, importUris)
 	}
 }
 
@@ -563,6 +611,10 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
 		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+	}
+
+	getCache() : PolicyModelEntity[] {
+		return this.cache
 	}
 
 	getAllDefinitionsSlot(name: string): Location[] {
@@ -585,7 +637,7 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 		return CacheQueries.getFoldingRanges(this.cache)
 	}
 
-	getAutoComplete(location: Location) : CompletionList {
+	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
 		return CacheQueries.getAutoCompletePolicySpace(this.cache)
 	}
 }
@@ -602,6 +654,11 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 		this.tree = newTree
 		this.cache = ValueInferenceServices.getAllEntitiesInDoc(newTree, this.uri)
 	}
+
+	getCache() : PolicyModelEntity[] {
+		return this.cache
+	}
+
 	getAllReferencesSlot(name: string, source: string): Location[] {
 		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
 	}
@@ -614,8 +671,9 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 		return CacheQueries.getFoldingRanges(this.cache)
 	}
 
-	getAutoComplete(location: Location) : CompletionList {
-		return CacheQueries.getAutoCompleteValueInference(this.cache)
+	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
+		//return CacheQueries.getAutoCompleteValueInference(this.cache)
+		return CacheQueries.getAutoCompletePolicySpace(this.cache)
 	}
 }
 
@@ -677,11 +735,13 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], imports : DocumentUri[] = undefined) : CompletionList {
+	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], /*otherCaches : Map<DocumentUri, PolicyModelEntity[]>, currentDoc : DocumentUri,*/ imports : DocumentUri[] = undefined) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
 		let slots : PolicyModelEntity[]
 		let slotvalues : PolicyModelEntity[]
-		let keywords : CompletionItem[] = PolicySpaceKeywords
+		let keywords : CompletionItem[] = DecisionGraphKeywords
+		// let currentDocCache = otherCaches.get(currentDoc)
+		// if(isNullOrUndefined(currentDocCache)) {return null}
 
 		nodes = cache
 				.filter(function (e) {
@@ -689,14 +749,15 @@ export class CacheQueries {
 					return (e.getCategory() == PolicyModelEntityCategory.Declaration || 
 							(e.getCategory() == PolicyModelEntityCategory.Reference && !isNullOrUndefined(imports) && imports.indexOf(e.getSource()) >= 0))
 				})
-		slots = cache
-				.filter(e => e.getType() == PolicyModelEntityType.Slot)
+		// slots = cache
+		// 		.filter(e => e.getType() == PolicyModelEntityType.Slot && e.getCategory() != PolicyModelEntityCategory.FoldRange)
 
-		slotvalues = cache
-				.filter(e => e.getType() == PolicyModelEntityType.Slot)
-		
-		let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
-		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+		// slotvalues = cache
+		// 		.filter(e => e.getType() == PolicyModelEntityType.SlotValue && e.getCategory() != PolicyModelEntityCategory.FoldRange)		
+		// let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
+		// let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+
+		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e)))
 
 		let result = {
 			isIncomplete: false,
@@ -706,9 +767,11 @@ export class CacheQueries {
 	}
 
 	static getAutoCompletePolicySpace(cache : PolicyModelEntity[]) : CompletionList {		
-		let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
+		let entities : PolicyModelEntity[] = cache.filter(e => 
+			(e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue) 
+			&& e.getCategory() != PolicyModelEntityCategory.FoldRange)
 		let keywords : CompletionItem[] = PolicySpaceKeywords
-		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)))
 
 		let result = {
 			isIncomplete: false,
@@ -717,15 +780,15 @@ export class CacheQueries {
 		return result		
 	}
 
-	static getAutoCompleteValueInference(cache : PolicyModelEntity[]) : CompletionList {		
-		let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
-		let keywords : CompletionItem[] = ValueInferenceKeywords
-		let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
+	// static getAutoCompleteValueInference(cache : PolicyModelEntity[]) : CompletionList {		
+	// 	let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
+	// 	let keywords : CompletionItem[] = ValueInferenceKeywords
+	// 	let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
 
-		let result = {
-			isIncomplete: false,
-			items: items
-		}
-		return result	
-	}
+	// 	let result = {
+	// 		isIncomplete: false,
+	// 		items: items
+	// 	}
+	// 	return result	
+	// }
 }
