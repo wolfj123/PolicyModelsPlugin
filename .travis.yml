@@ -26,6 +26,8 @@ after_failure:
     echo $v logtail ======================== ; tail -100 $v ;
     done
 
+dist: trusty
+
 
 
 
