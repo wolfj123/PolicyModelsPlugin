@@ -601,8 +601,8 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 
 	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
-		let importUris : DocumentUri[] = Array.from(this.importMap.values())
-		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, importUris)
+		//let importUris : DocumentUri[] = Array.from(this.importMap.values())
+		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, this.uri, this.importMap)
 	}
 }
 
@@ -741,7 +741,7 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], imports : DocumentUri[] = undefined) : CompletionList | null {
+	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], uri : DocumentUri, importMap : Map<String, DocumentUri>) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
 		let slots : PolicyModelEntity[]
 		let slotvalues : PolicyModelEntity[]
@@ -750,11 +750,14 @@ export class CacheQueries {
 		nodes = cache
 				.filter(function (e) {
 					if(e.getType() != PolicyModelEntityType.DGNode) {return false}
+
+					let isImported : boolean = e.source === uri || Array.from(importMap.values()).indexOf(e.getSource()) > -1
+
 					return (e.getCategory() == PolicyModelEntityCategory.Declaration || 
-							(e.getCategory() == PolicyModelEntityCategory.Reference && !isNullOrUndefined(imports) && imports.indexOf(e.getSource()) >= 0))
+							(e.getCategory() == PolicyModelEntityCategory.Reference && isImported))
 				})
 
-		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e)))
+		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e, uri)))
 
 		let result = {
 			isIncomplete: false,

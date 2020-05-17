@@ -162,16 +162,27 @@ export const ValueInferenceKeywords : CompletionItem[] = [
 	{label: "comply", kind: CompletionItemKind.Keyword},
 ]
 
-export function entity2CompletionItem(entity : PolicyModelEntity) : CompletionItem {
+export function entity2CompletionItem(entity : PolicyModelEntity, uri : DocumentUri, importMap : Map<string, DocumentUri>) : CompletionItem {
 	let EntityType2CompletionItemKind : CompletionItemKind[] = []
 	EntityType2CompletionItemKind[PolicyModelEntityType.DGNode] = CompletionItemKind.Variable
 	EntityType2CompletionItemKind[PolicyModelEntityType.Slot] = CompletionItemKind.Enum
 	EntityType2CompletionItemKind[PolicyModelEntityType.SlotValue] = CompletionItemKind.Value
 
 	let kind : CompletionItemKind = EntityType2CompletionItemKind[entity.getType()]
+	let prefix : string = 
+		(entity.getType() == PolicyModelEntityType.DGNode && 
+		entity.getCategory() == PolicyModelEntityCategory.Reference && 
+		!isNullOrUndefined(entity.getSource()) &&
+		entity.getSource() !== uri) ? 
+			importMap.get(entity.getSource()) : "";
+
+
+	let label : string = entity.getName()
+
+
 
 	let result : CompletionItem = {
-		label: entity.getName(),
+		label: label,
 		kind: kind,
 	}
 	return result
