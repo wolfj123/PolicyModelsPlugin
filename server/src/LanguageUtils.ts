@@ -64,7 +64,9 @@ export function getLanguageByExtension(extension : string) : PolicyModelsLanguag
 
 function resolveSource(fromUri : DocumentUri, to : DocumentUri) : DocumentUri {
 	let currFileDir : string = path.dirname(fromUri)
-	return path.relative(currFileDir, to)
+	let relative : string = path.relative(currFileDir, to)
+	let absolutePath : string = path.resolve(currFileDir, relative)
+	return absolutePath
 }
 
 //****Entities****/
