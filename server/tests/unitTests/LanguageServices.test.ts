@@ -1034,6 +1034,7 @@ class DecisionGraphServices_UnitTests {
 				title: 'sanity',
 				input: 'dg2.dg',
 				output: [
+					{"category": 3, "name": "dg", "type": 5, }, 
 					{"category": 0, "name": "import_node", "type": 0, }, 
 					{"category": 1, "name": "findme", "type": 0, }, 
 					{"category": 0, "name": "ask_node", "type": 0, }, 
@@ -1051,7 +1052,7 @@ class DecisionGraphServices_UnitTests {
 			return getTree(testCase.input).then(tree => {
 				let uri : DocumentUri = testCase.input
 				const output = testCase.output
-				const result = DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
+				const result = DecisionGraphServices.getAllEntitiesInDoc(tree, uri).entities.map(e => {
 					return {
 						name: e.getName(),
 						type: e.getType(),

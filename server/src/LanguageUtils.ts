@@ -69,13 +69,15 @@ export enum PolicyModelEntityType {
 	Slot,
 	SlotValue,
 	ValueInference,
-	InferencePair
+	InferencePair,
+	ImportGraph
 }
 
 export enum PolicyModelEntityCategory {
 	FoldRange,
 	Declaration,
-	Reference
+	Reference,
+	Special
 }
 
 export class PolicyModelEntity {
@@ -279,7 +281,7 @@ export class DecisionGraphServices {
 		let source : DocumentUri
 		let category : PolicyModelEntityCategory
 		switch(node.type) {
-			//case 'node_id':
+			//case 'node_id':				
 			case 'node_id_value':	
 			 	name = node.text
 				switch(node.parent.type){
@@ -310,53 +312,68 @@ export class DecisionGraphServices {
 			case 'slot_value':
 				name = node.text
 				return new PolicyModelEntity(name, PolicyModelEntityType.SlotValue, node, undefined, uri, PolicyModelEntityCategory.Reference)	
+			// case 'import_node':
+			// 	name = node.descendantsOfType("decision_graph_name")[0].text.trim()
+			// 	return new PolicyModelEntity(name, PolicyModelEntityType.ImportGraph, node, undefined, uri, PolicyModelEntityCategory.Special)	
 			default:
 				return null
 		}
 	}
 
-	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : PolicyModelEntity[] {
-		let result : PolicyModelEntity[] = []
-		let imports : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
-		let importMap : Map<string, DocumentUri>
+	static getAllImportsInDoc(tree : Parser.Tree, uri : DocumentUri) : {imports: PolicyModelEntity[], importMap : Map<string, DocumentUri>}  {
+		let importNodes : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
+
+		let imports : PolicyModelEntity[] = []
+		let importMap : Map<string, DocumentUri> = new Map()
 		
-		if (imports.length > 0) {
-			//	imports.forEach
-			importMap = new Map()
-			imports.forEach(imp => {
+		if (importNodes.length > 0) {
+			importNodes.forEach(imp => {
 				let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
 				let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
+				let entity : PolicyModelEntity = new PolicyModelEntity(graphname, PolicyModelEntityType.ImportGraph, imp, undefined, uri, PolicyModelEntityCategory.Special)	
+				imports.push(entity)
 				importMap.set(graphname, filename)
 			})
 		}
+
+		return {
+			imports: imports,
+			importMap: importMap
+		}
+	}
+
+	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : {entities: PolicyModelEntity[], importMap : Map<string, DocumentUri>} {
+		let result : PolicyModelEntity[] = []
+		let importsInfo : {imports: PolicyModelEntity[], importMap : Map<string, DocumentUri>} 
+			= DecisionGraphServices.getAllImportsInDoc(tree, uri)
 
 		for (let node of nextNode(tree)) {
 			if(nodeTypes.indexOf(node.type) > -1) {
 				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, uri, uri, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
-				let entity = DecisionGraphServices.createEntityFromNode(node, uri, importMap)
+				let entity = DecisionGraphServices.createEntityFromNode(node, uri, importsInfo.importMap)
 				if(!isNullOrUndefined(entity)) {
 					result.push(entity)
 				}
 			}
 		}
-		return result
+		return {entities: result.concat(importsInfo.imports), importMap: importsInfo.importMap}
 	}
 
-	static getAllImports(tree : Parser.Tree) : Map<string, DocumentUri> {
-		let result : Map<string, DocumentUri> = new Map()
-		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let importNodes : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
-		importNodes.forEach(
-			imp => {
-				let name : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
-				let uri : string = imp.descendantsOfType("file_path")[0].text.trim()
-				result.set(name, uri)
-			})
+	// static getAllImports(tree : Parser.Tree) : Map<string, DocumentUri> {
+	// 	let result : Map<string, DocumentUri> = new Map()
+	// 	let root : Parser.SyntaxNode = tree.walk().currentNode()
+	// 	let importNodes : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
+	// 	importNodes.forEach(
+	// 		imp => {
+	// 			let name : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
+	// 			let uri : string = imp.descendantsOfType("file_path")[0].text.trim()
+	// 			result.set(name, uri)
+	// 		})
 
-		return result
-	}
+	// 	return result
+	// }
 
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()

@@ -554,16 +554,23 @@ export class LanguageServicesWithCache extends LanguageServices {
 
 export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
 	cache : PolicyModelEntity[]
-	imports : DocumentUri[]
+	importMap : Map<string, DocumentUri>
+
 
 	constructor(tree : Parser.Tree, uri : DocumentUri){
 		super(tree, uri)
-		this.cache = DecisionGraphServices.getAllEntitiesInDoc(tree, uri)
+		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: Map<string, string>}
+			= DecisionGraphServices.getAllEntitiesInDoc(tree, uri)
+		this.cache = cacheAndImportMap.entities
+		this.importMap = cacheAndImportMap.importMap
 	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.cache = DecisionGraphServices.getAllEntitiesInDoc(newTree, this.uri)
+		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: Map<string, string>}
+		= DecisionGraphServices.getAllEntitiesInDoc(newTree, this.uri)
+		this.cache = cacheAndImportMap.entities
+		this.importMap = cacheAndImportMap.importMap
 	}
 
 	getCache() : PolicyModelEntity[] {
@@ -594,8 +601,8 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 
 	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
-		let importMap : Map<string,DocumentUri> = DecisionGraphServices.getAllImports(this.tree)
-		let importUris : DocumentUri[] = Array.from(importMap.values())
+		//let importMap : Map<string,DocumentUri> = DecisionGraphServices.getAllImports(this.tree)
+		let importUris : DocumentUri[] = Array.from(this.importMap.values())
 		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, importUris)
 	}
 }
