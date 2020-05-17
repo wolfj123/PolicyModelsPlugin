@@ -741,7 +741,7 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], uri : DocumentUri, importMap : Map<String, DocumentUri>) : CompletionList | null {
+	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], uri : DocumentUri, importMap : Map<string, DocumentUri>) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
 		let slots : PolicyModelEntity[]
 		let slotvalues : PolicyModelEntity[]
@@ -757,7 +757,7 @@ export class CacheQueries {
 							(e.getCategory() == PolicyModelEntityCategory.Reference && isImported))
 				})
 
-		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e, uri)))
+		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e, uri, importMap)))
 
 		let result = {
 			isIncomplete: false,

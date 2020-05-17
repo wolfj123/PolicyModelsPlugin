@@ -162,24 +162,27 @@ export const ValueInferenceKeywords : CompletionItem[] = [
 	{label: "comply", kind: CompletionItemKind.Keyword},
 ]
 
-export function entity2CompletionItem(entity : PolicyModelEntity, uri : DocumentUri, importMap : Map<string, DocumentUri>) : CompletionItem {
+export function entity2CompletionItem(entity : PolicyModelEntity, uri : DocumentUri = undefined, importMap : Map<string, DocumentUri> = undefined) : CompletionItem | null {
 	let EntityType2CompletionItemKind : CompletionItemKind[] = []
 	EntityType2CompletionItemKind[PolicyModelEntityType.DGNode] = CompletionItemKind.Variable
 	EntityType2CompletionItemKind[PolicyModelEntityType.Slot] = CompletionItemKind.Enum
 	EntityType2CompletionItemKind[PolicyModelEntityType.SlotValue] = CompletionItemKind.Value
+	if(entity.getType() == PolicyModelEntityType.ImportGraph) {
+		return null
+	}
 
 	let kind : CompletionItemKind = EntityType2CompletionItemKind[entity.getType()]
-	let prefix : string = 
+	let prefix : string = ""
+	if(!isNullOrUndefined(uri) && !isNullOrUndefined(importMap)){
+		prefix =
 		(entity.getType() == PolicyModelEntityType.DGNode && 
 		entity.getCategory() == PolicyModelEntityCategory.Reference && 
 		!isNullOrUndefined(entity.getSource()) &&
-		entity.getSource() !== uri) ? 
-			importMap.get(entity.getSource()) : "";
-
-
-	let label : string = entity.getName()
-
-
+		entity.getSource() !== uri && importMap.has(entity.getSource()))
+			? importMap.get(entity.getSource()) : "" 
+	}
+	
+	let label : string = prefix.concat(entity.getName())
 
 	let result : CompletionItem = {
 		label: label,
