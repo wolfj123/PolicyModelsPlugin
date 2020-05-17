@@ -36,7 +36,8 @@ export enum PolicyModelsLanguage {
 	ValueInference
 }
 
-export const parsersInfo = 	//TODO: maybe extract this info from package.json
+//TODO: maybe extract this info from package.json
+export const parsersInfo = 	
 [ 
 	{ 
 		fileExtentsions : ['dg'],
@@ -154,10 +155,6 @@ export const PolicySpaceKeywords : CompletionItem[] = [
 	{label: "one of", kind: CompletionItemKind.Keyword},
 	{label: "some of", kind: CompletionItemKind.Keyword},
 	{label: "consists of", kind: CompletionItemKind.Keyword},
-	// {label: "of", kind: CompletionItemKind.Keyword},
-	// {label: "one", kind: CompletionItemKind.Keyword},
-	// {label: "some", kind: CompletionItemKind.Keyword},
-	// {label: "consists", kind: CompletionItemKind.Keyword},
 ]
 
 export const ValueInferenceKeywords : CompletionItem[] = [
@@ -324,22 +321,41 @@ export class DecisionGraphServices {
 		let importNodes : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
 
 		let imports : PolicyModelEntity[] = []
-		let importMap : Map<string, DocumentUri> = new Map()
+		//let importMap : Map<string, DocumentUri> = new Map()
 		
 		if (importNodes.length > 0) {
 			importNodes.forEach(imp => {
-				let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
+				// let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
+				// filename = path.relative(uri, filename)
 				let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
 				let entity : PolicyModelEntity = new PolicyModelEntity(graphname, PolicyModelEntityType.ImportGraph, imp, undefined, uri, PolicyModelEntityCategory.Special)	
 				imports.push(entity)
-				importMap.set(graphname, filename)
+				//importMap.set(graphname, filename)
 			})
 		}
 
 		return {
 			imports: imports,
-			importMap: importMap
+			importMap: DecisionGraphServices.importMapFromImportEntities(imports, uri)
 		}
+	}
+
+	static importMapFromImportEntities(imports: PolicyModelEntity[], uri : DocumentUri) : Map<string, DocumentUri> {
+		let importMap : Map<string, DocumentUri> = new Map()
+		
+		if (imports.length > 0) {
+			imports
+				.map(importEntity => importEntity.syntaxNode)
+				.filter(imp => imp.type === "import_node")
+				.forEach(imp => {
+					let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
+					let currFileDir : string = path.dirname(uri)
+					filename = path.relative(currFileDir, filename)
+					let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
+					importMap.set(graphname, filename)
+				})
+		}	
+		return importMap
 	}
 
 	static getAllEntitiesInDoc(tree : Parser.Tree, uri : DocumentUri) : {entities: PolicyModelEntity[], importMap : Map<string, DocumentUri>} {
@@ -361,21 +377,7 @@ export class DecisionGraphServices {
 		return {entities: result.concat(importsInfo.imports), importMap: importsInfo.importMap}
 	}
 
-	static importMapFromImportEntities(imports: PolicyModelEntity[]) : Map<string, DocumentUri> {
-		let importMap : Map<string, DocumentUri> = new Map()
-		
-		if (imports.length > 0) {
-			imports
-				.map(importEntity => importEntity.syntaxNode)
-				.filter(imp => imp.type === "import_node")
-				.forEach(imp => {
-					let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
-					let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
-					importMap.set(graphname, filename)
-				})
-		}	
-		return importMap
-	}
+
 
 	// static getAllImports(tree : Parser.Tree) : Map<string, DocumentUri> {
 	// 	let result : Map<string, DocumentUri> = new Map()
@@ -446,8 +448,6 @@ export class DecisionGraphServices {
 	}
 
 	static getAllNodesInDocument(tree : Parser.Tree) : Range[] {
-		
-		//let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = []
 		for (let node of nextNode(tree)) {
 			if(nodeTypes.indexOf(node.type) > -1){
@@ -457,18 +457,17 @@ export class DecisionGraphServices {
 		return getRangesOfSyntaxNodes(result)
 	}
 
-	static getCompletion(tree : Parser.Tree, range : Range) : PolicyModelEntityType | null {
-		//TODO:
-		let result : PolicyModelEntityType = null
-		let cursor : Parser.TreeCursor = tree.walk()
-		let node : Parser.SyntaxNode = cursor.currentNode().descendantForPosition(Utils.position2Point(range.start), Utils.position2Point(range.end))
-		console.log(node.type)
-		console.log(node.hasError())
-		console.log(node.text)
-		
-		
-		return result
-	}
+	// static getCompletion(tree : Parser.Tree, range : Range) : PolicyModelEntityType | null {
+	// 	//TODO:
+	// 	let result : PolicyModelEntityType = null
+	// 	let cursor : Parser.TreeCursor = tree.walk()
+	// 	let node : Parser.SyntaxNode = cursor.currentNode().descendantForPosition(Utils.position2Point(range.start), Utils.position2Point(range.end))
+	// 	console.log(node.type)
+	// 	console.log(node.hasError())
+	// 	console.log(node.text)
+			
+	// 	return result
+	// }
 }
 
 export class PolicySpaceServices {
@@ -535,7 +534,6 @@ export class PolicySpaceServices {
 	}
 
 	static getAllSlotsInDocument(tree : Parser.Tree) : Range[] {
-		//TODO: this maybe can be made faster without using descendantsOfType
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = root.descendantsOfType("slot")
 		return getRangesOfSyntaxNodes(result)
@@ -595,14 +593,12 @@ export class ValueInferenceServices {
 	}
 
 	static getAllValueInferencesInDocument(tree : Parser.Tree) : Range[] {
-		//TODO: this maybe can be made faster without using descendantsOfType
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = root.descendantsOfType("value_inference")
 		return getRangesOfSyntaxNodes(result)
 	}
 
 	static getAllInferencePairsInDocument(tree : Parser.Tree) : Range[] {
-		//TODO: this maybe can be made faster without using descendantsOfType
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = root.descendantsOfType("inference_pair")
 		return getRangesOfSyntaxNodes(result)
@@ -845,21 +841,21 @@ export class ValueInferenceServices {
 
 //dgplayground()
 
-async function dgplayground() {
-	await Parser.init()
-	const parser = new Parser()
-	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
-	const lang = await Parser.Language.load(wasm)
-	parser.setLanguage(lang)
-	let tree
-	let sourceCode
-	let result
+// async function dgplayground() {
+// 	await Parser.init()
+// 	const parser = new Parser()
+// 	const wasm = 'parsers/tree-sitter-decisiongraph.wasm'
+// 	const lang = await Parser.Language.load(wasm)
+// 	parser.setLanguage(lang)
+// 	let tree
+// 	let sourceCode
+// 	let result
 
-	//Then you can parse some source code,
-	sourceCode = `[`;
-	tree = parser.parse(sourceCode);
-	let range : Range = {start: {character:1, line:0}, end:{character:0, line:0}}
-	result = DecisionGraphServices.getCompletion(tree, range)
-	console.log(result)
-}
+// 	//Then you can parse some source code,
+// 	sourceCode = `[`;
+// 	tree = parser.parse(sourceCode);
+// 	let range : Range = {start: {character:1, line:0}, end:{character:0, line:0}}
+// 	result = DecisionGraphServices.getCompletion(tree, range)
+// 	console.log(result)
+// }
 

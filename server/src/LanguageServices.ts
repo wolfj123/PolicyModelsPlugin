@@ -601,7 +601,6 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 
 	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
-		//let importMap : Map<string,DocumentUri> = DecisionGraphServices.getAllImports(this.tree)
 		let importUris : DocumentUri[] = Array.from(this.importMap.values())
 		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, importUris)
 	}
@@ -742,13 +741,11 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], /*otherCaches : Map<DocumentUri, PolicyModelEntity[]>, currentDoc : DocumentUri,*/ imports : DocumentUri[] = undefined) : CompletionList | null {
+	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], imports : DocumentUri[] = undefined) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
 		let slots : PolicyModelEntity[]
 		let slotvalues : PolicyModelEntity[]
 		let keywords : CompletionItem[] = DecisionGraphKeywords
-		// let currentDocCache = otherCaches.get(currentDoc)
-		// if(isNullOrUndefined(currentDocCache)) {return null}
 
 		nodes = cache
 				.filter(function (e) {
@@ -756,13 +753,6 @@ export class CacheQueries {
 					return (e.getCategory() == PolicyModelEntityCategory.Declaration || 
 							(e.getCategory() == PolicyModelEntityCategory.Reference && !isNullOrUndefined(imports) && imports.indexOf(e.getSource()) >= 0))
 				})
-		// slots = cache
-		// 		.filter(e => e.getType() == PolicyModelEntityType.Slot && e.getCategory() != PolicyModelEntityCategory.FoldRange)
-
-		// slotvalues = cache
-		// 		.filter(e => e.getType() == PolicyModelEntityType.SlotValue && e.getCategory() != PolicyModelEntityCategory.FoldRange)		
-		// let entities : PolicyModelEntity[] = nodes.concat(slots.concat(slotvalues))
-		// let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
 
 		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e)))
 
@@ -786,16 +776,4 @@ export class CacheQueries {
 		}
 		return result		
 	}
-
-	// static getAutoCompleteValueInference(cache : PolicyModelEntity[]) : CompletionList {		
-	// 	let entities : PolicyModelEntity[] = cache.filter(e => e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue)
-	// 	let keywords : CompletionItem[] = ValueInferenceKeywords
-	// 	let items : CompletionItem[] = Utils.uniqueArray(entities.map(e => entity2CompletionItem(e)).concat(keywords))
-
-	// 	let result = {
-	// 		isIncomplete: false,
-	// 		items: items
-	// 	}
-	// 	return result	
-	// }
 }
