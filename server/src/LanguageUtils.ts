@@ -361,6 +361,22 @@ export class DecisionGraphServices {
 		return {entities: result.concat(importsInfo.imports), importMap: importsInfo.importMap}
 	}
 
+	static importMapFromImportEntities(imports: PolicyModelEntity[]) : Map<string, DocumentUri> {
+		let importMap : Map<string, DocumentUri> = new Map()
+		
+		if (imports.length > 0) {
+			imports
+				.map(importEntity => importEntity.syntaxNode)
+				.filter(imp => imp.type === "import_node")
+				.forEach(imp => {
+					let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
+					let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
+					importMap.set(graphname, filename)
+				})
+		}	
+		return importMap
+	}
+
 	// static getAllImports(tree : Parser.Tree) : Map<string, DocumentUri> {
 	// 	let result : Map<string, DocumentUri> = new Map()
 	// 	let root : Parser.SyntaxNode = tree.walk().currentNode()
