@@ -62,7 +62,10 @@ export function getLanguageByExtension(extension : string) : PolicyModelsLanguag
 	return correspondingInfo[0].language
 }
 
-
+function resolveSource(fromUri : DocumentUri, to : DocumentUri) : DocumentUri {
+	let currFileDir : string = path.dirname(fromUri)
+	return path.relative(currFileDir, to)
+}
 
 //****Entities****/
 export enum PolicyModelEntityType {
@@ -104,7 +107,9 @@ export class PolicyModelEntity {
 			Utils.newRange(
 				Utils.point2Position(syntaxNode.startPosition), 
 				Utils.point2Position(syntaxNode.endPosition)))
-		this.source = source
+		if(!isNullOrUndefined(source)) {
+			this.source = resolveSource(uri, source)
+		} 
 		this.category = category
 	}
 
@@ -333,18 +338,13 @@ export class DecisionGraphServices {
 
 	static getAllImportsInDoc(tree : Parser.Tree, uri : DocumentUri) : {imports: PolicyModelEntity[], importMap : Map<string, DocumentUri>}  {
 		let importNodes : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
-
 		let imports : PolicyModelEntity[] = []
-		//let importMap : Map<string, DocumentUri> = new Map()
 		
 		if (importNodes.length > 0) {
 			importNodes.forEach(imp => {
-				// let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
-				// filename = path.relative(uri, filename)
 				let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
 				let entity : PolicyModelEntity = new PolicyModelEntity(graphname, PolicyModelEntityType.ImportGraph, imp, undefined, uri, PolicyModelEntityCategory.Special)	
 				imports.push(entity)
-				//importMap.set(graphname, filename)
 			})
 		}
 
@@ -363,8 +363,7 @@ export class DecisionGraphServices {
 				.filter(imp => imp.type === "import_node")
 				.forEach(imp => {
 					let filename : string = imp.descendantsOfType("file_path")[0].text.trim()
-					let currFileDir : string = path.dirname(uri)
-					filename = path.relative(currFileDir, filename)
+					filename = resolveSource(uri, filename)
 					let graphname : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
 					importMap.set(graphname, filename)
 				})
