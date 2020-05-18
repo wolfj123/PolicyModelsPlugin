@@ -6,6 +6,7 @@ import { DocumentUri,
 		} from 'vscode-languageserver';
 import { languagesIds, newRange } from './Utils';
 import { getLogger, logSources } from './Logger';
+import { URI } from 'vscode-uri';
 
 
 export interface changeInfo{
@@ -15,13 +16,19 @@ export interface changeInfo{
 
 export interface PMTextDocument {
     /**
+	 * the filesystem path of the current file
+	 * 
+	 * @readonly
+	 */
+	readonly path: string;
+	 /**
      * The associated URI for this document. Most documents have the __file__-scheme, indicating that they
      * represent files on disk. However, some documents may have other schemes indicating that they are not
      * available on disk.
      *
      * @readonly
      */
-    readonly uri: DocumentUri;
+	readonly uri: string;
     /**
      * The identifier of the language associated with this document.
      *
@@ -94,7 +101,8 @@ export interface PMTextDocument {
 
 class FullTextDocument implements PMTextDocument {
 
-	private _uri: DocumentUri;
+	private _path: string;
+	private _uri: string;
 	private _languageId: languagesIds;
 	private _version: number;
 	private _content: string;
@@ -102,6 +110,7 @@ class FullTextDocument implements PMTextDocument {
 	private _lastChanges: changeInfo[];
 
 	public constructor(uri: DocumentUri, languageId: languagesIds, version: number, content: string) {
+		this._path = URI.parse(uri).fsPath;
 		this._uri = uri;
 		this._languageId = languageId;
 		this._version = version;
@@ -114,7 +123,11 @@ class FullTextDocument implements PMTextDocument {
 		return this._lastChanges;
 	}
 
-	public get uri(): string {
+	public get path(): string {
+		return this._path;
+	}
+
+	public get uri(): DocumentUri{
 		return this._uri;
 	}
 
@@ -270,7 +283,7 @@ class FullTextDocument implements PMTextDocument {
 			return false;
 		}
 
-		if (this._uri !== other._uri || this._version !== other.version || this._languageId !== other._languageId || 
+		if (this._path !== other._path || this._version !== other.version || this._languageId !== other._languageId || 
 			this.getLineOffsets() !== other.getLineOffsets() || this._content !== other._content ) {
 				return false;
 		}

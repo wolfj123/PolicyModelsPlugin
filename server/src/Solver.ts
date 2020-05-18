@@ -136,6 +136,8 @@ export class PMSolver implements SolverInt{
 		.then(changeResults=> {
 			changeResults.forEach(currChange => {
 				switch(currChange.type){
+					case documentManagerResultTypes.noChange:
+						break;
 					case documentManagerResultTypes.newFile:
 						this._languageFacade.addDocs([currChange.result]);
 						break;
