@@ -119,9 +119,9 @@ export interface SolverInt {
 	/**
 	 * updates manager about folder opening and notifies LanguageServicesFacade about documents collected by manager
 	 * 
-	 * @param pathUri URI representing the folder opened in client of null if no folder is opened and only a file was opened
+	 * @param pathUri URI representing the folder opened in client or null if no folder is opened and only a file was opened
 	 */
-	onOpenFolder (pathUri: string | null);
+	onOpenFolder (pathUri: DocumentUri | null);
 
 	/**
 	 * initializes parsers of LanguageServicesFacade
