@@ -922,11 +922,11 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 	static runTests() {
 		let self = new LanguageServicesWithCache_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
-			// self.getDeclarations()
-			// self.getReferences()
-			// self.getRangeOfDoc()
-			// self.createPolicyModelEntity()
-			// self.getFoldingRanges()
+			self.getDeclarations()
+			self.getReferences()
+			self.getRangeOfDoc()
+			self.createPolicyModelEntity()
+			self.getFoldingRanges()
 			self.getCompletion()
 		})
 	}
@@ -1035,7 +1035,8 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = absoluteFileName(location.uri)
 			let outputWithKeywords = output.concat(testCase.keywords)
 			let instance = await self.create(filenames)
 			const result = instance.getCompletion(location)
@@ -1115,8 +1116,8 @@ class DecisionGraphServices_UnitTests {
 
 //DecisionGraphServices_UnitTests.runTests()
 //LanguageServices_UnitTests.runTests()
-LanguageServicesFacade_UnitTests.runTests()
+//LanguageServicesFacade_UnitTests.runTests()
 
-//LanguageServicesWithCache_UnitTests.runTests()
+LanguageServicesWithCache_UnitTests.runTests()
 
 
