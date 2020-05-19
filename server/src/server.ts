@@ -152,8 +152,8 @@ connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	connection.onRequest("setPluginDir", async (dir:string) => {
 		initLogger(dir);
-		solver = new PMSolver();
-		await solver.initParser(dir);
+		solver = new PMSolver(dir);
+		// await solver.initParser(dir);
 		console.log("finish init from client");
 		return null;
 	})
@@ -227,15 +227,6 @@ connection.onInitialized(() => {
 		// we need this in order to get the folder that is currently open.
 		connection.workspace.getWorkspaceFolders().then(async _event => {
 			connection.console.log('getWorkspaceFolders folder change event received.');
-			
-			if (! solver.facadeIsReady){
-				// getLogger(logSources.server).warn("sending init language facede from getWorkspaceFolders");
-				await connection.sendRequest("getPluginDir").then ( async (ans: string) =>{
-					await solver.initParser(ans);
-					console.log("finish init from server");
-				})
-			}
-
 			if (_event === null || _event === undefined) {
 				await solver.onOpenFolder(null);
 				folderFS = undefined;

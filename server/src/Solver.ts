@@ -25,10 +25,12 @@ import {
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
 import { logSources, getLogger } from './Logger';
+import * as Path from 'path';
+import { URI } from 'vscode-uri';
 
 export interface SolverInt {
 
-	//// user request functions
+	//----------------------------  user/client event handlers
 	/**
 	 * @param params TextDocumentPositionParams as receievd from VS-Code
 	 * @returns possible completion items list for specified word and location in cide
@@ -79,7 +81,7 @@ export interface SolverInt {
 	onFoldingRanges(params: FoldingRangeParams): FoldingRange[];
 
 
-	//// document control functions
+	//----------------------------   document control envents handlers
 
 	/**
 	 * updates document state to open and updates LanguageServicesFacade if necessary
@@ -122,56 +124,164 @@ export interface SolverInt {
 	 * @param pathUri URI representing the folder opened in client or null if no folder is opened and only a file was opened
 	 */
 	onOpenFolder (pathUri: DocumentUri | null);
-
-	/**
-	 * initializes parsers of LanguageServicesFacade
-	 * 
-	 * @param pluginDir FS path of the plugin directory
-	 */
-	initParser (pluginDir:string);
-
-	/**
-	 * represnets of the parsers initialization is completed
-	 */
-	facadeIsReady: boolean;
 }
 
 
 export class PMSolver implements SolverInt{
 
-	private _documentManager: TextDocumentManagerInt;
-	private _languageFacade: LanguageServicesFacade;
+	private _documentManagerForFolder: TextDocumentManagerInt;
+	private _documentManagerSingleFiles: TextDocumentManagerInt; // handles all document managin for single files outside of folder
+	private _pluginFSPath: string;
+	private _workspaceFolderFSPath: string;
+	private _facdeForFolder: LanguageServicesFacade;
+	private _facdeForFilesFS: {[id: string]: LanguageServicesFacade};  // id is FS path
 
-	constructor(){
-		this._documentManager = new TextDocumentManager;
-		this._languageFacade = undefined;
+	constructor(pluginDir: string){
+		this._documentManagerForFolder = new TextDocumentManager();
+		this._documentManagerSingleFiles = new TextDocumentManager(); 
+		this._documentManagerSingleFiles.openedFolder(null);
+		this._workspaceFolderFSPath = undefined;
+		this._pluginFSPath = pluginDir;
+		this._facdeForFilesFS = {};
+		this._facdeForFolder = undefined;
 	}
 
-	public get facadeIsReady(){
-		return this._languageFacade !== undefined;
+
+	private getFSFolderFromUri(uri: DocumentUri): string{
+		let fileFSPath: string = URI.parse(uri).fsPath;
+		return Path.dirname(fileFSPath);
 	}
+
+
+	//#region private functions
+	/**
+	 * 
+	 * @param fileUri 
+	 * @returns true if the file belongs to the workspace folder in the client
+	 */
+	private isFolderRelevant (fileUri: DocumentUri): boolean{
+		let folderFSPath: string = this.getFSFolderFromUri(fileUri);
+		return folderFSPath === this._workspaceFolderFSPath;
+	}
+
+	private getDocManager(uri: DocumentUri): TextDocumentManagerInt{
+		if (this.isFolderRelevant(uri)){
+			return this._documentManagerForFolder;
+		}else{
+			return this._documentManagerSingleFiles;
+		}
+	}
+
+	/**
+	 * initializes new parsers if needed,
+	 * this function assumes workspace folder facades is created only once, if the function is called more than once with null parameter
+	 * the old workspace folder facade is overwritten
+	 * 
+	 * @param fileUri file Uri for new facade or null if createin facade for workspace folder
+	 */
+	private async initParser(fileUri: DocumentUri): Promise<void> {
+
+		let shouldOpenNewFacade: boolean = true
+		let fileDir: string = this.getFSFolderFromUri(fileUri);
+		if (fileUri !== null){ 
+			shouldOpenNewFacade =  this._facdeForFilesFS[fileDir] !== undefined && this._facdeForFilesFS[fileDir] !== null
+		}
+		if (! shouldOpenNewFacade){
+			return;
+		}
+
+		// initialize facade and set class variables
+		await LanguageServicesFacade.init([], this._pluginFSPath)
+		.then(facadeAns => {
+			getLogger(logSources.server).info(`generated new LanguageServicesFacade for file ${fileUri}`)
+			if (fileUri === null){
+				this._facdeForFolder = facadeAns;
+			}else{
+				let fileDir: string = this.getFSFolderFromUri(fileUri);
+				this._facdeForFilesFS[fileDir] = facadeAns;
+			}
+		})
+		.catch(rej => getLogger(logSources.server).error('reject form LanguageServicesFacade init', rej));
+	}
+
+	/**
+	 * all calls to facades from document event handlers should be done from this fucntion.
+	 * it wrappes the facade call to prevent error and create new facades if necessary
+	 * for document events we can't assume any order on events (THANKS ALOT VS-Code), so before calling the facade
+	 * we must check for its existence and if it doens't exist we create a new one before continuing 
+	 * 
+	 * @param params parameters for facade request
+	 * @param funcName facade function to be activated
+	 * @param uri uri of the file the request was made on
+	 */
+	private async facdeCallWrapperForDocumentEvents (params: any, funcName: string, uri: DocumentUri): Promise<void> {
+		let uriFolder: string = this.getFSFolderFromUri(uri);
+		let isFolderRelevant = this.isFolderRelevant(uri);
+		let facade: LanguageServicesFacade = isFolderRelevant ? this._facdeForFolder : this._facdeForFilesFS[uriFolder];
+
+		if (facade === undefined || facade === null){
+			await this.initParser(uri);
+			facade = isFolderRelevant ? this._facdeForFolder : this._facdeForFilesFS[uriFolder];
+		}
+
+		facade[funcName](params);
+	}
+
 	
+	/**
+	 * All request to facades that are relevant to client events should be made through herer
+	 * this is a wrapper for the facade to prevent errors of using undefined facades
+	 * we assume that facades are always initalized for every file before a user request is made with one excetption for folding range,
+	 * this function is a safety messure in case the above assumption is wrong
+	 * 
+	 * @param params parameters for facade request
+	 * @param uri uri of the file the request was made on
+	 * @param funcName facade function to be activated if facade exists
+	 * @returns null if facade doesn't exists, otherwise the relevant LanguageServicesFacade response
+	 */
+	private facadeCallWrapperForUserEvents(params: any, uri: DocumentUri, funcName: string): any {
+		let facade: LanguageServicesFacade;
+		if (this.isFolderRelevant(uri)){
+			facade = this._facdeForFolder;
+		}else{
+			facade = this._facdeForFilesFS[this.getFSFolderFromUri(uri)];
+		}
+		if (facade === undefined || facade == null){
+			getLogger(logSources.server).error(`trying to activate non existing facade for file ${uri} with function ${funcName}`, params);
+			return null;
+		}
+
+		return facade[funcName](params);
+	}
+
+	//#endregion private functions
+
+	//#region
+	//----------------------------  user/client event handlers --------------------------------------
+
 	onCompletion(params: TextDocumentPositionParams): CompletionList {
-		//throw new Error('Method not implemented.');
-		return this._languageFacade.onCompletion(params);
+		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri, "onCompletion");
 	}
 
 	onCompletionResolve(params: CompletionItem): CompletionItem {
 		//throw new Error('Method not implemented.');
-		return null; //TODO
+		return null;
 	}
 
 	onDefinition(params: DeclarationParams): LocationLink[] {
-		let ans:LocationLink[]= this._languageFacade.onDefinition(params);
-		return ans;
+		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onDefinition");
 	}
 
 	onPrepareRename(params: PrepareRenameParams): Range | null {
-		return this._languageFacade.onPrepareRename(params);
+		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onPrepareRename");
 	}
 
 	onRenameRequest(params: RenameParams): WorkspaceEdit {
-		let locationsToRename: Location[] = this._languageFacade.onRenameRequest(params);
+		let locationsToRename: Location[] = this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onRenameRequest");
+		if (locationsToRename === null){
+			return null;
+		}
+
 		let newName: string = params.newName;
 		let uniqeFiles: DocumentUri [] = [... new Set(locationsToRename.map(currLocation => currLocation.uri))];
 		let allFilesEdits:TextDocumentEdit [] = [];
@@ -198,16 +308,13 @@ export class PMSolver implements SolverInt{
 	}
 
 	onReferences(params: ReferenceParams): Location [] {
-		return this._languageFacade.onReferences(params);
+		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onReferences");
 	}
 	
-	onFoldingRanges(params: FoldingRangeParams): FoldingRange [] {	
-		if (!this.facadeIsReady){
-			return null;
-		}
-		let foldingLocations: Location [] = this._languageFacade.onFoldingRanges(params);
+	onFoldingRanges(params: FoldingRangeParams): FoldingRange [] {
+		let foldingLocations: Location [] =  this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onFoldingRanges");
 
-		if (foldingLocations === null || foldingLocations === undefined){
+		if (foldingLocations === null || foldingLocations === undefined || foldingLocations.length === 0){
 			return [];
 		}
 
@@ -218,21 +325,26 @@ export class PMSolver implements SolverInt{
 		return foldingRanges;
 	}
 
+	//#endregion
 
+	//#region 
+	//----------------------------   document control envents handlers --------------------------------------------
 
-
-	async onDidOpenTextDocument(opendDocParam: TextDocumentItem) {
-		await this._documentManager.openedDocumentInClient(opendDocParam)
+	public async onDidOpenTextDocument(opendDocParam: TextDocumentItem) {
+		let docManager: TextDocumentManagerInt = this.getDocManager(opendDocParam.uri);
+		await docManager.openedDocumentInClient(opendDocParam)
 		.then(changeResults=> {
 			changeResults.forEach(currChange => {
 				switch(currChange.type){
 					case documentManagerResultTypes.noChange:
 						break;
 					case documentManagerResultTypes.newFile:
-						this._languageFacade.addDocs([currChange.result]);
+						this.facdeCallWrapperForDocumentEvents(currChange.result,"addDocs",opendDocParam.uri)
+						// this._languageFacade.addDocs([currChange.result]);
 						break;
 					case documentManagerResultTypes.removeFile:
-						this._languageFacade.removeDoc(currChange.result)
+						this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
+						// this._languageFacade.removeDoc(currChange.result)
 						break;
 					default:
 						getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
@@ -243,12 +355,14 @@ export class PMSolver implements SolverInt{
 		.catch(rej => getLogger(logSources.server).error(`onDidOpenTextDocument was rejected`,{rej}));
 	}
 
-	async onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
-		await this._documentManager.closedDocumentInClient(closedDcoumentParams)
+	public async onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
+		let docManager: TextDocumentManagerInt = this.getDocManager(closedDcoumentParams.uri);
+		await docManager.closedDocumentInClient(closedDcoumentParams)
 		.then(change=>{
 			switch(change.type){
 				case documentManagerResultTypes.removeFile:
-					this._languageFacade.removeDoc(change.result);
+					this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",closedDcoumentParams.uri);
+					// this._languageFacade.removeDoc(change.result);
 					break;
 				default:
 					getLogger(logSources.server).error('onDidCloseTextDocument wrong change type',change);
@@ -258,12 +372,15 @@ export class PMSolver implements SolverInt{
 		.catch(rej => getLogger(logSources.server).error(`onDidCloseTextDocument was rejected `, rej));
 	}
 
-	async onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
-		await this._documentManager.changeTextDocument(params)
+	public async onDidChangeTextDocument(params: DidChangeTextDocumentParams) {
+		let docManager: TextDocumentManagerInt = this.getDocManager(params.textDocument.uri);
+		await docManager.changeTextDocument(params)
 		.then(change =>{
 			switch(change.type){
 				case documentManagerResultTypes.updateFile:
-					this._languageFacade.updateDoc(this._documentManager.getDocument(params.textDocument.uri));
+					let docUri: DocumentUri = params.textDocument.uri;
+					this.facdeCallWrapperForDocumentEvents(docManager.getDocument(docUri),"updateDoc",docUri);
+					//this._languageFacade.updateDoc(this._documentManager.getDocument(params.textDocument.uri));
 					break;
 				case documentManagerResultTypes.noChange:
 					break;
@@ -275,12 +392,14 @@ export class PMSolver implements SolverInt{
 		.catch(rej => getLogger(logSources.server).error(`onDeleteFile was rejected `,rej));
 	}
 
-	async onDeleteFile(deletedFile: string) {
-		await this._documentManager.deletedDocument(deletedFile)
+	public async onDeleteFile(deletedFileUri: DocumentUri) {
+		let docManager: TextDocumentManagerInt = this.getDocManager(deletedFileUri);
+		await docManager.deletedDocument(deletedFileUri)
 		.then(change =>{
 			switch(change.type){
 				case documentManagerResultTypes.removeFile:
-					this._languageFacade.removeDoc(change.result);
+					this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",deletedFileUri)
+					// this._languageFacade.removeDoc(change.result);
 				default:
 					getLogger(logSources.server).error('onDeleteFile wrong change type',change);
 					break;
@@ -289,12 +408,14 @@ export class PMSolver implements SolverInt{
 		.catch(rej => getLogger(logSources.server).error(`onDeleteFile was rejected `, rej));
 	}
 
-	async onCreatedNewFile(newFileUri: string) {
-		await this._documentManager.clientCreatedNewFile(newFileUri)
+	public async onCreatedNewFile(newFileUri: DocumentUri) {
+		let docManager: TextDocumentManagerInt = this.getDocManager(newFileUri);
+		await docManager.clientCreatedNewFile(newFileUri)
 		.then(change => {
 			switch(change.type){
 				case documentManagerResultTypes.newFile:
-					this._languageFacade.addDocs([change.result]);
+					this.facdeCallWrapperForDocumentEvents([change.result],"addDocs",newFileUri);
+					// this._languageFacade.addDocs([change.result]);
 				default:
 					getLogger(logSources.server).error('onCreatedNewFile wrong change type',change);
 					break;
@@ -303,24 +424,16 @@ export class PMSolver implements SolverInt{
 		.catch(rej =>getLogger(logSources.server).error(`onCreatedNewFile was rejected`, rej));
 	}
 
-	async onOpenFolder(pathUri: string | null) {
-		if (this._languageFacade !== undefined) {
-			this._documentManager.openedFolder(pathUri);
-			this._languageFacade.addDocs(this._documentManager.allDocumnets);
-		}else{
-			getLogger(logSources.server).warn("opend folder when facade wasn't initialized");
-			setTimeout(() => {
-				this.onOpenFolder(pathUri);
-			}, 200);
+	public async onOpenFolder(pathUri: string | null) {
+		// null / undefined path means no folder, this case is handled in constructor
+		if (pathUri !== null && pathUri !== undefined) {
+			let folderFSPath: string = URI.parse(pathUri).fsPath;
+			this._workspaceFolderFSPath = folderFSPath;
+			this._documentManagerForFolder.openedFolder(pathUri);
+			//init parser
+			await this.initParser(null);
+			this._facdeForFolder.addDocs(this._documentManagerForFolder.allDocumnets);
 		}
-		console.log("finish open folder");
 	}
-	
-
-	async initParser (pluginDir:string) {
-		await LanguageServicesFacade.init(this._documentManager.allDocumnets, pluginDir)
-		.then(ans => {console.log (`resolve parser init successfully`);
-		this._languageFacade = ans;})
-		.catch(rej => getLogger(logSources.server).error('reject form LanguageServicesFacade init', rej));
-	}
+	//#endregion
 }
