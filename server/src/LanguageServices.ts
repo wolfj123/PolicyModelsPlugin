@@ -41,7 +41,8 @@ import {
 	PolicyModelEntity,
 	DecisionGraphServices,
 	PolicySpaceServices,
-	ValueInferenceServices
+	ValueInferenceServices,
+	FilePath
 } from './LanguageUtils'
 
 //https://www.npmjs.com/package/web-tree-sitter
@@ -131,16 +132,14 @@ export class LanguageServicesFacade {
 
 export class LanguageServices {
 	//Workspace
-	fileManagers : Map<DocumentUri, FileManager>
+	fileManagers : Map<FilePath, FileManager>
 
 	//config
 	parsers : Map<PolicyModelsLanguage, Parser>
 
 
-	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServices> {
+	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServices> {
 		let instance : LanguageServices = new LanguageServices();
-		//console.log(`language facade init plugin dir is: ${pluginDir}`);
-
 		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
 		instance.fileManagers = new Map()
@@ -195,11 +194,11 @@ export class LanguageServices {
 
 	populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
-			//const uri = doc.uri
-			const uri : DocumentUri = doc.path
-			const extension = Utils.getFileExtension(uri)
+			//const uri : DocumentUri = doc.path
+			const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
+			const extension = Utils.getFileExtension(filepath)
 			let fileManager : FileManager = this.getFileManager(doc, extension)
-			this.fileManagers.set(uri, fileManager)
+			this.fileManagers.set(filepath, fileManager)
 		}
 	}
 

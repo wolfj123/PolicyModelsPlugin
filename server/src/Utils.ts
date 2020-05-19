@@ -23,6 +23,9 @@ export enum languagesIds {
 	decisiongraph =  1,
 	valueinference = 2
 }
+import { URI } from 'vscode-uri';
+import { FilePath } from './LanguageUtils';
+import * as path from 'path';
 
 const psExt:string = "ps";
 const pspaceExt:string = "pspace";
@@ -52,6 +55,14 @@ export function uniqueArray(arr : any[]) : any[] {
 		}
 	}
 	return result
+}
+
+export function Uri2FilePath(uri : DocumentUri) : FilePath {
+	return path.normalize(URI.parse(uri).fsPath)
+}
+
+export function FilePath2Uri(filepath : FilePath) : DocumentUri {
+	return URI.file(filepath).path
 }
 
 export function point2Position(p : Parser.Point) : Position {
