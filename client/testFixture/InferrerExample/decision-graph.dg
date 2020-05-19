@@ -1,5 +1,5 @@
 [set: HumanDataType=none; Harm=none]
-[>Human< ask:
+[>human< ask:
   {text: Does the data concerns humans?}
   {answers:
     {yes:
