@@ -87,8 +87,9 @@ export function getLanguageByExtension(extension : string) : PolicyModelsLanguag
  */
 function resolvePaths(fromAbsolutePath : FilePath, toRelativePath : FilePath) : FilePath {
 	let currFileDir : FilePath = path.dirname(fromAbsolutePath)
-	let absolutePath : FilePath = path.resolve(currFileDir, toRelativePath)
-	return absolutePath
+	//let absolutePath : FilePath = path.resolve(currFileDir, toRelativePath)
+	// return absolutePath
+	return path.normalize(path.join(currFileDir, toRelativePath))
 }
 
 

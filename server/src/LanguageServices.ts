@@ -358,18 +358,19 @@ export abstract class FileManager {
 export class FileManagerFactory {
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
 		//const uri = doc.uri
-		const uri : DocumentUri = doc.path
-		const extension = Utils.getFileExtension(uri)
+		//const uri : DocumentUri = doc.path
+		const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
+		const extension = Utils.getFileExtension(filepath)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
-				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, uri) : new DecisionGraphFileManager(tree, uri)
+				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath) : new DecisionGraphFileManager(tree, filepath)
 
 			case PolicyModelsLanguage.PolicySpace:
-				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, uri) : new PolicySpaceFileManager(tree, uri)	
+				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath) : new PolicySpaceFileManager(tree, filepath)	
 						
 			case PolicyModelsLanguage.ValueInference:
-				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, uri) : new ValueInferenceFileManager(tree, uri)
+				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath) : new ValueInferenceFileManager(tree, filepath)
 				
 			default:
 				return null
