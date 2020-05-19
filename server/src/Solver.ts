@@ -24,25 +24,115 @@ import {
 
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
-import { Logger, initLogger, logSources, getLogger } from './Logger';
+import { logSources, getLogger } from './Logger';
 
 export interface SolverInt {
+
+	//// user request functions
+	/**
+	 * @param params TextDocumentPositionParams as receievd from VS-Code
+	 * @returns possible completion items list for specified word and location in cide
+	 */
 	onCompletion(params: TextDocumentPositionParams): CompletionList;
+	/**
+	 * Generates additional information on item to show to user when looking at completion suggestions
+	 * 
+	 * @param params CompletionItem as receievd from VS-Code
+	 * @returns the item received with additonal data
+	 */
 	onCompletionResolve(params: CompletionItem): CompletionItem;
+
+	/**
+	 * finds the definition places of current word.
+	 * more than 1 location is possible if user has an error in his code and defiened 2 objects with the same name in same file
+	 * 
+	 * @param params DeclarationParams as receievd from VS-Code
+	 * @returns LocationLink array of all possible definitions for word
+	 */
 	onDefinition(params:DeclarationParams): LocationLink [];
+
+	/**
+	 * @param params PrepareRenameParams as receievd from VS-Code
+	 * @returns null if word can't be renamed, otherwise full range of word to be renamed 
+	 */
 	onPrepareRename(params:PrepareRenameParams):  Range ;
+	/**
+	 * finds all places to rename and convert them to WorkspaceEdit result.
+	 * file version is ignored because VS-Code isn't using it and after this result is sent to client
+	 * the client sends onDidChangeTextDocument event for all changes from this functions result
+	 * 
+	 * @param params RenameParams as receievd from VS-Code
+	 * @returns workspace edits that should be done due to rename, using WorkspaceEdit documentChanges and not changes
+	 */
 	onRenameRequest(params:RenameParams): WorkspaceEdit;
+
+	/**
+	 * @param params ReferenceParams as receievd from VS-Code
+	 * @returns Location array of all refrences to requested word
+	 */
 	onReferences(params: ReferenceParams): Location[];
+
+	/**
+	 * @param params FoldingRangeParams as receievd from VS-Code
+	 * @returns array of FoldingRange
+	 */
 	onFoldingRanges(params: FoldingRangeParams): FoldingRange[];
 
+
+	//// document control functions
+
+	/**
+	 * updates document state to open and updates LanguageServicesFacade if necessary
+	 * 
+	 * @param opendDocParam TextDocumentItem as receievd from VS-Code
+	 */
 	onDidOpenTextDocument (opendDocParam: TextDocumentItem);
+
+	/**
+	 * updates document state to closed and updates LanguageServicesFacade if necessary
+	 * 
+	 * @param closedDcoumentParams TextDocumentIdentifier as receievd from VS-Code
+	 */
 	onDidCloseTextDocument (closedDcoumentParams: TextDocumentIdentifier);
+
+	/**
+	 * updates document changes and notifies LanguageServicesFacade
+	 * 
+	 * @param params DidChangeTextDocumentParams as receievd from VS-Code
+	 */
 	onDidChangeTextDocument (params: DidChangeTextDocumentParams);
+
+	/**
+	 * deltes document from memory and notifies LanguageServicesFacade
+	 * 
+	 * @param deletedFile DocumentUri as receievd from VS-Code
+	 */
 	onDeleteFile (deletedFile:DocumentUri);
+
+	/**
+	 * creates new document in memory and notifies LanguageServicesFacade
+	 * 
+	 * @param newFileUri DocumentUri as receievd from VS-Code
+	 */
 	onCreatedNewFile (newFileUri:DocumentUri);
-	onOpenFolder (pathUri: string | null);
+
+	/**
+	 * updates manager about folder opening and notifies LanguageServicesFacade about documents collected by manager
+	 * 
+	 * @param pathUri URI representing the folder opened in client or null if no folder is opened and only a file was opened
+	 */
+	onOpenFolder (pathUri: DocumentUri | null);
+
+	/**
+	 * initializes parsers of LanguageServicesFacade
+	 * 
+	 * @param pluginDir FS path of the plugin directory
+	 */
 	initParser (pluginDir:string);
 
+	/**
+	 * represnets of the parsers initialization is completed
+	 */
 	facadeIsReady: boolean;
 }
 
@@ -136,6 +226,8 @@ export class PMSolver implements SolverInt{
 		.then(changeResults=> {
 			changeResults.forEach(currChange => {
 				switch(currChange.type){
+					case documentManagerResultTypes.noChange:
+						break;
 					case documentManagerResultTypes.newFile:
 						this._languageFacade.addDocs([currChange.result]);
 						break;

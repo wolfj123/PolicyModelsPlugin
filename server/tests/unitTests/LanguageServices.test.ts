@@ -57,6 +57,7 @@ import {
 import * as assert from 'assert';
 import * as mocha from 'mocha'; 
 import { PMTextDocument } from "../../src/Documents";
+import { URI } from 'vscode-uri';
 
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const chai = require('chai');
@@ -74,6 +75,7 @@ function getTextFromUri(uri : string) : string | null {
 function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
 	let result : PMTextDocument = {
 		uri : uri,
+		path: URI.parse(uri).fsPath,
 		languageId : null,
 		version : null,
 		getText : function(){return newText},
@@ -147,6 +149,7 @@ function createPMTextDocFromUrl(uri : string) : PMTextDocument {
 	let text : string = getTextFromUri(uri)	
 	return {
 			uri: uri,
+			path: URI.parse(uri).fsPath,
 			languageId: null,
 			version : null,
 			getText : function() {return text},
