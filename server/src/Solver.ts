@@ -153,7 +153,8 @@ export class PMSolver implements SolverInt{
 	
 	onCompletion(params: TextDocumentPositionParams): CompletionList {
 		//throw new Error('Method not implemented.');
-		return this._languageFacade.onCompletion(params);
+		let x = this._languageFacade.onCompletion(params);
+		return x
 	}
 
 	onCompletionResolve(params: CompletionItem): CompletionItem {

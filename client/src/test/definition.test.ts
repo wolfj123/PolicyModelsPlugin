@@ -10,9 +10,6 @@ export interface LocationLink {
 }
 */
 
-//TODO: make test not case sensitive
-
-
 
 import * as vscode from 'vscode';
 import * as assert from 'assert';
@@ -30,20 +27,7 @@ export type DefinitionResolve = vscode.Location[];
 
 
 
-describe('Definition test Sanity', () => {
-	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
-
-	it('Sanity Test' + testCounter.toString(), async () => {
-		let range: vscode.Range = new vscode.Range(new vscode.Position(0,0), new vscode.Position(0,0))
-		let definition: vscode.LocationLink[] = [{targetUri:docUri, targetRange:range}];;
-
-		//await testDefinition(docUri, defaultPosition, definition);
-	});
-	testCounter++;
-});
-
-
-describe('Definition test Policy Space', () => {
+describe('Definition E2E test Policy Space', () => {
 
 	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
 
@@ -90,7 +74,7 @@ describe('Definition test Policy Space', () => {
 });
 
 
-describe('Definition test Decision Graph', () => {
+describe('Definition E2E test Decision Graph', () => {
 
 	const docUriSource = getDocUri(testFixtureFolderPath + 'decision-graph.dg');
 	const docUriTarget= getDocUri(testFixtureFolderPath + 'policy-space.pspace');
@@ -136,7 +120,7 @@ describe('Definition test Decision Graph', () => {
 });
 
 
-describe('Definition test Value Inference', () => {
+describe('Definition E2E test Value Inference', () => {
 	const docUriSource = getDocUri(testFixtureFolderPath + 'valueInference.vi');
 	const docUriTarget= getDocUri(testFixtureFolderPath + 'policy-space.pspace');
 

@@ -13,6 +13,12 @@ export let platformEol: string;
 
 export let defaultRange = new vscode.Range(new vscode.Position(0,0), new vscode.Position(0,0));
 
+export async function openFolder(fileUri: vscode.Uri) {	
+	await vscode.commands.executeCommand('vscode.openFolder', fileUri);
+	vscode.workspace.updateWorkspaceFolders(0, 0, { uri: fileUri });
+	const ext = vscode.extensions.getExtension('policymodels-lsp.policymodels-lsp')!;
+	await ext.activate();
+}
 /**
  * Activates the vscode.lsp-sample extension
  */
@@ -145,6 +151,15 @@ export async function getAllWordLocationsFromFilesInDir(word: string, dir:string
 	})
 	await sleep(2000 * files.length)
 	return result;
+}
+
+export async function getWordLocationsFromFilesInFile(word: string, file:string, folderAsPath:string){
+	let result = {}
+	let uri = getDocUri(folderAsPath + file);
+	let x = await getAllWordRangeInFile(word, uri);
+	result[uri.toString()] = {"uri": uri, "ranges": x}
+	await sleep(2000)
+	return result
 }
 
 export const getWordPositionFromLine = (word: string, line:number, shiftig = 0) : vscode.Position => {
