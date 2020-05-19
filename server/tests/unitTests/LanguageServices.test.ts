@@ -1114,9 +1114,9 @@ class DecisionGraphServices_UnitTests {
 
 
 
-//DecisionGraphServices_UnitTests.runTests()
-//LanguageServices_UnitTests.runTests()
-//LanguageServicesFacade_UnitTests.runTests()
+DecisionGraphServices_UnitTests.runTests()
+LanguageServices_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()
 
 LanguageServicesWithCache_UnitTests.runTests()
 
