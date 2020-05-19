@@ -215,7 +215,7 @@ class LanguageServicesFacade_UnitTests {
 		async function test(testCase) : Promise<void> {
 			const init : string[] = testCase.input.init
 			const add : string[] = testCase.input.add
-			const output = testCase.output
+			const output = testCase.output.map(absoluteFileName)
 			let instance = await self.create(init)
 			instance.addDocs(add.map(createPMTextDocFromUrl))
 			const result = Array.from(instance.services.fileManagers.keys())
@@ -260,7 +260,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			let instance = await self.create(init)
 			instance.updateDoc(update)
-			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
+			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: absoluteFileName('ps1.pspace')})
 			assert.equal(result.getName(), output.name)
 			assert.equal(result.getType(), output.type)
 		}
@@ -290,8 +290,8 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const init : string[] = testCase.input.init
-			const remove : string = testCase.input.remove
-			const output = testCase.output
+			const remove : string = absoluteFileName(testCase.input.remove)
+			const output = testCase.output.map(absoluteFileName)
 			let instance = await self.create(init)
 			instance.removeDoc(remove)
 			const result = Array.from(instance.services.fileManagers.keys())
@@ -348,9 +348,13 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.targetUri = absoluteFileName(element.targetUri)
+			});
 			const filenames : string[] = input.fileNames
-			const param : DeclarationParams = input.param
+			let param : DeclarationParams = input.param
+			param.textDocument.uri = absoluteFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onDefinition(param)
 			assert.deepEqual(result, output)
@@ -535,10 +539,10 @@ class LanguageServices_UnitTests {
 	static runTests() {
 		let self = new LanguageServices_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
-			//self.getDeclarations()
-			// self.getReferences()
-			//self.getRangeOfDoc()
-			//self.createPolicyModelEntity()
+			self.getDeclarations()
+			self.getReferences()
+			self.getRangeOfDoc()
+			self.createPolicyModelEntity()
 			self.getFoldingRanges()
 			//self.getCompletion()
 		})
@@ -1096,10 +1100,10 @@ class DecisionGraphServices_UnitTests {
 
 
 
-// DecisionGraphServices_UnitTests.runTests()
-LanguageServices_UnitTests.runTests()
-// LanguageServicesFacade_UnitTests.runTests()
+//DecisionGraphServices_UnitTests.runTests()
+//LanguageServices_UnitTests.runTests()
+LanguageServicesFacade_UnitTests.runTests()
 
-// LanguageServicesWithCache_UnitTests.runTests()
+//LanguageServicesWithCache_UnitTests.runTests()
 
 
