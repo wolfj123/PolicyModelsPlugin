@@ -114,3 +114,4 @@ jonathan/lsp_samples/cli/lib/desktop.ini
 !utils/*
 plugin/cli/java
 *.png
+!cli/LibServiceApp.jar
