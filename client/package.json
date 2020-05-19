@@ -13,7 +13,7 @@
 		"vscode": "*"
 	},
 	"scripts": {
-		"test": "mocha -r ts-node/register tests/**/*.spec.ts && cd ../ && node client/out/color/test",
+		"test": "mocha -r ts-node/register 'tests/**/!(policyModelLibApi).spec.ts'  && cd ../ && node client/out/color/test",
 		"update-vscode": "vscode-install",
 		"postinstall": "vscode-install",
 		"clean": "rm -rf node_modules && rm -rf package-lock.json",
