@@ -195,10 +195,11 @@ export class LanguageServices {
 
 	populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
-			const uri = doc.uri
+			//const uri = doc.uri
+			const uri : DocumentUri = doc.path
 			const extension = Utils.getFileExtension(uri)
 			let fileManager : FileManager = this.getFileManager(doc, extension)
-			this.fileManagers.set(doc.uri, fileManager)
+			this.fileManagers.set(uri, fileManager)
 		}
 	}
 
@@ -330,7 +331,7 @@ export abstract class FileManager {
 		if(isNullOrUndefined(entity)) {return []}
 		switch(entity.getType()){
 			case PolicyModelEntityType.DGNode: 
-				return this.getAllReferencesDGNode(entity.getName(), entity.source)
+				return this.getAllReferencesDGNode(entity.getName(), this.uri, entity.source)
 			case PolicyModelEntityType.Slot: 
 				return this.getAllReferencesSlot(entity.getName(), entity.source)
 			case PolicyModelEntityType.SlotValue: 
@@ -346,7 +347,7 @@ export abstract class FileManager {
 	abstract getAllDefinitionsSlot(name : string) : Location[]
 	abstract getAllDefinitionsSlotValue(name : string) : Location[]
 
-	abstract getAllReferencesDGNode(name : string, source : DocumentUri) : Location[]
+	abstract getAllReferencesDGNode(name : string, uri: DocumentUri, source : DocumentUri) : Location[]
 	abstract getAllReferencesSlot(name : string, source : DocumentUri) : Location[]
 	abstract getAllReferencesSlotValue(name : string, source : DocumentUri) : Location[]
 
@@ -357,7 +358,8 @@ export abstract class FileManager {
 
 export class FileManagerFactory {
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
-		const uri = doc.uri
+		//const uri = doc.uri
+		const uri : DocumentUri = doc.path
 		const extension = Utils.getFileExtension(uri)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
@@ -395,8 +397,8 @@ export class DecisionGraphFileManager extends FileManager {
 	getAllDefinitionsSlotValue(name: string): Location[] {
 		return []
 	}
-	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
-		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfNodeInDocument(name, this.tree, source)
+	getAllReferencesDGNode(name: string, uri : DocumentUri, source : DocumentUri): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfNodeInDocument(name, this.tree, uri, source)
 		return this.rangeArray2LocationArray(ranges)
 	}
 	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
@@ -434,7 +436,7 @@ export class PolicySpaceFileManager extends FileManager {
 		let ranges : Range[] = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
+	getAllReferencesDGNode(name: string, uri : DocumentUri, source : DocumentUri): Location[] {
 		return []
 	}
 	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
@@ -470,7 +472,7 @@ export class ValueInferenceFileManager extends FileManager {
 	getAllDefinitionsSlotValue(name: string): Location[] {
 		return []
 	}
-	getAllReferencesDGNode(name: string, source: string): Location[] {
+	getAllReferencesDGNode(name: string, uri: DocumentUri, source: string): Location[] {
 		return []
 	}
 	getAllReferencesSlot(name: string, source: string): Location[] {
@@ -584,7 +586,7 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 		return []
 	}
 
-	getAllReferencesDGNode(name: string, source : DocumentUri): Location[] {
+	getAllReferencesDGNode(name: string, uri: DocumentUri, source : DocumentUri): Location[] {
 		return CacheQueries.getAllReferencesDGNode(this.cache, name, source)
 	}
 	

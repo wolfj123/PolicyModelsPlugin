@@ -58,6 +58,7 @@ import * as assert from 'assert';
 import * as mocha from 'mocha'; 
 import { PMTextDocument } from "../../src/Documents";
 import { URI } from 'vscode-uri';
+import * as path from 'path';
 
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const chai = require('chai');
@@ -71,11 +72,16 @@ function getTextFromUri(uri : string) : string | null {
 	return dataEntry.text
 }
 
+const dir = "E:"
+function absoluteFileName(filename : string) {
+	return dir.concat(path.sep.concat(filename))
+}
 
 function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
 	let result : PMTextDocument = {
-		uri : uri,
-		path: URI.parse(uri).fsPath,
+		uri : absoluteFileName(uri),
+		path: absoluteFileName(uri),
+		//path: URI.parse(uri).fsPath,
 		languageId : null,
 		version : null,
 		getText : function(){return newText},
@@ -90,6 +96,25 @@ function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRa
 		}]
 	}
 	return result
+}
+
+
+function createPMTextDocFromUrl(uri : string) : PMTextDocument {
+	let text : string = getTextFromUri(uri)	
+	return {
+			uri: absoluteFileName(uri),
+			path: absoluteFileName(uri),
+			//path: URI.parse(uri).fsPath,
+			languageId: null,
+			version : null,
+			getText : function() {return text},
+			positionAt : null,
+			offsetAt : null,
+			isEqual : null,
+			lineCount : null,
+			update : null,
+			lastChanges : []	
+	}
 }
 
 function getParserWasmPathByExtension(extension : string) : string | null {
@@ -145,23 +170,6 @@ function runMochaTestCases(title : string,  testCases, testFunction) {
 // 	}
 // }
 
-function createPMTextDocFromUrl(uri : string) : PMTextDocument {
-	let text : string = getTextFromUri(uri)	
-	return {
-			uri: uri,
-			path: URI.parse(uri).fsPath,
-			languageId: null,
-			version : null,
-			getText : function() {return text},
-			positionAt : null,
-			offsetAt : null,
-			isEqual : null,
-			lineCount : null,
-			update : null,
-			lastChanges : []
-		
-	}
-}
 
 
 
@@ -527,7 +535,7 @@ class LanguageServices_UnitTests {
 	static runTests() {
 		let self = new LanguageServices_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
-			self.getDeclarations()
+			//self.getDeclarations()
 			self.getReferences()
 			self.getRangeOfDoc()
 			self.createPolicyModelEntity()
@@ -612,9 +620,13 @@ class LanguageServices_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = absoluteFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = absoluteFileName(location.uri)
 			let instance = await self.create(filenames)
 			const result = instance.getDeclarations(location)
 			assert.deepEqual(result, output)
@@ -645,98 +657,102 @@ class LanguageServices_UnitTests {
 					{range: {start: {character: 45, line: 5},end: {character: 47, line: 5}}, uri: 'dg2_ws_1.dg'},
 				]
 			},
-			{
-				title: 'dg->slot ref',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 15, line: 8},end: {character: 15, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1
-				},
-				output: [
-					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
-				]
-			},
-			{
-				title: 'dg->slotvalue ref',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 30, line: 8},end: {character: 30, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1_val1
-				},
-				output: [
-					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
-				]
-			},
-			{
-				title: 'pspace->slot ref',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'} // aggregate_slot
-				},
-				output: [
-					{range: {start: {character: 76, line: 15},end: {character: 90, line: 15}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 15, line: 9},end: {character: 29, line: 9}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 34, line: 2},end: {character: 48, line: 2}}, uri: 'vi_ws_1.vi'},
-				]
-			},
-			{
-				title: 'pspace->slotvalue ref',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'ps_ws_1.pspace'} // atomic_slot1_val1
-				},
-				output: [
-					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
-				]
-			},
-			{
-				title: 'vi->slot ref',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'vi_ws_1.vi'} // atomic_slot1
-				},
-				output: [
-					{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
-				]
-			},
-			{
-				title: 'vi->slotvalue ref',
-				input: {
-					fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
-					location: {range: {start: {character: 79, line: 2},end: {character: 79, line: 2}}, uri: 'vi_ws_1.vi'} // atomic_slot1_val1
-				},
-				output: [
-					{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
-					{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
-					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
-					{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
-					{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
-				]
-			}
+			// {
+			// 	title: 'dg->slot ref',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 15, line: 8},end: {character: 15, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
+			// 		{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
+			// 		{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
+			// 		{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
+			// 	]
+			// },
+			// {
+			// 	title: 'dg->slotvalue ref',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 30, line: 8},end: {character: 30, line: 8}}, uri: 'dg1_ws_1.dg'} // atomic_slot1_val1
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+			// 		{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+			// 		{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+			// 		{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
+			// 	]
+			// },
+			// {
+			// 	title: 'pspace->slot ref',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 1, line: 10},end: {character: 1, line: 10}}, uri: 'ps_ws_1.pspace'} // aggregate_slot
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 76, line: 15},end: {character: 90, line: 15}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 15, line: 9},end: {character: 29, line: 9}}, uri: 'dg1_ws_1.dg'},
+			// 		{range: {start: {character: 0, line: 10},end: {character: 14, line: 10}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 34, line: 2},end: {character: 48, line: 2}}, uri: 'vi_ws_1.vi'},
+			// 	]
+			// },
+			// {
+			// 	title: 'pspace->slotvalue ref',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'ps_ws_1.pspace'} // atomic_slot1_val1
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+			// 		{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+			// 		{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+			// 		{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
+			// 	]
+			// },
+			// {
+			// 	title: 'vi->slot ref',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 1, line: 1},end: {character: 1, line: 1}}, uri: 'vi_ws_1.vi'} // atomic_slot1
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 0, line: 0},end: {character: 12, line: 0}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 48, line: 15},end: {character: 60, line: 15}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 15, line: 8},end: {character: 27, line: 8}}, uri: 'dg1_ws_1.dg'},
+			// 		{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg2_ws_1.dg'},
+			// 		{range: {start: {character: 2, line: 5},end: {character: 14, line: 5}}, uri: 'dg3_ws_1.dg'},
+			// 		{range: {start: {character: 1, line: 1},end: {character: 13, line: 1}}, uri: 'vi_ws_1.vi'},
+			// 	]
+			// },
+			// {
+			// 	title: 'vi->slotvalue ref',
+			// 	input: {
+			// 		fileNames: ['ps_ws_1.pspace', 'dg1_ws_1.dg', 'dg2_ws_1.dg', 'dg3_ws_1.dg', 'vi_ws_1.vi'],
+			// 		location: {range: {start: {character: 79, line: 2},end: {character: 79, line: 2}}, uri: 'vi_ws_1.vi'} // atomic_slot1_val1
+			// 	},
+			// 	output: [
+			// 		{range: {start: {character: 1, line: 1},end: {character: 18, line: 1}}, uri: 'ps_ws_1.pspace'},
+			// 		{range: {start: {character: 30, line: 8},end: {character: 47, line: 8}}, uri: 'dg1_ws_1.dg'},
+			// 		{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg2_ws_1.dg'},
+			// 		{range: {start: {character: 15, line: 5},end: {character: 32, line: 5}}, uri: 'dg3_ws_1.dg'},
+			// 		{range: {start: {character: 77, line: 2},end: {character: 94, line: 2}}, uri: 'vi_ws_1.vi'},
+			// 	]
+			// }
 		]
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = absoluteFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = absoluteFileName(location.uri)
 			let instance = await self.create(filenames)
 			const result = instance.getReferences(location)
 			expect(result).to.deep.equalInAnyOrder(output)
@@ -1078,10 +1094,10 @@ class DecisionGraphServices_UnitTests {
 
 
 
-DecisionGraphServices_UnitTests.runTests()
+// DecisionGraphServices_UnitTests.runTests()
 LanguageServices_UnitTests.runTests()
-LanguageServicesFacade_UnitTests.runTests()
+// LanguageServicesFacade_UnitTests.runTests()
 
-LanguageServicesWithCache_UnitTests.runTests()
+// LanguageServicesWithCache_UnitTests.runTests()
 
 

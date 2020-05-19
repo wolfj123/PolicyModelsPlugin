@@ -64,10 +64,13 @@ export function getLanguageByExtension(extension : string) : PolicyModelsLanguag
 
 function resolveSource(fromUri : DocumentUri, to : DocumentUri) : DocumentUri {
 	let currFileDir : string = path.dirname(fromUri)
-	let relative : string = path.relative(currFileDir, to)
-	let absolutePath : string = path.resolve(currFileDir, relative)
+	// let relative : string = path.relative(currFileDir, to)
+	// let absolutePath : string = path.resolve(currFileDir, relative)
+	let absolutePath : string = path.resolve(currFileDir, to)
 	return absolutePath
 }
+
+
 
 //****Entities****/
 export enum PolicyModelEntityType {
@@ -392,22 +395,6 @@ export class DecisionGraphServices {
 		return {entities: result.concat(importsInfo.imports), importMap: importsInfo.importMap}
 	}
 
-
-
-	// static getAllImports(tree : Parser.Tree) : Map<string, DocumentUri> {
-	// 	let result : Map<string, DocumentUri> = new Map()
-	// 	let root : Parser.SyntaxNode = tree.walk().currentNode()
-	// 	let importNodes : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
-	// 	importNodes.forEach(
-	// 		imp => {
-	// 			let name : string = imp.descendantsOfType("decision_graph_name")[0].text.trim()
-	// 			let uri : string = imp.descendantsOfType("file_path")[0].text.trim()
-	// 			result.set(name, uri)
-	// 		})
-
-	// 	return result
-	// }
-
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let nodeIds : Parser.SyntaxNode[] = root.descendantsOfType("node_id")
@@ -418,7 +405,7 @@ export class DecisionGraphServices {
 		return getRangesOfSyntaxNodes(relevantIds)
 	}
 
-	static getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, decisiongraphSource : DocumentUri = undefined /*if the node is from another file*/) : Range[] {
+	static getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, uri : DocumentUri, decisiongraphSource : DocumentUri = undefined /*if the node is from another file*/) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let importedGraphName
 
@@ -427,7 +414,7 @@ export class DecisionGraphServices {
 			let importSource : Parser.SyntaxNode = imports.find(
 				node => 
 					{ 
-						return node.descendantsOfType("file_path")[0].text.trim() === decisiongraphSource
+						return resolveSource(uri, node.descendantsOfType("file_path")[0].text.trim()) === decisiongraphSource
 					}
 				)
 			if(importSource){

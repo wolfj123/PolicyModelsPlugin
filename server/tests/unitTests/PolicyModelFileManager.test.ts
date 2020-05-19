@@ -236,7 +236,7 @@ class DecisionGraphFileManager_UnitTests {
 			const source : string = input.source
 			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
-				const result = instance.getAllReferencesDGNode(nodeName, source)
+				const result = instance.getAllReferencesDGNode(nodeName, filename, source)
 				assert.deepEqual(result, output)
 			})
 		}
@@ -514,7 +514,7 @@ class PolicySpaceFileManager_UnitTests {
 			const source : string = input.source
 			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
-				const result = instance.getAllReferencesDGNode(nodeName, source)
+				const result = instance.getAllReferencesDGNode(nodeName, filename, source)
 				assert.deepEqual(result, output)
 			})
 		}
@@ -786,7 +786,7 @@ class ValueInferenceFileManager_UnitTests {
 			const source : string = input.source
 			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
-				const result = instance.getAllReferencesDGNode(nodeName, source)
+				const result = instance.getAllReferencesDGNode(nodeName, filename, source)
 				assert.deepEqual(result, output)
 			})
 		}
@@ -916,6 +916,6 @@ class ValueInferenceFileManager_UnitTests {
 }
 
 
-DecisionGraphFileManager_UnitTests.runTests()
-PolicySpaceFileManager_UnitTests.runTests()
-ValueInferenceFileManager_UnitTests.runTests()
+//  DecisionGraphFileManager_UnitTests.runTests()
+//  PolicySpaceFileManager_UnitTests.runTests()
+//  ValueInferenceFileManager_UnitTests.runTests()
