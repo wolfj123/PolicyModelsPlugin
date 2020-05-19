@@ -79,13 +79,14 @@ export class LanguageServicesFacade {
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
+		location = this.locationWithUri2LocationWithFilePath(location)
 		let locations : Location[] = this.services.getDeclarations(location)
 		
 		let result : LocationLink[] = locations.map(loc =>{
 			let rangeOfDoc : Range = this.services.getRangeOfDoc(loc.uri)
 			if(isNullOrUndefined(rangeOfDoc)) {return null}
 			return {
-				targetUri : loc.uri,
+				targetUri : Utils.FilePath2Uri(loc.uri),
 				targetSelectionRange: loc.range,
 				targetRange: rangeOfDoc
 			}
@@ -96,11 +97,13 @@ export class LanguageServicesFacade {
 	// these functions are called when the request is first made from the server
 	onReferences(params : ReferenceParams):  Location[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		return this.services.getReferences(location)
+		location = this.locationWithUri2LocationWithFilePath(location)
+		return this.services.getReferences(location).map(this.locationWithFilePath2LocationWithUri)
 	}
 
 	onPrepareRename(params : PrepareRenameParams): Range | null {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
+		location = this.locationWithUri2LocationWithFilePath(location)
 		let entity : PolicyModelEntity = this.services.createPolicyModelEntity(location)
 		if(isNullOrUndefined(entity)) {return null}
 		let pos1 : Position = Utils.point2Position(entity.syntaxNode.startPosition)
@@ -111,11 +114,13 @@ export class LanguageServicesFacade {
 
 	onRenameRequest(params : RenameParams) : Location[]	{		//WorkspaceEdit {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		return this.services.getReferences(location)
+		location = this.locationWithUri2LocationWithFilePath(location)
+		return this.services.getReferences(location).map(this.locationWithFilePath2LocationWithUri)
 	}
 
 	onCompletion(params : TextDocumentPositionParams): CompletionList | null { //return a list of labels
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
+		location = this.locationWithUri2LocationWithFilePath(location)
 		return this.services.getCompletion(location)
 	}
 
@@ -125,7 +130,23 @@ export class LanguageServicesFacade {
 	}
 
 	onFoldingRanges(params : FoldingRangeParams): Location[] {
-		return this.services.getFoldingRanges(params.textDocument.uri)
+		return this.services.getFoldingRanges(Utils.Uri2FilePath(params.textDocument.uri)).map(this.locationWithFilePath2LocationWithUri)
+	}
+
+	private locationWithUri2LocationWithFilePath(location : Location) : Location {
+		let newLocation : Location = {
+			uri: Utils.Uri2FilePath(location.uri),
+			range: location.range
+		}
+		return newLocation
+	}
+
+	private locationWithFilePath2LocationWithUri(location : Location) : Location {
+		let newLocation : Location = {
+			uri: Utils.FilePath2Uri(location.uri),
+			range: location.range
+		}
+		return newLocation
 	}
 }
 
