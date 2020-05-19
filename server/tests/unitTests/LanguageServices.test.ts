@@ -392,9 +392,13 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = absoluteFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const param : ReferenceParams = input.param
+			let param : ReferenceParams = input.param
+			param.textDocument.uri = absoluteFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onReferences(param)
 			assert.deepEqual(result, output)
@@ -425,9 +429,10 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
 			const filenames : string[] = input.fileNames
-			const param : RenameParams = input.param
+			let param : RenameParams = input.param
+			param.textDocument.uri = absoluteFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onPrepareRename(param)
 			assert.deepEqual(result, output)
@@ -464,9 +469,13 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = absoluteFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const param : RenameParams = input.param
+			let param : RenameParams = input.param
+			param.textDocument.uri = absoluteFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onRenameRequest(param)
 			assert.deepEqual(result, output)
@@ -504,9 +513,13 @@ class LanguageServicesFacade_UnitTests {
 		]
 
 		async function test(testCase) : Promise<void> {
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = absoluteFileName(element.uri)
+			});
 			const filenames : string[] = testCase.input.fileNames
 			const param : FoldingRangeParams = testCase.input.param
+			param.textDocument.uri = absoluteFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onFoldingRanges(param)
 			assert.deepEqual(result, output)
