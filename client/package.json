@@ -17,7 +17,8 @@
 		"update-vscode": "vscode-install",
 		"postinstall": "vscode-install",
 		"clean": "rm -rf node_modules && rm -rf package-lock.json",
-		"reinstall": "npm run clean && npm i"
+		"reinstall": "npm run clean && npm i",
+		"testjava": "mocha -r ts-node/register 'tests/policyModelLibApi.spec.ts'"
 	},
 	"dependencies": {
 		"axios": "^0.19.2",
