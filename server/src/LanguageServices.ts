@@ -42,7 +42,8 @@ import {
 	DecisionGraphServices,
 	PolicySpaceServices,
 	ValueInferenceServices,
-	FilePath
+	FilePath,
+	ImportMap
 } from './LanguageUtils'
 
 //https://www.npmjs.com/package/web-tree-sitter
@@ -51,45 +52,57 @@ import {
 
 
 export class LanguageServicesFacade {
+	uriPathMap : Map<DocumentUri, FilePath>
 	services : LanguageServices
 
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
-		let services : LanguageServices = await LanguageServicesWithCache.init(docs, pluginDir)
+		instance.addToUriPathMap(docs)
+		let convertedDocs : PMTextDocument[] = docs.map(doc => instance.convertUri2PathPMTextDocument(doc))
+		let services : LanguageServices = await LanguageServicesWithCache.init(convertedDocs, pluginDir)
 		instance.services = services
 		return instance
 	}
 
-	//TODO: it has to be async
-	// constructor(docs : TextDocWithChanges[]) {
-	// 	this.services = new LanguageServices(docs)
-	// }
+	addToUriPathMap(docs : PMTextDocument[]) {
+		if(isNullOrUndefined(this.uriPathMap)){
+			this.uriPathMap = new Map()
+		}
+		docs.forEach(doc => {
+			const uri : DocumentUri = doc.uri
+			const path : FilePath = Utils.Uri2FilePath(uri)
+			this.uriPathMap.set(uri, path)
+		})
+	}
 
 	addDocs(docs : PMTextDocument[]) {
-		this.services.addDocs(docs)
+		this.addToUriPathMap(docs)
+		this.services.addDocs(docs.map(doc => this.convertUri2PathPMTextDocument(doc)))
 	}
 
 	updateDoc(doc : PMTextDocument){
-		this.services.updateDoc(doc)
+		this.services.updateDoc(this.convertUri2PathPMTextDocument(doc))
 	}
 
 	removeDoc(doc : DocumentUri) {
-		this.services.removeDoc(doc)
+		const path : FilePath = this.uriPathMap.get(doc)
+		this.services.removeDoc(path)
+		this.uriPathMap.delete(doc)
 	}
 
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		location = this.locationWithUri2LocationWithFilePath(location)
+		location = this.convertUri2PathLocation(location)
 		let locations : Location[] = this.services.getDeclarations(location)
 		
 		let result : LocationLink[] = locations.map(loc =>{
 			let rangeOfDoc : Range = this.services.getRangeOfDoc(loc.uri)
 			if(isNullOrUndefined(rangeOfDoc)) {return null}
-			return {
-				targetUri : Utils.FilePath2Uri(loc.uri),
+			return this.convertUri2PathLocationLink({
+				targetUri : loc.uri,
 				targetSelectionRange: loc.range,
 				targetRange: rangeOfDoc
-			}
+			}, false)
 		})
 		return result.filter(loc => !isNullOrUndefined(loc))
 	}
@@ -97,13 +110,13 @@ export class LanguageServicesFacade {
 	// these functions are called when the request is first made from the server
 	onReferences(params : ReferenceParams):  Location[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		location = this.locationWithUri2LocationWithFilePath(location)
-		return this.services.getReferences(location).map(this.locationWithFilePath2LocationWithUri)
+		location = this.convertUri2PathLocation(location)
+		return this.services.getReferences(location).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
 	onPrepareRename(params : PrepareRenameParams): Range | null {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		location = this.locationWithUri2LocationWithFilePath(location)
+		location = this.convertUri2PathLocation(location)
 		let entity : PolicyModelEntity = this.services.createPolicyModelEntity(location)
 		if(isNullOrUndefined(entity)) {return null}
 		let pos1 : Position = Utils.point2Position(entity.syntaxNode.startPosition)
@@ -114,13 +127,13 @@ export class LanguageServicesFacade {
 
 	onRenameRequest(params : RenameParams) : Location[]	{		//WorkspaceEdit {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		location = this.locationWithUri2LocationWithFilePath(location)
-		return this.services.getReferences(location).map(this.locationWithFilePath2LocationWithUri)
+		location = this.convertUri2PathLocation(location)
+		return this.services.getReferences(location).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
 	onCompletion(params : TextDocumentPositionParams): CompletionList | null { //return a list of labels
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
-		location = this.locationWithUri2LocationWithFilePath(location)
+		location = this.convertUri2PathLocation(location)
 		return this.services.getCompletion(location)
 	}
 
@@ -130,23 +143,60 @@ export class LanguageServicesFacade {
 	}
 
 	onFoldingRanges(params : FoldingRangeParams): Location[] {
-		return this.services.getFoldingRanges(Utils.Uri2FilePath(params.textDocument.uri)).map(this.locationWithFilePath2LocationWithUri)
+		return this.services.getFoldingRanges(Utils.Uri2FilePath(params.textDocument.uri)).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
-	private locationWithUri2LocationWithFilePath(location : Location) : Location {
-		let newLocation : Location = {
-			uri: Utils.Uri2FilePath(location.uri),
-			range: location.range
+	private convertUri2PathLocation(toConvert : Location, uri2path : boolean = true) : Location { 
+		let str : string = toConvert.uri
+		let strs : string[] = (uri2path) ?
+			[this.uriPathMap.get(toConvert.uri)] :
+			Utils.getMapKeysByValue(this.uriPathMap, toConvert.uri)
+		if(strs.length > 0){
+			str = strs[0]
 		}
-		return newLocation
+		return {
+			uri: str,
+			range: toConvert.range
+		}
 	}
 
-	private locationWithFilePath2LocationWithUri(location : Location) : Location {
-		let newLocation : Location = {
-			uri: Utils.FilePath2Uri(location.uri),
-			range: location.range
+	private convertUri2PathLocationLink(toConvert : LocationLink, uri2path : boolean = true) : LocationLink { 
+		let str : string = toConvert.targetUri
+		let strs : string[] = (uri2path) ?
+			[this.uriPathMap.get(toConvert.targetUri)] :
+			Utils.getMapKeysByValue(this.uriPathMap, toConvert.targetUri)
+		if(strs.length > 0){
+			str = strs[0]
 		}
-		return newLocation
+		return {
+			targetUri: str,
+			targetRange: toConvert.targetRange,
+			targetSelectionRange: toConvert.targetSelectionRange,
+			originSelectionRange: toConvert.originSelectionRange
+		}
+	}
+	
+	private convertUri2PathPMTextDocument(toConvert : PMTextDocument, uri2path : boolean = true) : PMTextDocument { 
+		let str : string = toConvert.uri
+		let strs : string[] = (uri2path) ?
+			[this.uriPathMap.get(toConvert.uri)] :
+			Utils.getMapKeysByValue(this.uriPathMap, toConvert.uri)
+		if(strs.length > 0){
+			str = strs[0]
+		}
+		return {
+			uri: str,
+			path : toConvert.path,
+			languageId: toConvert.languageId,
+			version : toConvert.version,
+			getText : toConvert.getText,
+			positionAt : toConvert.positionAt,
+			offsetAt : toConvert.offsetAt,
+			isEqual : toConvert.isEqual,
+			lineCount : toConvert.lineCount,
+			update : toConvert.update,
+			lastChanges : toConvert.lastChanges	
+		}
 	}
 }
 
@@ -216,7 +266,8 @@ export class LanguageServices {
 	populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
 			//const uri : DocumentUri = doc.path
-			const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
+			//const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
+			const filepath : FilePath = doc.uri
 			const extension = Utils.getFileExtension(filepath)
 			let fileManager : FileManager = this.getFileManager(doc, extension)
 			this.fileManagers.set(filepath, fileManager)
@@ -239,7 +290,7 @@ export class LanguageServices {
 		if(isNullOrUndefined(entity)) return []
 		
 		let result : Location[] = []
-		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+		this.fileManagers.forEach((fm: FileManager, path: FilePath) => {
 			result = result.concat(fm.getAllDefinitions(entity))
 		});
 		return result
@@ -253,12 +304,12 @@ export class LanguageServices {
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
 		//declarations = fm.getAllDefinitions(entity)
-		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+		this.fileManagers.forEach((fm: FileManager, path: FilePath) => {
 			declarations = declarations.concat(fm.getAllDefinitions(entity))
 		});
 
 		
-		this.fileManagers.forEach((fm: FileManager, uri: DocumentUri) => {
+		this.fileManagers.forEach((fm: FileManager, path: FilePath) => {
 			references = references.concat(fm.getAllReferences(entity))
 		});
 	
@@ -268,8 +319,8 @@ export class LanguageServices {
 		return result
 	}
 
-	getRangeOfDoc(uri : DocumentUri) : Range | null {
-		let fm : FileManager = this.fileManagers.get(uri)
+	getRangeOfDoc(path: FilePath) : Range | null {
+		let fm : FileManager = this.fileManagers.get(path)
 		if(isNullOrUndefined(fm)) {return null}
 		let pos1 : Position = Utils.point2Position(fm.tree.rootNode.startPosition)
 		let pos2 : Position = Utils.point2Position(fm.tree.rootNode.endPosition)
@@ -284,9 +335,9 @@ export class LanguageServices {
 		return entity
 	}
 	
-	getFoldingRanges(uri : DocumentUri) : Location[] | null {
+	getFoldingRanges(path: FilePath) : Location[] | null {
 		let result : Location[] = []
-		let fm : FileManager = this.fileManagers.get(uri)
+		let fm : FileManager = this.fileManagers.get(path)
 		if(isNullOrUndefined(fm)) {return null}
 		return fm.getFoldingRanges()
 	}
@@ -301,11 +352,11 @@ export class LanguageServices {
 //****File Managers****/
 export abstract class FileManager {
 	tree : Parser.Tree
-	uri : DocumentUri
+	path : FilePath
 
-	constructor(tree : Parser.Tree, uri : DocumentUri){
+	constructor(tree : Parser.Tree, path : FilePath){
 		this.tree = tree
-		this.uri = uri
+		this.path = path
 	}
 
 	updateTree(newTree : Parser.Tree) {
@@ -318,7 +369,7 @@ export abstract class FileManager {
 	}
 
 	isLocationInDoc(location : Location) : boolean {
-		if (!(location.uri === this.uri)) return false
+		if (!(location.uri === this.path)) return false
 		return true
 	}
 
@@ -329,7 +380,7 @@ export abstract class FileManager {
 	}
 
 	rangeArray2LocationArray(ranges : Range[]) : Location[] {
-		return ranges.map(range => Utils.newLocation(this.uri, range))
+		return ranges.map(range => Utils.newLocation(this.path, range))
 	}
 
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
@@ -351,7 +402,7 @@ export abstract class FileManager {
 		if(isNullOrUndefined(entity)) {return []}
 		switch(entity.getType()){
 			case PolicyModelEntityType.DGNode: 
-				return this.getAllReferencesDGNode(entity.getName(), this.uri, entity.source)
+				return this.getAllReferencesDGNode(entity.getName(), this.path, entity.source)
 			case PolicyModelEntityType.Slot: 
 				return this.getAllReferencesSlot(entity.getName(), entity.source)
 			case PolicyModelEntityType.SlotValue: 
@@ -363,13 +414,13 @@ export abstract class FileManager {
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
 
-	abstract getAllDefinitionsDGNode(name : string, source : DocumentUri) : Location[]
+	abstract getAllDefinitionsDGNode(name : string, source : FilePath) : Location[]
 	abstract getAllDefinitionsSlot(name : string) : Location[]
 	abstract getAllDefinitionsSlotValue(name : string) : Location[]
 
-	abstract getAllReferencesDGNode(name : string, uri: DocumentUri, source : DocumentUri) : Location[]
-	abstract getAllReferencesSlot(name : string, source : DocumentUri) : Location[]
-	abstract getAllReferencesSlotValue(name : string, source : DocumentUri) : Location[]
+	abstract getAllReferencesDGNode(name : string, currentFile: FilePath, sourceOfEntity : FilePath) : Location[]
+	abstract getAllReferencesSlot(name : string, sourceOfEntity : FilePath) : Location[]
+	abstract getAllReferencesSlotValue(name : string, sourceOfEntity : FilePath) : Location[]
 
 	abstract getFoldingRanges() : Location[]
 
@@ -380,7 +431,8 @@ export class FileManagerFactory {
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
 		//const uri = doc.uri
 		//const uri : DocumentUri = doc.path
-		const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
+		//const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
+		const filepath : FilePath = doc.uri
 		const extension = Utils.getFileExtension(filepath)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
@@ -405,8 +457,8 @@ export class DecisionGraphFileManager extends FileManager {
 		if(isNullOrUndefined(node)) {return null}
 		return DecisionGraphServices.createEntityFromNode(node, location.uri)
 	}
-	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
-		if(source === this.uri) {
+	getAllDefinitionsDGNode(name: string, source : FilePath): Location[] {
+		if(source === this.path) {
 			let ranges : Range[] = DecisionGraphServices.getAllDefinitionsOfNodeInDocument(name, this.tree)
 			return this.rangeArray2LocationArray(ranges)
 		}
@@ -418,15 +470,15 @@ export class DecisionGraphFileManager extends FileManager {
 	getAllDefinitionsSlotValue(name: string): Location[] {
 		return []
 	}
-	getAllReferencesDGNode(name: string, uri : DocumentUri, source : DocumentUri): Location[] {
-		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfNodeInDocument(name, this.tree, uri, source)
+	getAllReferencesDGNode(name: string, currentFile : FilePath, sourceOfEntity : FilePath): Location[] {
+		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfNodeInDocument(name, this.tree, currentFile, sourceOfEntity)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+	getAllReferencesSlot(name: string, sourceOfEntity : FilePath): Location[] {
 		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfSlotInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+	getAllReferencesSlotValue(name: string, sourceOfEntity : FilePath): Location[] {
 		let ranges : Range[] = DecisionGraphServices.getAllReferencesOfSlotValueInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
@@ -446,7 +498,7 @@ export class PolicySpaceFileManager extends FileManager {
 		if(isNullOrUndefined(node)) {return null}
 		return PolicySpaceServices.createEntityFromNode(node, location.uri)
 	}
-	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
+	getAllDefinitionsDGNode(name: string, sourceOfEntity : FilePath): Location[] {
 		return []
 	}
 	getAllDefinitionsSlot(name: string): Location[] {
@@ -457,14 +509,14 @@ export class PolicySpaceFileManager extends FileManager {
 		let ranges : Range[] = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAllReferencesDGNode(name: string, uri : DocumentUri, source : DocumentUri): Location[] {
+	getAllReferencesDGNode(name: string, currentFile : FilePath, sourceOfEntity : FilePath): Location[] {
 		return []
 	}
-	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
+	getAllReferencesSlot(name: string, sourceOfEntity : FilePath): Location[] {
 		let ranges : Range[] = PolicySpaceServices.getAllReferencesOfSlotInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
+	getAllReferencesSlotValue(name: string, sourceOfEntity : FilePath): Location[] {
 		let ranges : Range[] = PolicySpaceServices.getAllDefinitionsOfSlotValueInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
@@ -484,7 +536,7 @@ export class ValueInferenceFileManager extends FileManager {
 		if(isNullOrUndefined(node)) {return null}
 		return ValueInferenceServices.createEntityFromNode(node, location.uri)
 	}
-	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
+	getAllDefinitionsDGNode(name: string, sourceOfEntity : FilePath): Location[] {
 		return []
 	}
 	getAllDefinitionsSlot(name: string): Location[] {
@@ -493,14 +545,14 @@ export class ValueInferenceFileManager extends FileManager {
 	getAllDefinitionsSlotValue(name: string): Location[] {
 		return []
 	}
-	getAllReferencesDGNode(name: string, uri: DocumentUri, source: string): Location[] {
+	getAllReferencesDGNode(name: string, currentFile : FilePath, sourceOfEntity : FilePath): Location[] {
 		return []
 	}
-	getAllReferencesSlot(name: string, source: string): Location[] {
+	getAllReferencesSlot(name: string, sourceOfEntity : FilePath): Location[] {
 		let ranges : Range[] = ValueInferenceServices.getAllReferencesOfSlotInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
-	getAllReferencesSlotValue(name: string, source: string): Location[] {
+	getAllReferencesSlotValue(name: string, sourceOfEntity : FilePath): Location[] {
 		let ranges : Range[] = ValueInferenceServices.getAllReferencesOfSlotValueInDocument(name, this.tree)
 		return this.rangeArray2LocationArray(ranges)
 	}
@@ -536,12 +588,12 @@ export class LanguageServicesWithCache extends LanguageServices {
 	}
 
 	getCompletion(location : Location) : CompletionList | null {
-		let uri : DocumentUri = location.uri
-		let fm : FileManager = this.fileManagers.get(uri)
+		let path : FilePath = location.uri
+		let fm : FileManager = this.fileManagers.get(path)
 		if(isNullOrUndefined(fm)) {return null}
 
 		let pspaceCompletionList : CompletionList = {isIncomplete: false, items: []}
-		this.fileManagers.forEach((fm : FileManager, uri : DocumentUri) => {
+		this.fileManagers.forEach((fm : FileManager, path : FilePath) => {
 			if(fm instanceof PolicySpaceFileManager) {
 				pspaceCompletionList = Utils.mergeCompletionLists(pspaceCompletionList, fm.getAutoComplete(null, null))
 			}
@@ -577,21 +629,21 @@ export class LanguageServicesWithCache extends LanguageServices {
 
 export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
 	cache : PolicyModelEntity[]
-	importMap : Map<string, DocumentUri>
+	importMap : ImportMap
 
 
-	constructor(tree : Parser.Tree, uri : DocumentUri){
-		super(tree, uri)
-		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: Map<string, string>}
-			= DecisionGraphServices.getAllEntitiesInDoc(tree, uri)
+	constructor(tree : Parser.Tree, path : FilePath){
+		super(tree, path)
+		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: ImportMap}
+			= DecisionGraphServices.getAllEntitiesInDoc(tree, path)
 		this.cache = cacheAndImportMap.entities
 		this.importMap = cacheAndImportMap.importMap
 	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: Map<string, string>}
-		= DecisionGraphServices.getAllEntitiesInDoc(newTree, this.uri)
+		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: ImportMap}
+		= DecisionGraphServices.getAllEntitiesInDoc(newTree, this.path)
 		this.cache = cacheAndImportMap.entities
 		this.importMap = cacheAndImportMap.importMap
 	}
@@ -600,23 +652,23 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 		return this.cache
 	}
 
-	getAllDefinitionsDGNode(name: string, source : DocumentUri): Location[] {
-		if(source === this.uri){
+	getAllDefinitionsDGNode(name: string, sourceOfEntity : FilePath): Location[] {
+		if(sourceOfEntity === this.path){
 			return CacheQueries.getAllDefinitionsDGNode(this.cache, name)
 		}
 		return []
 	}
 
-	getAllReferencesDGNode(name: string, uri: DocumentUri, source : DocumentUri): Location[] {
-		return CacheQueries.getAllReferencesDGNode(this.cache, name, source)
+	getAllReferencesDGNode(name: string, currentFile: FilePath, sourceOfEntity : FilePath): Location[] {
+		return CacheQueries.getAllReferencesDGNode(this.cache, name, sourceOfEntity)
 	}
 	
-	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
-		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
+	getAllReferencesSlot(name: string, sourceOfEntity : FilePath): Location[] {
+		return CacheQueries.getAllReferencesSlot(this.cache, name, sourceOfEntity)
 	}
 
-	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
-		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
+	getAllReferencesSlotValue(name: string, sourceOfEntity : FilePath): Location[] {
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, sourceOfEntity)
 	}
 
 	getFoldingRanges(): Location[] {
@@ -625,21 +677,21 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 
 	getAutoComplete(location: Location, allCaches : PolicyModelEntity[]) : CompletionList {
 		//let importUris : DocumentUri[] = Array.from(this.importMap.values())
-		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, this.uri, this.importMap)
+		return CacheQueries.getAutoCompleteDecisionGraph(allCaches, this.path, this.importMap)
 	}
 }
 
 export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 	cache : PolicyModelEntity[]
 
-	constructor(tree : Parser.Tree, uri : DocumentUri){
-		super(tree, uri)
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, uri)
+	constructor(tree : Parser.Tree, currentFile: FilePath){
+		super(tree, currentFile)
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, currentFile)
 	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.uri)
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.path)
 	}
 
 	getCache() : PolicyModelEntity[] {
@@ -654,12 +706,12 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 		return CacheQueries.getAllDefinitionsSlotValue(this.cache, name)
 	}
 
-	getAllReferencesSlot(name: string, source : DocumentUri): Location[] {
-		return CacheQueries.getAllReferencesSlot(this.cache, name, source)
+	getAllReferencesSlot(name: string, sourceOfEntity : FilePath): Location[] {
+		return CacheQueries.getAllReferencesSlot(this.cache, name, sourceOfEntity)
 	}
 
-	getAllReferencesSlotValue(name: string, source : DocumentUri): Location[] {
-		return CacheQueries.getAllReferencesSlotValue(this.cache, name, source)
+	getAllReferencesSlotValue(name: string, sourceOfEntity : FilePath): Location[] {
+		return CacheQueries.getAllReferencesSlotValue(this.cache, name, sourceOfEntity)
 	}
 
 	getFoldingRanges(): Location[] {
@@ -674,14 +726,14 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManager {
 	cache : PolicyModelEntity[]
 
-	constructor(tree : Parser.Tree, uri : DocumentUri){
-		super(tree, uri)
-		this.cache = ValueInferenceServices.getAllEntitiesInDoc(tree, uri)
+	constructor(tree : Parser.Tree, path : FilePath){
+		super(tree, path)
+		this.cache = ValueInferenceServices.getAllEntitiesInDoc(tree, path)
 	}
 
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.cache = ValueInferenceServices.getAllEntitiesInDoc(newTree, this.uri)
+		this.cache = ValueInferenceServices.getAllEntitiesInDoc(newTree, this.path)
 	}
 
 	getCache() : PolicyModelEntity[] {
@@ -715,12 +767,12 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAllReferencesDGNode(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+	static getAllReferencesDGNode(cache : PolicyModelEntity[], name: string, sourceOfEntity : FilePath): Location[] {
 		const type = PolicyModelEntityType.DGNode
 		const category1 = PolicyModelEntityCategory.Reference
 		//const category2 = PolicyModelEntityCategory.Declaration
 		return cache
-			.filter(e => e.getName() === name && (e.getCategory() == category1 /*||  e.getCategory() == category2*/) && e.getType() == type && e.source == source) 
+			.filter(e => e.getName() === name && (e.getCategory() == category1 /*||  e.getCategory() == category2*/) && e.getType() == type && e.source == sourceOfEntity) 
 			.map(e => e.location)
 	}
 
@@ -732,7 +784,7 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAllReferencesSlot(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+	static getAllReferencesSlot(cache : PolicyModelEntity[], name: string, sourceOfEntity : FilePath): Location[] {
 		const type = PolicyModelEntityType.Slot
 		const category = PolicyModelEntityCategory.Reference
 		return cache
@@ -748,7 +800,7 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 	
-	static getAllReferencesSlotValue(cache : PolicyModelEntity[], name: string, source : DocumentUri): Location[] {
+	static getAllReferencesSlotValue(cache : PolicyModelEntity[], name: string, sourceOfEntity : FilePath): Location[] {
 		const type = PolicyModelEntityType.SlotValue
 		const category1 = PolicyModelEntityCategory.Declaration
 		const category2 = PolicyModelEntityCategory.Reference
@@ -764,7 +816,7 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], uri : DocumentUri, importMap : Map<string, DocumentUri>) : CompletionList | null {
+	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], currentFile : FilePath, importMap : ImportMap) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
 		let slots : PolicyModelEntity[]
 		let slotvalues : PolicyModelEntity[]
@@ -774,13 +826,13 @@ export class CacheQueries {
 				.filter(function (e) {
 					if(e.getType() != PolicyModelEntityType.DGNode) {return false}
 
-					let isImported : boolean = e.source === uri || Array.from(importMap.values()).indexOf(e.getSource()) > -1
+					let isImported : boolean = e.source === currentFile || Array.from(importMap.values()).indexOf(e.getSource()) > -1
 
 					return (e.getCategory() == PolicyModelEntityCategory.Declaration || 
 							(e.getCategory() == PolicyModelEntityCategory.Reference && isImported))
 				})
 
-		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e, uri, importMap)))
+		let items : CompletionItem[] = Utils.uniqueArray(nodes.map(e => entity2CompletionItem(e, currentFile, importMap)))
 
 		let result = {
 			isIncomplete: false,

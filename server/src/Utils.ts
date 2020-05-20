@@ -57,13 +57,18 @@ export function uniqueArray(arr : any[]) : any[] {
 	return result
 }
 
+export function getMapKeysByValue<K,V>(map : Map<K,V>, value : V) : K[] {
+	const keys : K[] = Array.from(map.keys())
+	return keys.filter(k => map.get(k) === value)
+}
+
 export function Uri2FilePath(uri : DocumentUri) : FilePath {
 	return path.normalize(URI.parse(uri).fsPath)
 }
 
-export function FilePath2Uri(filepath : FilePath) : DocumentUri {
-	return URI.file(filepath).path
-}
+// export function FilePath2Uri(filepath : FilePath) : DocumentUri {
+// 	return URI.file(filepath).path
+// }
 
 export function point2Position(p : Parser.Point) : Position {
 	return Position.create(p.row, p.column)
