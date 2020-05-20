@@ -155,9 +155,10 @@ export class PolicyModelEntity {
 				Utils.point2Position(syntaxNode.endPosition)))
 
 		//TODO: fileparse
-		if(!isNullOrUndefined(sourceFile)) {
-			this.source = resolvePaths(currentFile, sourceFile)
-		} 
+		// if(!isNullOrUndefined(sourceFile)) {
+		// 	this.source = resolvePaths(currentFile, sourceFile)
+		// } 
+		this.source = sourceFile
 		this.category = category
 	}
 

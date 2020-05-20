@@ -27,7 +27,7 @@ import * as Parser from 'web-tree-sitter';
 import * as Utils from './Utils'
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
-import { PMTextDocument } from './Documents';
+import { PMTextDocument, createNewTextDocument } from './Documents';
 import {
 	entity2CompletionItem,
 	DecisionGraphKeywords,
@@ -184,19 +184,22 @@ export class LanguageServicesFacade {
 		if(strs.length > 0){
 			str = strs[0]
 		}
-		return {
-			uri: str,
-			path : toConvert.path,
-			languageId: toConvert.languageId,
-			version : toConvert.version,
-			getText : toConvert.getText,
-			positionAt : toConvert.positionAt,
-			offsetAt : toConvert.offsetAt,
-			isEqual : toConvert.isEqual,
-			lineCount : toConvert.lineCount,
-			update : toConvert.update,
-			lastChanges : toConvert.lastChanges	
-		}
+		let newDoc : PMTextDocument = createNewTextDocument(str, toConvert.languageId, toConvert.version, toConvert.getText())
+		newDoc.lastChanges = toConvert.lastChanges
+		// let newDoc : PMTextDocument = {
+		// 	uri: str,
+		// 	path : toConvert.path,
+		// 	languageId: toConvert.languageId,
+		// 	version : toConvert.version,
+		// 	getText : toConvert.getText,
+		// 	positionAt : toConvert.positionAt,
+		// 	offsetAt : toConvert.offsetAt,
+		// 	isEqual : toConvert.isEqual,
+		// 	lineCount : toConvert.lineCount,
+		// 	update : toConvert.update,
+		// 	lastChanges : toConvert.lastChanges	
+		// }
+		return newDoc
 	}
 }
 
