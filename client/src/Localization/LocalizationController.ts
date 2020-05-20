@@ -1,5 +1,6 @@
 import { LanguageData, File } from '../view/Types/model';
 import FileService from './FileService';
+import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
 var PATH = require('path');
 
@@ -18,6 +19,7 @@ export default class LocalizationController {
     this._fileService = new FileService();
     this._localizationPath = rootPath + localizationRootFolder;
     this._onError = onError;
+    const instance: PolicyModelLibApi = PolicyModelLibApi.getInstance();
   }
 
   activateLocalization({ onError }) {
@@ -90,4 +92,6 @@ export default class LocalizationController {
     );
     return languagesFilesData;
   }
+
+
 }

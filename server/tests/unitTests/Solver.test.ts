@@ -22,8 +22,7 @@ describe('Solver Test Suite', ()=>{
 		let cwd:string = process.cwd()
 		initLogger(cwd);
 		testFolder = cwd + testFolderSuffix;
-		solver = new PMSolver();
-		await solver.initParser(cwd);
+		solver = new PMSolver(cwd);
 		codeFolder =path.join(testFolder,"InferrerExample");
 		await solver.onOpenFolder(URI.file(codeFolder).toString());
 	});

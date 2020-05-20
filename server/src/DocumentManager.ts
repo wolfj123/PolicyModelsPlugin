@@ -92,7 +92,7 @@ export interface TextDocumentManagerInt{
 
 	/**
 	 * this reads all the files in folder and sub folders, and create PMTextDocument object for all relevant 
-	 * Policy Model files, this function is synchronic and must be called
+	 * Policy Model files, this function is synchronic and must be called before any other TextDocumentManagerInt function
 	 * if this function isn't called the rest of the functions will not work, because they all wait for this function to finish its work
 	 * @param pathUri null for no folder, string of the folder URI
 	 */
@@ -236,7 +236,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 				);
 		}
 
-		let deletedIdx: number = this._allDocuments.findIndex(currDoc => currDoc .uri === deletedFile);
+		let deletedIdx: number = this._allDocuments.findIndex(currDoc => currDoc.uri === deletedFile);
 		if (deletedIdx === -1){
 			getLogger(logSources.documents).error(`didn't find text document to delete in deletedDocument`, deletedFile);
 			return Promise.resolve({type: documentManagerResultTypes.noChange});

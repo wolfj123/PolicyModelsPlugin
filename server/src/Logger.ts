@@ -52,6 +52,7 @@ export function getLogger(source: logSources): Logger {
 	let logger = allLoggers.find(curr => curr.source === source);
 	if (logger === undefined){
 		globalLog.error(`requested bad Logger ${source}`);
+		return globalLog;
 	}
 	return logger.log;
 }

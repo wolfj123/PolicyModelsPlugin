@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import * as mock from 'mock-fs';
 import LocalizationController from '../src/Localization/LocalizationController';
 import { LanguageData, File } from '../src/view/Types/model';
+import PolicyModelLibApi from '../src/services/PolicyModelLibApi';
 import 'mocha';
 
 const rootPath = '.';
@@ -9,6 +10,7 @@ const filecontent = fileName => fileName + 'file content';
 let localizationController;
 
 before(() => {
+  PolicyModelLibApi.buildInstance(rootPath,e => e);
   localizationController = new LocalizationController({}, rootPath, e => {
     throw Error(e);
   });

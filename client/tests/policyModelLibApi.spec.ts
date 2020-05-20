@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import 'mocha';
-import { PolicyModelLibApi } from '../src/services/PolicyModelLibApi';
+import PolicyModelLibApi from '../src/services/PolicyModelLibApi';
 import * as path from 'path';
 
 
-const timeout = ms =>  {
+const timeout = ms => {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 const sampleProjectPath: string = path.join(__dirname, "/../testFixture/parts");
@@ -12,8 +12,9 @@ const sampleProjectPath: string = path.join(__dirname, "/../testFixture/parts");
 describe('API Environment Tests', () => {
 
 	let api: PolicyModelLibApi;
-	beforeEach(()=>{
-	api = new PolicyModelLibApi(sampleProjectPath, message => console.log(message));
+	beforeEach(() => {
+		PolicyModelLibApi.buildInstance(sampleProjectPath, message => console.log(message));
+		api = PolicyModelLibApi.getInstance();
 	})
 
 	afterEach(async () => {
@@ -32,7 +33,8 @@ describe('API Environment Tests', () => {
 	});
 
 	it('should failed build environment cause to wrong path', async () => {
-		api = new PolicyModelLibApi(sampleProjectPath+"wrongPath", message => console.log(message));
+		PolicyModelLibApi.buildInstance(sampleProjectPath + "wrongPath", message => console.log(message));
+		api = PolicyModelLibApi.getInstance();
 		const serverHasStarted = await api._startServer();
 		expect(serverHasStarted).to.be.true;
 		const modelHasLoaded = await api._loadModel();
