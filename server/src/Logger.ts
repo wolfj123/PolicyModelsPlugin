@@ -52,6 +52,7 @@ export function getLogger(source: logSources): Logger {
 	let logger = allLoggers.find(curr => curr.source === source);
 	if (logger === undefined){
 		globalLog.error(`requested bad Logger ${source}`);
+		return globalLog;
 	}
 	return logger.log;
 }
@@ -82,10 +83,10 @@ export function initLogger(pluginDir: string): void {
 		globalLog.info(`the plugin dir is: ${pluginDir}`);
 	}
 
-	globalLog.add(new winston.transports.File({
-		filename:  path.join(pluginDir, logFolder,"unhandeled_exceptions.log"),
-		handleExceptions: true
-	}))
+	// globalLog.add(new winston.transports.File({
+	// 	filename:  path.join(pluginDir, logFolder,"unhandeled_exceptions.log"),
+	// 	handleExceptions: true
+	// }))
 
 	allLogs.forEach(currLog => {
 		try {
