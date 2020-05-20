@@ -73,7 +73,7 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceRoot}",
 				"--extensionTestsPath=${workspaceRoot}/client/out/test",
-				"${workspaceRoot}/client/testFixture"
+				"${workspaceRoot}/client/testFixture/InferrerExample"
 			],
 			"outFiles": ["${workspaceRoot}/client/out/test/**/*.js"],
 			"preLaunchTask": "npm: compile"

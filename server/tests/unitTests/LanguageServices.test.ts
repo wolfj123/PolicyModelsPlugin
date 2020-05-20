@@ -4,6 +4,7 @@
 
 
 import * as TestTarget from "../../src/LanguageServices";
+import * as Utils from '../../src/Utils';
 import {
 	DecisionGraphKeywords,
 	PolicySpaceKeywords,
@@ -52,12 +53,14 @@ import {
 	newRange, 
 	newLocation, 
 	flatten, 
-	docChange2Edit
+	docChange2Edit,
+	Uri2FilePath
 } from '../../src/Utils';
 import * as assert from 'assert';
 import * as mocha from 'mocha'; 
 import { PMTextDocument } from "../../src/Documents";
 import { URI } from 'vscode-uri';
+import * as path from 'path';
 
 const deepEqualInAnyOrder = require('deep-equal-in-any-order');
 const chai = require('chai');
@@ -71,11 +74,17 @@ function getTextFromUri(uri : string) : string | null {
 	return dataEntry.text
 }
 
+const dir = "e:"
+function normalizeFileName(filename : string) : string {
+	//return dir.concat(path.sep.concat(filename))
+	return Utils.Uri2FilePath(filename)
+}
 
 function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRange : Range) : PMTextDocument {
 	let result : PMTextDocument = {
-		uri : uri,
-		path: URI.parse(uri).fsPath,
+		uri : normalizeFileName(uri),
+		path: normalizeFileName(uri),
+		//path: URI.parse(uri).fsPath,
 		languageId : null,
 		version : null,
 		getText : function(){return newText},
@@ -90,6 +99,25 @@ function createPMTextDoc(uri : string, newText : string, oldRange : Range, newRa
 		}]
 	}
 	return result
+}
+
+
+function createPMTextDocFromUrl(uri : string) : PMTextDocument {
+	let text : string = getTextFromUri(uri)	
+	return {
+			uri: normalizeFileName(uri),
+			path: normalizeFileName(uri),
+			//path: URI.parse(uri).fsPath,
+			languageId: null,
+			version : null,
+			getText : function() {return text},
+			positionAt : null,
+			offsetAt : null,
+			isEqual : null,
+			lineCount : null,
+			update : null,
+			lastChanges : []	
+	}
 }
 
 function getParserWasmPathByExtension(extension : string) : string | null {
@@ -145,23 +173,6 @@ function runMochaTestCases(title : string,  testCases, testFunction) {
 // 	}
 // }
 
-function createPMTextDocFromUrl(uri : string) : PMTextDocument {
-	let text : string = getTextFromUri(uri)	
-	return {
-			uri: uri,
-			path: URI.parse(uri).fsPath,
-			languageId: null,
-			version : null,
-			getText : function() {return text},
-			positionAt : null,
-			offsetAt : null,
-			isEqual : null,
-			lineCount : null,
-			update : null,
-			lastChanges : []
-		
-	}
-}
 
 
 
@@ -207,7 +218,7 @@ class LanguageServicesFacade_UnitTests {
 		async function test(testCase) : Promise<void> {
 			const init : string[] = testCase.input.init
 			const add : string[] = testCase.input.add
-			const output = testCase.output
+			const output = testCase.output.map(normalizeFileName)
 			let instance = await self.create(init)
 			instance.addDocs(add.map(createPMTextDocFromUrl))
 			const result = Array.from(instance.services.fileManagers.keys())
@@ -252,7 +263,7 @@ class LanguageServicesFacade_UnitTests {
 			const output = testCase.output
 			let instance = await self.create(init)
 			instance.updateDoc(update)
-			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: 'ps1.pspace'})
+			let result = instance.services.createPolicyModelEntity({range:{start: {character: 1, line: 0},end: {character: 1, line: 0}}, uri: normalizeFileName('ps1.pspace')})
 			assert.equal(result.getName(), output.name)
 			assert.equal(result.getType(), output.type)
 		}
@@ -282,8 +293,8 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const init : string[] = testCase.input.init
-			const remove : string = testCase.input.remove
-			const output = testCase.output
+			const remove : string = normalizeFileName(testCase.input.remove)
+			const output = testCase.output.map(normalizeFileName)
 			let instance = await self.create(init)
 			instance.removeDoc(remove)
 			const result = Array.from(instance.services.fileManagers.keys())
@@ -340,9 +351,14 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				//element.targetUri = Utils.FilePath2Uri(element.targetUri)
+				element.targetUri = normalizeFileName(element.targetUri)
+			});
 			const filenames : string[] = input.fileNames
-			const param : DeclarationParams = input.param
+			let param : DeclarationParams = input.param
+			param.textDocument.uri = normalizeFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onDefinition(param)
 			assert.deepEqual(result, output)
@@ -380,9 +396,14 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				//element.uri = Utils.FilePath2Uri(element.uri)
+				element.uri = normalizeFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const param : ReferenceParams = input.param
+			let param : ReferenceParams = input.param
+			param.textDocument.uri = normalizeFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onReferences(param)
 			assert.deepEqual(result, output)
@@ -413,9 +434,10 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
 			const filenames : string[] = input.fileNames
-			const param : RenameParams = input.param
+			let param : RenameParams = input.param
+			param.textDocument.uri = normalizeFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onPrepareRename(param)
 			assert.deepEqual(result, output)
@@ -452,9 +474,14 @@ class LanguageServicesFacade_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				//element.uri = Utils.FilePath2Uri(element.uri)
+				element.uri = normalizeFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const param : RenameParams = input.param
+			let param : RenameParams = input.param
+			param.textDocument.uri = normalizeFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onRenameRequest(param)
 			assert.deepEqual(result, output)
@@ -492,9 +519,14 @@ class LanguageServicesFacade_UnitTests {
 		]
 
 		async function test(testCase) : Promise<void> {
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				//element.uri = Utils.FilePath2Uri(element.uri)
+				element.uri = normalizeFileName(element.uri)
+			});
 			const filenames : string[] = testCase.input.fileNames
 			const param : FoldingRangeParams = testCase.input.param
+			param.textDocument.uri = normalizeFileName(param.textDocument.uri)
 			let instance = await self.create(filenames)
 			const result = instance.onFoldingRanges(param)
 			assert.deepEqual(result, output)
@@ -612,9 +644,13 @@ class LanguageServices_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = normalizeFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = normalizeFileName(location.uri)
 			let instance = await self.create(filenames)
 			const result = instance.getDeclarations(location)
 			assert.deepEqual(result, output)
@@ -734,9 +770,13 @@ class LanguageServices_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(element => {
+				element.uri = normalizeFileName(element.uri)
+			});
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = normalizeFileName(location.uri)
 			let instance = await self.create(filenames)
 			const result = instance.getReferences(location)
 			expect(result).to.deep.equalInAnyOrder(output)
@@ -767,10 +807,10 @@ class LanguageServices_UnitTests {
 		]
 
 		async function test(testCase) : Promise<void> {
-			const input = testCase.input
-			const output = testCase.output
-			const filenames : string[] = input.fileNames
-			const filename : string = input.location
+			let input = testCase.input
+			let output = testCase.output
+			let filenames : string[] = input.fileNames //.map(absoluteFileName)
+			let filename : string = normalizeFileName(input.location)
 			let instance = await self.create(filenames)
 			const result = instance.getRangeOfDoc(filename)
 			assert.deepEqual(result, output)
@@ -804,7 +844,8 @@ class LanguageServices_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = normalizeFileName(location.uri)
 			let instance = await self.create(filenames)
 			const result = instance.createPolicyModelEntity(location)
 			assert.deepEqual({name : result.name, type : result.type}, output)
@@ -857,9 +898,10 @@ class LanguageServices_UnitTests {
 
 		async function test(testCase) : Promise<void> {
 			const input = testCase.input
-			const output = testCase.output
+			let output = testCase.output
+			output.forEach(e=> e.uri = normalizeFileName(e.uri))
 			const filenames : string[] = input.fileNames
-			const location : string = input.location
+			const location : string = normalizeFileName(input.location)
 			let instance = await self.create(filenames)
 			const result = instance.getFoldingRanges(location)
 			assert.deepEqual(result, output)
@@ -887,11 +929,11 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 	static runTests() {
 		let self = new LanguageServicesWithCache_UnitTests()
 		describe(self.testTargetClass.name + " unit tests", function() {
-			// self.getDeclarations()
-			// self.getReferences()
-			// self.getRangeOfDoc()
-			// self.createPolicyModelEntity()
-			// self.getFoldingRanges()
+			self.getDeclarations()
+			self.getReferences()
+			self.getRangeOfDoc()
+			self.createPolicyModelEntity()
+			self.getFoldingRanges()
 			self.getCompletion()
 		})
 	}
@@ -1000,7 +1042,8 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filenames : string[] = input.fileNames
-			const location : Location = input.location
+			let location : Location = input.location
+			location.uri = normalizeFileName(location.uri)
 			let outputWithKeywords = output.concat(testCase.keywords)
 			let instance = await self.create(filenames)
 			const result = instance.getCompletion(location)
@@ -1037,6 +1080,7 @@ class DecisionGraphServices_UnitTests {
 				title: 'sanity',
 				input: 'dg2.dg',
 				output: [
+					{"category": 3, "name": "dg", "type": 5, }, 
 					{"category": 0, "name": "import_node", "type": 0, }, 
 					{"category": 1, "name": "findme", "type": 0, }, 
 					{"category": 0, "name": "ask_node", "type": 0, }, 
@@ -1054,7 +1098,7 @@ class DecisionGraphServices_UnitTests {
 			return getTree(testCase.input).then(tree => {
 				let uri : DocumentUri = testCase.input
 				const output = testCase.output
-				const result = DecisionGraphServices.getAllEntitiesInDoc(tree, uri).map(e => {
+				const result = DecisionGraphServices.getAllEntitiesInDoc(tree, uri).entities.map(e => {
 					return {
 						name: e.getName(),
 						type: e.getType(),
