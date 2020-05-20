@@ -10,6 +10,7 @@ import * as Parser from 'web-tree-sitter';
 import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
+import PolicyModelLibApi from './services/PolicyModelLibApi';
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
@@ -21,7 +22,8 @@ export function activate(context: ExtensionContext) {
   // The commandId parameter must match the command field in package.json
 
   addLocalizationCommand(context);
-
+  buildLibServiceAppApiInstance();
+  addRunCommand(context);
   activateSyntaxColoring(context);
 
   // The server is implemented in node
@@ -70,10 +72,6 @@ export function activate(context: ExtensionContext) {
   // Create the language client and start the client.
   client = new LanguageClient('PolicyModelsServer', 'PolicyModels Server', serverOptions, clientOptions);
 
-  addRunCommand(context);
-
-
-
   // Start the client. This will also launch the server
   client.start();
 
@@ -88,12 +86,13 @@ export function activate(context: ExtensionContext) {
       return context.extensionPath;
     });
   });
-
-
-
 }
 
-
+function buildLibServiceAppApiInstance(){
+  const rootPath: string = vscode.workspace.rootPath;
+  const onMessage = message => vscode.window.showInformationMessage("Policy Model CLI: ",message);
+  PolicyModelLibApi.buildInstance(rootPath,onMessage);
+}
 
 
 export function deactivate(): Thenable<void> | undefined {
