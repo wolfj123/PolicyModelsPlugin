@@ -73,7 +73,7 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
   return (
     <div className={'App'}>
       <div className={'container'}>
-      <div className="panel" style={{flex: '0 0 115px'}}>
+      <div className="panel" style={{flex: '0 0 130px'}}>
         <SideBarMenu filesMenuData={filesMenuData} languagesMenuData={languagesMenuData} />
       </div>
       <div className="panel" style={{flex: '1 1 0'}}>

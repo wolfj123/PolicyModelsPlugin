@@ -29,6 +29,8 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
   ;
 
   let menu;
+  let header;
+  let backButton;
   if (panelType === PANELS_TYPES.LANGUAGES) {
     menu = languagesMenuData.map((language) => {
       const { onClick, text, isSelected } = language;
@@ -43,8 +45,8 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
           </Text>
         </IconWrapper>
 			);
-		});
-		menu=[getHeader('Languages'), menu];
+    });
+    header = getHeader('Languages');
 	}
 	 else if (panelType === PANELS_TYPES.FILES) {
 		 const selectedLanguage = languagesMenuData.find(({isSelected}) => isSelected );
@@ -58,15 +60,22 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
       );
     });
 
-    const backButton = (
+     backButton = (
       <Text key={'back'} onClick={() => setPanelType(PANELS_TYPES.LANGUAGES)} color={'#bfbfbf'} size={'smaller'}>
         {'< Languages'}
       </Text>
     );
-    menu = [backButton,getHeader('Files',selectedLanguageName), menu];
+    header = getHeader('Files',selectedLanguageName);
   }
 
-  return <div className='menuContainer' >{menu}</div>;
+  return <div className='menuContainer' >
+    {backButton}
+    {header}
+    <div className="scrollable">
+    {menu}
+    </div>
+
+    </div>;
 };
 
 export default SideBarMenu;

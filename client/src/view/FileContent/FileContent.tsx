@@ -1,6 +1,6 @@
 import * as React from 'react';
 import AnswersFileContent from './AnswersFileContent';
-import SpaceFileContnet from './SpaceFileContnet';
+import SpaceFileContent from './SpaceFileContent';
 import TextEditor from './TextEditor';
 import Text from '../Text/Text';
 import Page from '../Page/Page';
@@ -25,7 +25,7 @@ const FileContent: React.FunctionComponent<Props> = props => {
       break;
     case 'space.md':
     case 'sections.md':
-      RendererComponent = <SpaceFileContnet key={id} content={content} onFileChange={handleFileChange} />;
+      RendererComponent = <SpaceFileContent key={id} content={content} onFileChange={handleFileChange} />;
       break;
     default:
       RendererComponent = <TextEditor key={id} content={content} onFileChange={handleFileChange} />;
