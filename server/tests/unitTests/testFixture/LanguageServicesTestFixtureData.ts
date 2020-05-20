@@ -111,8 +111,8 @@ text :
 [#import dg3 : dg3_ws_1.dg]
 
 [>n1<  call : n2]
-[>n2<  call : dg2>n2]
-[>n3<  call : dg3>n2]
+[>n2<  call : dg2>n1]
+[>n3<  call : dg3>n1]
 [>n4< set: 
 	compound_slot/atomic_slot1 = atomic_slot1_val1; 
 	compound_slot/aggregate_slot += {aggregate_slot_slotval1, aggregate_slot_slotval2}]
