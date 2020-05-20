@@ -960,8 +960,17 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 					{label: 'n1', kind: 6},
 					{label: 'n2', kind: 6},
 					{label: 'n3', kind: 6},
-					{label: 'n4', kind: 6},
 					{label: 'n_end', kind: 6},
+
+					{label: 'dg2>n1', kind: 6},
+					//{label: 'dg2>n2', kind: 6},
+					{label: 'dg2>n_end', kind: 6},
+
+					{label: 'dg3>n1', kind: 6},
+					//{label: 'dg3>n2', kind: 6},
+					{label: 'dg3>n_end', kind: 6},
+
+					{label: 'n4', kind: 6},
 					// {label: 'atomic_slot1', kind: 13},
 					// {label: 'compound_slot', kind: 13},
 					// {label: 'aggregate_slot', kind: 13},

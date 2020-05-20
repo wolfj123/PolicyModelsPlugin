@@ -94,9 +94,6 @@ function resolvePaths(fromAbsolutePath : FilePath, toRelativePath : FilePath) : 
 
 
 
-//****Entities****/
-
-
 /**
  * This class represents an entity found in a parse tree.
  * Instances of this class are the basis of all language services.
@@ -266,10 +263,10 @@ export function entity2CompletionItem(entity : PolicyModelEntity, currentFile : 
 	if(!isNullOrUndefined(currentFile) && !isNullOrUndefined(importMap)){
 		prefix =
 		(entity.getType() == PolicyModelEntityType.DGNode && 
-		entity.getCategory() == PolicyModelEntityCategory.Reference && 
+		[PolicyModelEntityCategory.Declaration, PolicyModelEntityCategory.Reference].indexOf(entity.getCategory()) > -1 && 
 		!isNullOrUndefined(entity.getSource()) &&
-		entity.getSource() !== currentFile && importMap.has(entity.getSource()))
-			? importMap.get(entity.getSource()) : "" 
+		entity.getSource() !== currentFile && Utils.getMapKeysByValue(importMap, entity.getSource()).length > 0)
+			? Utils.getMapKeysByValue(importMap, entity.getSource())[0].concat(">") : "" 
 	}
 	
 	let label : string = prefix.concat(entity.getName())
