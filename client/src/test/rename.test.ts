@@ -12,7 +12,6 @@ import {
 	activate, 
 	getWordPositionFromLine,
 	getWordRangeFromLineInEditor} from './helper';
-import { print } from 'util';
 
 var testCounter: number = 0
 var testFixtureFolderPath: String = 'InferrerExample/'
@@ -88,10 +87,20 @@ async function testDefinition(
 		const actualItem = actualRenameWorkspce.entries()[i];
 		assert.equal(actualItem[0].path, expectedItem.uri.path);
 		assert.equal(actualItem[1].length, expectedItem.ranges.length);
+		let allActualRanges = []
 		actualItem[1].forEach((edit, j) => {
-			// const expectedRange = expectedItem.ranges[j];
-			// assert.equal(edit.range, expectedRange);
+			allActualRanges.push(edit.range)
 			assert.equal(edit.newText, expectedItem.newText);
+		});
+		allActualRanges.forEach((range: vscode.Range) => {
+			var found = false;
+			for(var i = 0; i < expectedItem.ranges.length; i++) {
+				if(range.isEqual(expectedItem.ranges[i])){
+					found = true;
+					break;
+				}
+			}
+			if (!found) assert.fail()
 		});
 
 	});

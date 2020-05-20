@@ -4,7 +4,7 @@ Relevant Comman: vscode.executeReferenceProvider
 Expected Output: Array of
 export interface Location {
     uri: DocumentUri; //file of result
-    range: Range; //result
+    range: Range; //result range
 }
 */
 
@@ -15,120 +15,133 @@ import {
 	getDocUri, 
 	activate, 
 	getWordPositionFromLine, 
-	getWordRangeFromLineInEditor, 
-	getAllWordLocationsFromFilesInDir,
-	// getAllFilesInFolder,
-	defaultRange,
-	getDocPath,
-	readAllCodeFilesInDirectory} from './helper';
+	getWordRangeFromLineInEditor,} from './helper';
 
 var testCounter: number = 0
 var testFixtureFolderPath: string = 'InferrerExample/'
-let defaultPosition: vscode.Position = new vscode.Position(0,0)
 export type ReferenseResolve = vscode.Location[];
 
-describe('Referense test Sanity', () => {
-	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
-
-	// it('Setup', async () => {
-	// 	await activate(docUri);
-	// })
-
-	it('Sanity Test' + testCounter.toString(), async () => {
-		let range: vscode.Range = new vscode.Range(new vscode.Position(0,0), new vscode.Position(0,0))
-		let definition: vscode.Location[] = [{uri:docUri, range:range}];
-
-		let pathi = getDocPath("InferrerExample")
-		let files = readAllCodeFilesInDirectory(pathi)
-
-		let testSelectionRange: vscode.Range[]
-
-		// await testReferense(docUri, defaultPosition, definition);
-	});
-	testCounter++;
-});
+const docUriPS = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
+const docUriDG = getDocUri(testFixtureFolderPath + 'decision-graph.dg');
+const docUriVI = getDocUri(testFixtureFolderPath + 'valueInference.vi');
+let locationPS : vscode.Location[];
+let locationDG : vscode.Location[];
+let locationVI : vscode.Location[];
 
 
-describe('Referense test Policy Space', () => {
+describe('Renference E2E test Policy Space', () => {
 
-	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
-
-	it('Setup', async () => {
-		await activate(docUri);
-	})
-
-	it('Human (4) Test' + testCounter.toString(), async () => {
-		let position : vscode.Position = getWordPositionFromLine("Human", 0);
-		let resultRanges: {} = 
-			await getAllWordLocationsFromFilesInDir("Human", getDocPath("InferrerExample"), testFixtureFolderPath)
+	it('Human (1) Test' + testCounter.toString(), async () => {
+		let wordToReference= "Human"
+		await activate(docUriPS);
+		let position : vscode.Position = getWordPositionFromLine(wordToReference, 0);
+		locationPS = [createLocation(docUriPS, getWordRangeFromLineInEditor(wordToReference, 0))];
 		
-		let referenceResult: vscode.Location[] = await builtReferenceExpectedResultObject(resultRanges)
-		// await testReferense(docUri, position, referenceResult);
+		locationDG = undefined;
+
+		locationVI = undefined;
+		
+		let expectedLocations = builtReferenceExpectedResultObject(locationPS, locationDG, locationVI);
+
+		await testReferense(docUriPS, position, expectedLocations);
 	});
 	testCounter++;
-/*
-	// the word from the decision graph is wrong
+
 	it('major (3) Test' + testCounter.toString(), async () => {
-		let position : vscode.Position = getWordPositionFromLine("major", 2);
-		let resultRanges: {} = 
-			await getAllWordLocationsFromFilesInDir("major", getDocPath("InferrerExample"), testFixtureFolderPath)
+		let wordToReference= "major"
+		await activate(docUriPS);
+		let position : vscode.Position = getWordPositionFromLine(wordToReference, 2);
+		locationPS = [createLocation(docUriPS, getWordRangeFromLineInEditor(wordToReference, 2))];
 		
-		let referenceResult: vscode.Location[] = await builtReferenceExpectedResultObject(resultRanges)
-		await testReferense(docUri, position, referenceResult);
+		await activate(docUriDG);
+		locationDG = [createLocation(docUriDG, getWordRangeFromLineInEditor(wordToReference, 25))];
+
+		await activate(docUriVI);
+		locationVI = [createLocation(docUriVI, getWordRangeFromLineInEditor(wordToReference, 3))];
+		
+		let expectedLocations = builtReferenceExpectedResultObject(locationPS, locationDG, locationVI);
+
+		await activate(docUriPS);
+		await testReferense(docUriPS, position, expectedLocations);
 	});
 	testCounter++;
-*/
-
 });
 
-/*
-describe('Referense test Decision Graph', () => {
-
-	const docUri = getDocUri(testFixtureFolderPath + 'decision-graph.dg');
-
-	it('Setup', async () => {
-		await activate(docUri);
-	})
+describe('Referense E2E test Decision Graph', () => {
 
 	it('HumanDataType (9) Test' + testCounter.toString(), async () => {
-		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 0);
-		let resultRanges: {} = 
-			await getAllWordLocationsFromFilesInDir("HumanDataType", getDocPath("InferrerExample"), testFixtureFolderPath)
+		let wordToReference= "HumanDataType"
+		await activate(docUriDG);
+		let position : vscode.Position = getWordPositionFromLine(wordToReference, 0);
+
+		await activate(docUriPS);
+		locationPS = [
+			createLocation(docUriPS, getWordRangeFromLineInEditor(wordToReference, 0)),
+			createLocation(docUriPS, getWordRangeFromLineInEditor(wordToReference, 1))];
 		
-		let referenceResult: vscode.Location[] = await builtReferenceExpectedResultObject(resultRanges)
-		await testReferense(docUri, position, referenceResult);
+		await activate(docUriDG);
+		locationDG = [
+			createLocation(docUriDG, getWordRangeFromLineInEditor(wordToReference, 0)),
+			createLocation(docUriDG, getWordRangeFromLineInEditor(wordToReference, 11)),
+			createLocation(docUriDG, getWordRangeFromLineInEditor(wordToReference, 12)),
+			createLocation(docUriDG, getWordRangeFromLineInEditor(wordToReference, 13))];
+
+		await activate(docUriVI);
+		locationVI = [
+			createLocation(docUriVI, getWordRangeFromLineInEditor(wordToReference, 1)),
+			createLocation(docUriVI, getWordRangeFromLineInEditor(wordToReference, 2)),
+			createLocation(docUriVI, getWordRangeFromLineInEditor(wordToReference, 3))];
+		
+		let expectedLocations = builtReferenceExpectedResultObject(locationPS, locationDG, locationVI);
+
+		await activate(docUriDG);
+		await testReferense(docUriDG, position, expectedLocations);
 	});
 	testCounter++;
 
-}); */
+}); 
 
-
-describe('Referense test Value Inference', () => {
-	const docUri = getDocUri(testFixtureFolderPath + 'valueInference.vi');
-
-	it('Setup', async () => {
-		await activate(docUri);
-	})
+describe('Referense E2E test Value Inference', () => {
 
 	it('serverSide (2) Test' + testCounter.toString(), async () => {
-		let position : vscode.Position = getWordPositionFromLine("serverSide", 2);
-		let resultRanges: {} = 
-			await getAllWordLocationsFromFilesInDir("serverSide", getDocPath("InferrerExample"), testFixtureFolderPath)
-		
-		let referenceResult: vscode.Location[] = await builtReferenceExpectedResultObject(resultRanges)
-		// await testReferense(docUri, position, referenceResult);
-	});
-	testCounter++;
+		let wordToReference= "serverSide"
+		await activate(docUriVI);
+		let position : vscode.Position = getWordPositionFromLine(wordToReference, 2);
 
-	it('medium (3) Test' + testCounter.toString(), async () => {
-		let position : vscode.Position = getWordPositionFromLine("medium", 2);
-		let resultRanges: {} = 
-			await getAllWordLocationsFromFilesInDir("medium", getDocPath("InferrerExample"), testFixtureFolderPath)
+		await activate(docUriPS);
+		locationPS = [createLocation(docUriPS, getWordRangeFromLineInEditor(wordToReference, 3))];
 		
-		let referenceResult: vscode.Location[] = await builtReferenceExpectedResultObject(resultRanges)
-		// await testReferense(docUri, position, referenceResult);
+		locationDG = undefined;
+
+		await activate(docUriVI);
+		locationVI = [createLocation(docUriVI, getWordRangeFromLineInEditor(wordToReference, 2))];
+		
+		let expectedLocations = builtReferenceExpectedResultObject(locationPS, locationDG, locationVI);
+
+		await testReferense(docUriVI, position, expectedLocations);
 	});
 	testCounter++;
+	
+	it('medium (3) Test' + testCounter.toString(), async () => {
+		let wordToReference= "medium"
+		await activate(docUriVI);
+		let position : vscode.Position = getWordPositionFromLine(wordToReference, 2);
+
+		await activate(docUriPS);
+		locationPS = [createLocation(docUriPS, getWordRangeFromLineInEditor(wordToReference, 2))];
+		
+		await activate(docUriDG);
+		locationDG = [createLocation(docUriDG, getWordRangeFromLineInEditor(wordToReference, 24))];
+
+		await activate(docUriVI);
+		locationVI = [createLocation(docUriVI, getWordRangeFromLineInEditor(wordToReference, 2))];
+		
+		let expectedLocations = builtReferenceExpectedResultObject(locationPS, locationDG, locationVI);
+
+		await testReferense(docUriVI, position, expectedLocations);
+	});
+	testCounter++;
+	
 });
 
 
@@ -145,29 +158,41 @@ async function testReferense(
 		position,
 	)) as ReferenseResolve;
 	
-	//console.log(expectedReferenseList)
 	assert.equal(actualReferenseList.length, expectedReferenseList.length);
-
-	expectedReferenseList.forEach((expectedItem, i) => {
-		const actualItem = actualReferenseList[i];
-		assert.equal(actualItem.uri, expectedItem.uri);
-		assert.equal(actualItem.range, expectedItem.range);
+	
+	actualReferenseList.forEach((location: vscode.Location) => {
+		var found = false;
+		for(var i = 0; i < expectedReferenseList.length; i++) {
+			if(location.range.isEqual(expectedReferenseList[i].range)
+				&& location.uri.path == expectedReferenseList[i].uri.path){
+				found = true;
+				break;
+			}
+		}
+		if (!found) 
+			assert.fail("failed, location is missing", location)
 	});
 }
 
-const builtLocation = (docUri: vscode.Uri, resultRange: vscode.Range) : vscode.Location => {
-	return {uri: docUri, range: resultRange};
+export async function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function builtReferenceExpectedResultObject(resultRanges: {}){
-	let referenceResult: vscode.Location[] = [];
-	for (let uriString in resultRanges) {
-		let uriAndRanges = resultRanges[uriString];
-		uriAndRanges["ranges"].forEach(range => {
-			let uri = uriAndRanges["uri"];
-			if (range!==undefined && !range.isEqual(defaultRange))
-				referenceResult.push(builtLocation(uri, range));
-		});
-	}
-	return referenceResult
+const createLocation = (uri: vscode.Uri, range: vscode.Range) : vscode.Location=> {
+	return new vscode.Location(uri, range)
+}
+
+const builtReferenceExpectedResultObject = (
+	locationPS: vscode.Location[], 
+	locationDG: vscode.Location[], 
+	locationVI: vscode.Location[]) : vscode.Location[]=> {
+
+	let result: vscode.Location[] = []
+	if (locationPS !== undefined)
+		locationPS.forEach(l => result.push(l))
+	if (locationDG !== undefined)
+		locationDG.forEach(l => result.push(l))
+	if (locationVI !== undefined)
+		locationVI.forEach(l => result.push(l))
+	return result
 }
