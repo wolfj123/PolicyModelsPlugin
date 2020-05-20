@@ -123,6 +123,10 @@ class FullTextDocument implements PMTextDocument {
 		return this._lastChanges;
 	}
 
+	public set lastChanges(changes : changeInfo[]) {
+		this._lastChanges = changes;
+	}
+
 	public get path(): string {
 		return this._path;
 	}
