@@ -655,6 +655,12 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 		return this.cache
 	}
 
+	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
+		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
+		if(isNullOrUndefined(node)) {return null}
+		return DecisionGraphServices.createEntityFromNode(node, location.uri, this.importMap)
+	}
+
 	getAllDefinitionsDGNode(name: string, sourceOfEntity : FilePath): Location[] {
 		if(sourceOfEntity === this.path){
 			return CacheQueries.getAllDefinitionsDGNode(this.cache, name)
