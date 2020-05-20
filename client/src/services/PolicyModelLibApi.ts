@@ -10,15 +10,27 @@ const axiosInstance = axios.create({
   timeout: 1500,
 });
 
-export class PolicyModelLibApi {
+export default class PolicyModelLibApi {
   _rootPath: string;
   child: ChildProcess;
   _printToScreenCallback: any;
+  private static instance: PolicyModelLibApi;
 
-  constructor(rootPath, printToScreenCallback) {
+  private constructor(rootPath: string, printToScreenCallback?: any) {
     this._rootPath = rootPath;
     this._printToScreenCallback = printToScreenCallback;
-    this.child;
+    this.child = null;
+  }
+
+  static buildInstance(rootPath?: string, printToScreenCallback?: any){
+    PolicyModelLibApi.instance = new PolicyModelLibApi(rootPath, printToScreenCallback);
+  }
+
+  static getInstance(rootPath?: string, printToScreenCallback?: any): PolicyModelLibApi {
+    if (!PolicyModelLibApi.instance) {
+        throw new Error("Initialized instance does not exists");
+    }
+    return PolicyModelLibApi.instance;
   }
 
   async _buildEnvironment() {
