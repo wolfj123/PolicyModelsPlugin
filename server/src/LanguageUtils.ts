@@ -527,11 +527,26 @@ export class DecisionGraphServices {
 
 	/**
 	 * TODO: add doc
+	 * 
 	 */
 	static getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, currentFile : FilePath, decisiongraphSource : FilePath = undefined /*if the node is from another file*/) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let importedGraphName
+		let importMap : ImportMap = DecisionGraphServices.getAllImportsInDoc(tree, currentFile).importMap
 
+		let references : Parser.SyntaxNode[] = root.descendantsOfType("node_reference")
+		let relevantReferences = references.filter(
+			ref => 
+			{
+				let importedGraphName = ref.descendantsOfType("decision_graph_name").length > 0 ? ref.descendantsOfType("decision_graph_name")[0].text.trim() : undefined
+				return ref.descendantsOfType("node_id_value")[0].text === name &&
+					(isNullOrUndefined(importedGraphName) || importedGraphName === Utils.getMapKeysByValue(importMap,decisiongraphSource)[0] )
+			}	
+		).map(ref => {return ref.descendantsOfType("node_id_value")[0]})
+		return getRangesOfSyntaxNodes(relevantReferences)
+	}
+
+
+/* OLD CODE SECTION
 		if(decisiongraphSource) {
 			let imports : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
 			let importSource : Parser.SyntaxNode = imports.find(
@@ -555,7 +570,9 @@ export class DecisionGraphServices {
 			}	
 		).map(ref => {return ref.descendantsOfType("node_id_value")[0]})
 		return getRangesOfSyntaxNodes(relevantReferences)
-	}
+
+*/
+
 
 	/** 
 	 * TODO: add doc
