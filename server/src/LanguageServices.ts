@@ -172,7 +172,7 @@ export class LanguageServicesFacade {
 			targetUri: str,
 			targetRange: toConvert.targetRange,
 			targetSelectionRange: toConvert.targetSelectionRange,
-			originSelectionRange: toConvert.originSelectionRange
+			//originSelectionRange: toConvert.originSelectionRange //we leave this as undefined
 		}
 	}
 	

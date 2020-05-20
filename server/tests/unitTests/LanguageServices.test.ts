@@ -398,8 +398,8 @@ class LanguageServicesFacade_UnitTests {
 			const input = testCase.input
 			let output = testCase.output
 			output.forEach(element => {
-				//element.targetUri = Utils.FilePath2Uri(element.targetUri)
-				element.targetUri = normalizeFileName(element.targetUri)
+				//element.uri = Utils.FilePath2Uri(element.uri)
+				element.uri = normalizeFileName(element.uri)
 			});
 			const filenames : string[] = input.fileNames
 			let param : ReferenceParams = input.param
@@ -476,8 +476,8 @@ class LanguageServicesFacade_UnitTests {
 			const input = testCase.input
 			let output = testCase.output
 			output.forEach(element => {
-				//element.targetUri = Utils.FilePath2Uri(element.targetUri)
-				element.targetUri = normalizeFileName(element.targetUri)
+				//element.uri = Utils.FilePath2Uri(element.uri)
+				element.uri = normalizeFileName(element.uri)
 			});
 			const filenames : string[] = input.fileNames
 			let param : RenameParams = input.param
@@ -521,8 +521,8 @@ class LanguageServicesFacade_UnitTests {
 		async function test(testCase) : Promise<void> {
 			let output = testCase.output
 			output.forEach(element => {
-				//element.targetUri = Utils.FilePath2Uri(element.targetUri)
-				element.targetUri = normalizeFileName(element.targetUri)
+				//element.uri = Utils.FilePath2Uri(element.uri)
+				element.uri = normalizeFileName(element.uri)
 			});
 			const filenames : string[] = testCase.input.fileNames
 			const param : FoldingRangeParams = testCase.input.param
