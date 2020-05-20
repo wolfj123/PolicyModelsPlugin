@@ -83,10 +83,10 @@ export function initLogger(pluginDir: string): void {
 		globalLog.info(`the plugin dir is: ${pluginDir}`);
 	}
 
-	// globalLog.add(new winston.transports.File({
-	// 	filename:  path.join(pluginDir, logFolder,"unhandeled_exceptions.log"),
-	// 	handleExceptions: true
-	// }))
+	globalLog.add(new winston.transports.File({
+		filename:  path.join(pluginDir, logFolder,"unhandeled_exceptions.log"),
+		handleExceptions: true
+	}))
 
 	allLogs.forEach(currLog => {
 		try {
