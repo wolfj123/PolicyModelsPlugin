@@ -386,7 +386,7 @@ const nodeTypes : string[] = mainNodesTypes.concat(subNodesTypes)
 /**
  * This class is a collection of basic analysis methods of a **Decision Graph** {@link Parser.Tree}
  * All the methods are static and store no information and cause no side-effects.
- * They are to be called by other classes to compose more complex queries
+ * They are to be called by other classes to be composed into more complex queries
  */
 export class DecisionGraphServices {	
 	
@@ -494,7 +494,7 @@ export class DecisionGraphServices {
 	}
 
 	/**
-	 * returns all {@link PolicyModelEntity} from a {@link Parser.Tree} (and an {@link ImportMap})
+	 * returns all {@link PolicyModelEntity} from a Decision Graph {@link Parser.Tree} (and an {@link ImportMap})
 	 *
 	 * @param tree the tree to analyze
 	 * @param currentFile the current file from which the tree originated
@@ -610,7 +610,7 @@ export class DecisionGraphServices {
 /**
  * This class is a collection of basic analysis methods of a **Policy Space** {@link Parser.Tree}
  * All the methods are static and store no information and cause no side-effects.
- * They are to be called by other classes to compose more complex queries
+ * They are to be called by other classes to be composed into more complex queries
  */
 export class PolicySpaceServices {
 		
@@ -640,7 +640,7 @@ export class PolicySpaceServices {
 	} 
 	
 	/**
-	 * returns all {@link PolicyModelEntity} from a {@link Parser.Tree}
+	 * returns all {@link PolicyModelEntity} from a Policy Space {@link Parser.Tree}
 	 *
 	 * @param tree the tree to analyze
 	 * @param currentFile the current file from which the tree originated
@@ -724,10 +724,19 @@ export class PolicySpaceServices {
 	}
 }
 
+/**
+ * This class is a collection of basic analysis methods of a **Value Inference** {@link Parser.Tree}
+ * All the methods are static and store no information and cause no side-effects.
+ * They are to be called by other classes to be composed into more complex queries
+ */
 export class ValueInferenceServices {
 	
 	/**
-	 * TODO: add doc
+	 * creates an {@link PolicyModelEntity} from a {@link Parser.SyntaxNode}
+	 *
+	 * @param node the syntax node to convert
+	 * @param currentFile the current file from which the syntax node originated
+	 * @returns the {@link PolicyModelEntity} derived from the node
 	 */
 	static createEntityFromNode(node : Parser.SyntaxNode, currentFile : FilePath) : PolicyModelEntity | null {
 		let name : string
@@ -746,7 +755,11 @@ export class ValueInferenceServices {
 	} 
 
 	/**
-	 * TODO: add doc
+	 * returns all {@link PolicyModelEntity} from a Value Inference {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @param currentFile the current file from which the tree originated
+	 * @returns array of {@link PolicyModelEntity}
 	 */
 	static getAllEntitiesInDoc(tree : Parser.Tree, currentFile : FilePath) : PolicyModelEntity[] {
 		let result : PolicyModelEntity[] = []
@@ -768,7 +781,11 @@ export class ValueInferenceServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **references** of a slot in a Value Inference {@link Parser.Tree}
+	 *
+	 * @param name name of the slot
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot
 	 */
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -779,7 +796,11 @@ export class ValueInferenceServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **references** of a slot value in a Policy Space {@link Parser.Tree}
+	 *
+	 * @param name name of the slot value
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot value
 	 */	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -790,7 +811,10 @@ export class ValueInferenceServices {
 	}
 	
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the value-inferences in a Value Inference {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a value-inference
 	 */	
 	static getAllValueInferencesInDocument(tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -799,7 +823,10 @@ export class ValueInferenceServices {
 	}
 	
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the value-inferences pair in a Value Inference {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a value-inference pair
 	 */	
 	static getAllInferencePairsInDocument(tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
