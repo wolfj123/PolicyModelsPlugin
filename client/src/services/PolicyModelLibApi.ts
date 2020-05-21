@@ -89,6 +89,14 @@ export default class PolicyModelLibApi {
     return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
   }
 
+  async _visualizePolicySpace(outputPath: string): Promise<boolean> {
+    return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
+
+  async _visualizeDecisionGraph(outputPath: string): Promise<boolean> {
+    return await axiosInstance.get(`/visualize-dg?outputPath=${outputPath}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
+
   async _requestsWrapper(requestCallback) {
     const buildSucceeded = await this._buildEnvironment();
     let requestAnswer = false;
@@ -105,6 +113,15 @@ export default class PolicyModelLibApi {
   }
 
   async createNewLocalization(name: string): Promise<boolean> {
-    return await this._requestsWrapper(() => this.createNewLocalization(name));
+    return await this._requestsWrapper(() => this._createNewLocalization(name));
   }
+
+  async visualizePolicySpace(outputPath: string): Promise<boolean> {
+    return await this._requestsWrapper(() => this._visualizePolicySpace(outputPath));
+  }
+
+  async visualizeDecisionGraph(outputPath: string): Promise<boolean> {
+    return await this._requestsWrapper(() => this._visualizeDecisionGraph(outputPath));
+  }
+
 }

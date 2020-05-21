@@ -25,6 +25,8 @@ public class Server {
         server.createContext("/load", new LoadModelHandler());
         server.createContext("/loc/new", new CreateNewLocalizationhandler());
         server.createContext("/loc/update", new UpdateLocalizationHandler());
+        server.createContext("/visualize-ps", new VisualizePSHandler());
+        server.createContext("/visualize-dg", new VisualizeDGHandler());
         server.setExecutor(executor);
         server.start();
     }

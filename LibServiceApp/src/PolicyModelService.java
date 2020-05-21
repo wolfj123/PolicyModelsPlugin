@@ -1,8 +1,7 @@
 import edu.harvard.iq.policymodels.cli.CliRunner;
-import edu.harvard.iq.policymodels.cli.commands.CreateLocalizationCommand;
-import edu.harvard.iq.policymodels.cli.commands.LoadPolicyModelCommand;
-import edu.harvard.iq.policymodels.cli.commands.ReloadModelCommand;
-import edu.harvard.iq.policymodels.cli.commands.UpdateLocalizationCommand;
+import edu.harvard.iq.policymodels.cli.commands.*;
+
+import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +35,30 @@ public  class PolicyModelService {
     public static void updateLocalization() throws  Exception {
         UpdateLocalizationCommand updateCmd = new UpdateLocalizationCommand();
         updateCmd.execute(cli,new LinkedList<>());
+    }
+
+    public static void visualizePS(String outputPath) throws  Exception {
+        Class<?> visualizePolicySpaceCommandClass = VisualizePolicySpaceCommand.class;
+        Object visualizePolicySpaceCommandReflection = visualizePolicySpaceCommandClass.newInstance();
+        graphvizCommandExecute(outputPath, visualizePolicySpaceCommandReflection);
+    }
+
+    public static void visualizeDG(String outputPath) throws  Exception {
+        Class<?> visualizeDecisionGraphCommandClass = VisualizeDecisionGraphCommand.class;
+        Object visualizePolicySpaceCommandReflection = visualizeDecisionGraphCommandClass.newInstance();
+        graphvizCommandExecute(outputPath, visualizePolicySpaceCommandReflection);
+    }
+
+    private static void graphvizCommandExecute(String outputPath, Object graphvizCommandReflection) throws  Exception{
+        String pathToDot = "C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe"; //TODO change to get from client
+        Field pathToDotField = graphvizCommandReflection.getClass().getSuperclass().getDeclaredField("pathToDot");
+        pathToDotField.setAccessible(true);
+        pathToDotField.set(graphvizCommandReflection, pathToDot);
+
+        List<String> args = new LinkedList<>();
+        args.add(outputPath);
+        args.add(outputPath);
+        ((DotCommand)graphvizCommandReflection).execute(cli, args);
     }
 
 }

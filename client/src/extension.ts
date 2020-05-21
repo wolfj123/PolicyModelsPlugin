@@ -11,6 +11,8 @@ import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
 import PolicyModelLibApi from './services/PolicyModelLibApi';
+import GraphvizController from './Graphviz/GraphvizController';
+
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
@@ -21,6 +23,7 @@ export function activate(context: ExtensionContext) {
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
 
+  addGraphvizCommand(context);
   addLocalizationCommand(context);
   buildLibServiceAppApiInstance();
   addRunCommand(context);
@@ -351,3 +354,36 @@ function visibleLines(editor: vscode.TextEditor) {
 function range(x: colors.Range): vscode.Range {
   return new vscode.Range(x.start.row, x.start.column, x.end.row, x.end.column);
 }
+
+
+/**************************************/
+
+
+function addGraphvizCommand(context: vscode.ExtensionContext) {
+  const {subscriptions} = context;
+  const myCommandId = 'graphviz';
+  subscriptions.push(
+    vscode.commands.registerCommand(myCommandId, () => {
+      try{
+      const graphvizController = new GraphvizController(vscode.workspace.rootPath);
+      graphvizController.visualizePolicySpace();
+      }catch(e){
+        console.log(e)
+      }
+    })
+  );
+
+  let statusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99999);
+  statusBarItem.text = '$(graph) Visualization';
+  statusBarItem.command = myCommandId;
+  statusBarItem.show();
+  subscriptions.push(statusBarItem);
+}
+
+// function graphvizInteractivePreview(context: vscode.ExtensionContext) {
+//   let args = {
+//     content: "C:\\Users\\Shira\\Desktop\\School\\project\\PolicyModelsPlugin\\client\\src\\Graphviz\\example\\test.svg",
+//   }
+//   vscode.commands.executeCommand("graphviz-interactive-preview.preview.beside", args);
+// }
+
