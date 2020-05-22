@@ -1,6 +1,6 @@
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
-const localizationRootFolder = '/visualization';
+const graphvizOutputFolder = '/visualization';
 const policySpacePostfix = '/ps.svg'
 const decisionGraphPostix = '/dg.svg'
 
@@ -10,7 +10,8 @@ export default class GraphvizController{
 	_policyModelLibApi: PolicyModelLibApi;
 
 	constructor(rootPath: string) {
-		this._outputFolderPath = rootPath + localizationRootFolder;
+		let outputFolderPath = rootPath + graphvizOutputFolder;
+		this._outputFolderPath = outputFolderPath.replace(/\\/g, '/');
 		this._policyModelLibApi = PolicyModelLibApi.getInstance();
 	}
 	
