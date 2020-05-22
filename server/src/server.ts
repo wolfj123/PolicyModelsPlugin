@@ -305,7 +305,7 @@ connection.onRenameRequest(
 function runModel(param : string[]) : string {
 	getLogger(logSources.serverHttp).http(`runModel`,param);
 	console.log("server is running the model")
-	let cliJar: string = path.join(__dirname,"/../../cli/DataTagsLib.jar");
+	let cliJar: string = path.join(__dirname,"/../../cli/PolicyModels-1.9.9.uber.jar");
 	if (folderFS === undefined){
 		child_process.exec(`start cmd.exe /K java -jar "${cliJar}"`);
 	}else{

@@ -12,11 +12,9 @@ public class Server {
         try {
             activeServer();
             System.out.print("ready");
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static void activeServer() throws IOException {
@@ -25,9 +23,12 @@ public class Server {
         server.createContext("/load", new LoadModelHandler());
         server.createContext("/loc/new", new CreateNewLocalizationhandler());
         server.createContext("/loc/update", new UpdateLocalizationHandler());
+        server.createContext("/newModel",new NewModelHandler());
         server.setExecutor(executor);
         server.start();
     }
+
+
 }
 
 

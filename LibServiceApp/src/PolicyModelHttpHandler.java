@@ -34,6 +34,7 @@ abstract public class PolicyModelHttpHandler implements HttpHandler {
         }catch (Exception e){
            response= e.toString();
         }
+//        httpExchange.sendResponseHeaders();
         OutputStream outputStream = httpExchange.getResponseBody();
         httpExchange.sendResponseHeaders(200, response.length());
         outputStream.write(response.getBytes());

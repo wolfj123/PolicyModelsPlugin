@@ -5,6 +5,8 @@ const BASE_URL = `http://localhost:${PORT}`;
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
 
+// import * as axios from 'axios';
+
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 1500,
@@ -33,10 +35,12 @@ export default class PolicyModelLibApi {
     return PolicyModelLibApi.instance;
   }
 
-  async _buildEnvironment() {
+  async _buildEnvironment(loadModel:boolean) {
     let isSucceed: boolean = true;
     isSucceed = isSucceed && await this._startServer();
-    isSucceed = isSucceed && await this._loadModel();
+    if (loadModel){
+      isSucceed = isSucceed && await this._loadModel();
+    }
     return isSucceed;
   }
 
@@ -89,8 +93,8 @@ export default class PolicyModelLibApi {
     return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
   }
 
-  async _requestsWrapper(requestCallback) {
-    const buildSucceeded = await this._buildEnvironment();
+  async _requestsWrapper(loadModel: boolean,requestCallback) {
+    const buildSucceeded = await this._buildEnvironment(loadModel);
     let requestAnswer = false;
     if (buildSucceeded) {
       requestAnswer = await requestCallback();
@@ -105,6 +109,42 @@ export default class PolicyModelLibApi {
   }
 
   async createNewLocalization(name: string): Promise<boolean> {
-    return await this._requestsWrapper(() => this.createNewLocalization(name));
+    return await this._requestsWrapper(true, () => this.createNewLocalization(name));
   }
+
+  public async createNewModel(){
+    // return await this._requestsWrapper(false, () => {this._createNewModel()});
+
+  }
+
+  public async _createNewModel(par){
+    // return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+    await axiosInstance.post(`/newModel`,JSON.stringify(par))
+    .then(ans=>{
+      console.log("success", ans);
+
+    })
+    .catch(rej=>{
+      console.log(`new model rejected from server\n\n ${rej}\n\n`);
+
+    });
+    
+  }
+
+
 }
+
+export interface newModleRequest {
+  modelName: string,
+  modelPath: string,
+  dgFileName: string,
+  psFileName: string,
+  rootSlot: string,
+  AuthorsInfo: {
+    personOrGroup: string,
+    AuthorName: string,
+    authorContact: string
+  }[]
+}
+
+

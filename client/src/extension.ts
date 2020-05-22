@@ -10,7 +10,7 @@ import * as Parser from 'web-tree-sitter';
 import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
-import PolicyModelLibApi from './services/PolicyModelLibApi';
+import PolicyModelLibApi, { newModleRequest } from './services/PolicyModelLibApi';
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
@@ -21,9 +21,11 @@ export function activate(context: ExtensionContext) {
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
 
-  addLocalizationCommand(context);
   buildLibServiceAppApiInstance();
+
+  addLocalizationCommand(context);
   addRunCommand(context);
+  addNewModelCommand(context);
   activateSyntaxColoring(context);
 
   // The server is implemented in node
@@ -103,6 +105,51 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 let myStatusBarItem: vscode.StatusBarItem;
+
+export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
+  let myStatusBarItem: vscode.StatusBarItem;
+
+  const myCommandId = 'policymodel.newModel';
+  subscriptions.push(
+    vscode.commands.registerCommand(myCommandId, () => {
+      // client.sendRequest('Run_Model', ['Params for execute']).then(data => console.log(data));
+      let x: newModleRequest = {
+        modelName: "testMod",
+        modelPath: "C:\\Ariel\\Final Project\\Project\\PolicyModelsPlugin\\LibServiceApp\\test",
+        dgFileName: `testDG`,
+        psFileName: `testPS`,
+        rootSlot: "testRoot",
+        AuthorsInfo: [
+          {
+            AuthorName: "a",
+            authorContact: "b",
+            personOrGroup: "p"
+          },
+          {
+            AuthorName: "c",
+            authorContact: "d",
+            personOrGroup: "g"
+          }
+        ]
+      }
+      
+      PolicyModelLibApi.getInstance()._createNewModel(x);
+    })
+  );
+
+  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
+  myStatusBarItem.command = myCommandId;
+  subscriptions.push(myStatusBarItem);
+
+  // register some listener that make sure the status bar
+  // item always up-to-date
+  // subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
+  // subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
+
+  // update status bar item once at start
+  myStatusBarItem.text = '$(play) new Model';
+  myStatusBarItem.show();
+}
 
 export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
   // register a command that is invoked when the status bar

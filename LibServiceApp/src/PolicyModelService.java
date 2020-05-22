@@ -1,8 +1,7 @@
 import edu.harvard.iq.policymodels.cli.CliRunner;
-import edu.harvard.iq.policymodels.cli.commands.CreateLocalizationCommand;
-import edu.harvard.iq.policymodels.cli.commands.LoadPolicyModelCommand;
-import edu.harvard.iq.policymodels.cli.commands.ReloadModelCommand;
-import edu.harvard.iq.policymodels.cli.commands.UpdateLocalizationCommand;
+import edu.harvard.iq.policymodels.cli.commands.*;
+
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +35,14 @@ public  class PolicyModelService {
     public static void updateLocalization() throws  Exception {
         UpdateLocalizationCommand updateCmd = new UpdateLocalizationCommand();
         updateCmd.execute(cli,new LinkedList<>());
+    }
+
+    public static String createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
+        NewModelCommand newModelCommand = new NewModelCommand();
+        newModelCommand.execute(newCli, Collections.emptyList());
+        if (newCli.getModel() != null)
+            return newCli.getModelPath();
+        return  "FAIL";
     }
 
 }
