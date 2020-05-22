@@ -1,7 +1,8 @@
+import CommandCustomize.VisualizeDecisionGraphCommandCustomize;
+import CommandCustomize.VisualizePolicySpaceCommandCustomize;
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.*;
 
-import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -37,35 +38,24 @@ public  class PolicyModelService {
         updateCmd.execute(cli,new LinkedList<>());
     }
 
-    public static void visualizePS(String outputPath) throws  Exception {
-//        Class<?> visualizePolicySpaceCommandClass = VisualizePolicySpaceCommand.class;
-//        Object visualizePolicySpaceCommandReflection = visualizePolicySpaceCommandClass.newInstance();
-//        graphvizCommandExecute(outputPath, visualizePolicySpaceCommandReflection);
-        VisualizePolicySpaceCommand visualizePolicySpaceCommand = new VisualizePolicySpaceCommand();
+    public static void visualizePS(String outputPath, String dotPath) throws  Exception {
+        dotPath = dotPath.replace("%20", " ");
+        VisualizePolicySpaceCommandCustomize visualizePolicySpaceCmd = new VisualizePolicySpaceCommandCustomize();
         List<String> args = new LinkedList<>();
         args.add(outputPath);
         args.add(outputPath);
-        Object x = System.getenv("PATH");
-        visualizePolicySpaceCommand.execute(cli, args);
+        args.add(dotPath);
+        visualizePolicySpaceCmd.execute(cli, args);
     }
 
-    public static void visualizeDG(String outputPath) throws  Exception {
-        Class<?> visualizeDecisionGraphCommandClass = VisualizeDecisionGraphCommand.class;
-        Object visualizePolicySpaceCommandReflection = visualizeDecisionGraphCommandClass.newInstance();
-        graphvizCommandExecute(outputPath, visualizePolicySpaceCommandReflection);
-    }
-
-    private static void graphvizCommandExecute(String outputPath, Object graphvizCommandReflection) throws  Exception{
-        String pathToDot = "C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe"; //TODO change to get from client
-
-        Field pathToDotField = graphvizCommandReflection.getClass().getSuperclass().getDeclaredField("pathToDot");
-        pathToDotField.setAccessible(true);
-        pathToDotField.set(graphvizCommandReflection, pathToDot);
-
+    public static void visualizeDG(String outputPath, String dotPath) throws  Exception {
+        dotPath = dotPath.replace("%20", " ");
+        VisualizeDecisionGraphCommandCustomize visualizeDecisionGraphCmd = new VisualizeDecisionGraphCommandCustomize();
         List<String> args = new LinkedList<>();
         args.add(outputPath);
         args.add(outputPath);
-        ((DotCommand)graphvizCommandReflection).execute(cli, args);
+        args.add(dotPath);
+        visualizeDecisionGraphCmd.execute(cli, args);
     }
 
 }

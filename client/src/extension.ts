@@ -361,9 +361,11 @@ function range(x: colors.Range): vscode.Range {
 
 function addGraphvizCommand(context: vscode.ExtensionContext) {
   const {subscriptions} = context;
-  const myCommandId = 'graphviz';
+  const visualizePolicySpaceID = 'graphviz_visualizePolicySpace';
+  const visualizeDecisionGraphID = 'graphviz_visualizeDecisionGraph';
+
   subscriptions.push(
-    vscode.commands.registerCommand(myCommandId, () => {
+    vscode.commands.registerCommand(visualizePolicySpaceID, () => {
       try{
       const graphvizController = new GraphvizController(vscode.workspace.rootPath);
       graphvizController.visualizePolicySpace();
@@ -373,11 +375,28 @@ function addGraphvizCommand(context: vscode.ExtensionContext) {
     })
   );
 
-  let statusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99999);
-  statusBarItem.text = '$(graph) Visualization';
-  statusBarItem.command = myCommandId;
-  statusBarItem.show();
-  subscriptions.push(statusBarItem);
+  subscriptions.push(
+    vscode.commands.registerCommand(visualizeDecisionGraphID, () => {
+      try{
+      const graphvizController = new GraphvizController(vscode.workspace.rootPath);
+      graphvizController.visualizeDecisionGraph();
+      }catch(e){
+        console.log(e)
+      }
+    })
+  );
+
+  let statusBarItemPS: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99999);
+  statusBarItemPS.text = '$(graph) Visualization PS';
+  statusBarItemPS.command = visualizePolicySpaceID;
+  statusBarItemPS.show();
+  subscriptions.push(statusBarItemPS);
+
+  let statusBarItemDG: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99998);
+  statusBarItemDG.text = '$(graph) Visualization DG';
+  statusBarItemDG.command = visualizeDecisionGraphID;
+  statusBarItemDG.show();
+  subscriptions.push(statusBarItemDG);
 }
 
 // function graphvizInteractivePreview(context: vscode.ExtensionContext) {
