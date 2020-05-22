@@ -179,7 +179,6 @@ export class LanguageServicesFacade {
 		let range : Range = Utils.newRange(pos1, pos2)
 		return range
 	}
-
 	
 	/**
 	 * Answers a LSP **onRenameRequest** query
@@ -204,7 +203,6 @@ export class LanguageServicesFacade {
 		location = this.convertUri2PathLocation(location)
 		return this.services.getCompletion(location)
 	}
-
 	
 	/**
 	 * Unsupported
@@ -496,10 +494,10 @@ export class LanguageServices {
 	}
 
 	/**
-	 * Given a file path of a document, returns the document's range
+	 * Given a location, returns the {@link PolicyModelEntity} found in that location
 	 * 
-	 * @param path The path of the document
-	 * @returns A {@link Range} of the document, null if document not found
+	 * @param location The location in a document
+	 * @returns The {@link PolicyModelEntity} found in that location, null if no valid entity found
 	 */
 	createPolicyModelEntity(location : Location) : PolicyModelEntity | null {
 		let fm : FileManager = this.fileManagers.get(location.uri)
@@ -507,7 +505,13 @@ export class LanguageServices {
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
 		return entity
 	}
-	
+
+	/**
+	 * Given a file path of a document, returns all folding ranges in that document
+	 * 
+	 * @param path The path of the document
+	 * @returns A {@link Location} array of all folding ranges
+	 */
 	getFoldingRanges(path: FilePath) : Location[] | null {
 		let result : Location[] = []
 		let fm : FileManager = this.fileManagers.get(path)
@@ -515,6 +519,9 @@ export class LanguageServices {
 		return fm.getFoldingRanges()
 	}
 
+	/**
+	 * Unsupported
+	 */
 	getCompletion(location : Location) : CompletionList | null {
 		//TODO:
 		throw new Error("Method not implemented.");
