@@ -11,6 +11,8 @@ import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
 import PolicyModelLibApi from './services/PolicyModelLibApi';
+import GraphvizController from './Graphviz/GraphvizController';
+
 
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
@@ -21,6 +23,7 @@ export function activate(context: ExtensionContext) {
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
 
+  addGraphvizCommand(context);
   addLocalizationCommand(context);
   buildLibServiceAppApiInstance();
   addRunCommand(context);
@@ -351,3 +354,55 @@ function visibleLines(editor: vscode.TextEditor) {
 function range(x: colors.Range): vscode.Range {
   return new vscode.Range(x.start.row, x.start.column, x.end.row, x.end.column);
 }
+
+
+/**************************************/
+
+
+function addGraphvizCommand(context: vscode.ExtensionContext) {
+  const {subscriptions} = context;
+  const visualizePolicySpaceID = 'graphviz_visualizePolicySpace';
+  const visualizeDecisionGraphID = 'graphviz_visualizeDecisionGraph';
+
+  subscriptions.push(
+    vscode.commands.registerCommand(visualizePolicySpaceID, () => {
+      try{
+      const graphvizController = new GraphvizController(vscode.workspace.rootPath);
+      graphvizController.visualizePolicySpace();
+      }catch(e){
+        console.log(e)
+      }
+    })
+  );
+
+  subscriptions.push(
+    vscode.commands.registerCommand(visualizeDecisionGraphID, () => {
+      try{
+      const graphvizController = new GraphvizController(vscode.workspace.rootPath);
+      graphvizController.visualizeDecisionGraph();
+      }catch(e){
+        console.log(e)
+      }
+    })
+  );
+
+  let statusBarItemPS: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99999);
+  statusBarItemPS.text = '$(graph) Visualization PS';
+  statusBarItemPS.command = visualizePolicySpaceID;
+  statusBarItemPS.show();
+  subscriptions.push(statusBarItemPS);
+
+  let statusBarItemDG: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99998);
+  statusBarItemDG.text = '$(graph) Visualization DG';
+  statusBarItemDG.command = visualizeDecisionGraphID;
+  statusBarItemDG.show();
+  subscriptions.push(statusBarItemDG);
+}
+
+// function graphvizInteractivePreview(context: vscode.ExtensionContext) {
+//   let args = {
+//     content: "C:\\Users\\Shira\\Desktop\\School\\project\\PolicyModelsPlugin\\client\\src\\Graphviz\\example\\test.svg",
+//   }
+//   vscode.commands.executeCommand("graphviz-interactive-preview.preview.beside", args);
+// }
+

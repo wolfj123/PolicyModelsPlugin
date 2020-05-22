@@ -1,8 +1,8 @@
+import CommandCustomize.VisualizeDecisionGraphCommandCustomize;
+import CommandCustomize.VisualizePolicySpaceCommandCustomize;
 import edu.harvard.iq.policymodels.cli.CliRunner;
-import edu.harvard.iq.policymodels.cli.commands.CreateLocalizationCommand;
-import edu.harvard.iq.policymodels.cli.commands.LoadPolicyModelCommand;
-import edu.harvard.iq.policymodels.cli.commands.ReloadModelCommand;
-import edu.harvard.iq.policymodels.cli.commands.UpdateLocalizationCommand;
+import edu.harvard.iq.policymodels.cli.commands.*;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,26 @@ public  class PolicyModelService {
     public static void updateLocalization() throws  Exception {
         UpdateLocalizationCommand updateCmd = new UpdateLocalizationCommand();
         updateCmd.execute(cli,new LinkedList<>());
+    }
+
+    public static void visualizePS(String outputPath, String dotPath) throws  Exception {
+        dotPath = dotPath.replace("%20", " ");
+        VisualizePolicySpaceCommandCustomize visualizePolicySpaceCmd = new VisualizePolicySpaceCommandCustomize();
+        List<String> args = new LinkedList<>();
+        args.add(outputPath);
+        args.add(outputPath);
+        args.add(dotPath);
+        visualizePolicySpaceCmd.execute(cli, args);
+    }
+
+    public static void visualizeDG(String outputPath, String dotPath) throws  Exception {
+        dotPath = dotPath.replace("%20", " ");
+        VisualizeDecisionGraphCommandCustomize visualizeDecisionGraphCmd = new VisualizeDecisionGraphCommandCustomize();
+        List<String> args = new LinkedList<>();
+        args.add(outputPath);
+        args.add(outputPath);
+        args.add(dotPath);
+        visualizeDecisionGraphCmd.execute(cli, args);
     }
 
 }

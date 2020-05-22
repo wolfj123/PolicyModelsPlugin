@@ -10,6 +10,13 @@ const axiosInstance = axios.create({
   timeout: 1500,
 });
 
+axiosInstance.interceptors.request.use(function (config) {
+  config.url = config.url.replace(/\\/g, '/');
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
+
 export default class PolicyModelLibApi {
   _rootPath: string;
   child: ChildProcess;
@@ -17,7 +24,7 @@ export default class PolicyModelLibApi {
   private static instance: PolicyModelLibApi;
 
   private constructor(rootPath: string, printToScreenCallback?: any) {
-    this._rootPath = rootPath;
+    this._rootPath = rootPath.replace(/\\/g, '/');
     this._printToScreenCallback = printToScreenCallback;
     this.child = null;
   }
@@ -89,6 +96,14 @@ export default class PolicyModelLibApi {
     return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
   }
 
+  async _visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}&dotPath=${graphvizDot}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
+
+  async _visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await axiosInstance.get(`/visualize-dg?outputPath=${outputPath}&dotPath=${graphvizDot}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
+
   async _requestsWrapper(requestCallback) {
     const buildSucceeded = await this._buildEnvironment();
     let requestAnswer = false;
@@ -105,6 +120,15 @@ export default class PolicyModelLibApi {
   }
 
   async createNewLocalization(name: string): Promise<boolean> {
-    return await this._requestsWrapper(() => this.createNewLocalization(name));
+    return await this._requestsWrapper(() => this._createNewLocalization(name));
   }
+
+  async visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await this._requestsWrapper(() => this._visualizePolicySpace(outputPath, graphvizDot));
+  }
+
+  async visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await this._requestsWrapper(() => this._visualizeDecisionGraph(outputPath, graphvizDot));
+  }
+
 }
