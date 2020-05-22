@@ -96,7 +96,7 @@ export class LanguageServicesFacade {
 	/**
 	 * Add new documents to the Policy Model project
 	 * 
-	 * @param docs The documents that compose the Policy Model project.
+	 * @param docs New documents to be added to the Policy Model Project
 	 * Assumes all files are supplied and their URIs can be converted to absolute values.
 	 */
 	addDocs(docs : PMTextDocument[]) {
@@ -247,7 +247,6 @@ export class LanguageServicesFacade {
 		}
 	}
 
-
 	/**
 	 * Handles the convertion of URI to Absolute Path and vice versa,
 	 * in a {@link LocationLink} instance.
@@ -296,15 +295,31 @@ export class LanguageServicesFacade {
 	}
 }
 
-
+/**
+ * This class provides language services for a Policy Model project.
+ * It assumes that it was provided all the files of said project, 
+ * either in it's initilization or later incrementally.
+ */
 export class LanguageServices {
-	//Workspace
+	/**
+ 	* A map of {@link FileManager} for each Policy Model file in the project
+	*/
 	fileManagers : Map<FilePath, FileManager>
 
-	//config
+	/**
+ 	* A map of {@link Parser} for each Language of Policy Models
+	*/
 	parsers : Map<PolicyModelsLanguage, Parser>
 
-
+	/**
+	 * Creates asynchronously a new instance of {@link LanguageServices}.
+	 * The creation must be asynchronous due to the asynchronous initilization of {@link Parser}
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
+	 * @returns A promise of a new instance of {@link LanguageServices}.
+	 */
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServices> {
 		let instance : LanguageServices = new LanguageServices();
 		let parsersPath: string = path.join(pluginDir,"parsers");
@@ -314,17 +329,23 @@ export class LanguageServices {
 		return instance
 	}
 
-	//TODO: async
-	// constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
-	// 	this.initParsers()
-	// 	this.fileManagers = new Map()
-	// 	this.populateMaps(docs)
-	// }
-
+	/**
+	 * Adds new entries to the uriPathMap of this class.
+	 * If the uriPathMap wasn't initilaized, it will initialize it.
+	 * 
+	 * @param docs New documents to be added to the Policy Model Project	
+	 * Assumes all documents contain an abolsute path
+	*/
 	addDocs(docs : PMTextDocument[]) {
 		this.populateMaps(docs)
 	}
 
+	/**
+	 * Add new documents to the Policy Model project
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all documents contain an abolsute path
+	 */
 	updateDoc(doc : PMTextDocument){
 		let fileManager : FileManager = this.fileManagers.get(doc.uri)
 		if(isNullOrUndefined(fileManager)) return
@@ -337,12 +358,23 @@ export class LanguageServices {
 		});
 	}
 
+	/**
+	 * Removes a document that was changed.
+	 * 
+	 * @param docs The document to remove from the Policy Model project.
+	 * Assumes the document was already added.
+	 * Assumes all documents contain an abolsute path
+	 */
 	removeDoc(doc : DocumentUri) {
 		this.fileManagers.delete(doc)
 	}
 
-	//maybe this map should be global singleton?
-	async initParsers(parserPath: string) {
+	/**
+	 * Initializing the parsers
+	 * 
+	 * @param parserPath A path to the plugin's parser folder which contains the WASM parsers
+	 */
+	private async initParsers(parserPath: string) {
 		this.parsers = new Map()
 		for(let info of parsersInfo) {
 			const wasm = path.join(parserPath,info.wasm);
@@ -354,15 +386,24 @@ export class LanguageServices {
 		}
 	}
 
-	getParserByExtension(extension : string) : Parser {
+	/**
+	 * Gets a {@link Parser} by a file extension
+	 * 
+	 * @param extension The file extension
+	 * @returns A {@link Parser} corresponding to the langauge represented by the file extension
+	 */
+	private getParserByExtension(extension : string) : Parser {
 		const language = getLanguageByExtension(extension)
 		return this.parsers.get(language)
 	}
 
-	populateMaps(docs : PMTextDocument[]) {
+	/**
+	 * Adds the documents to the map
+	 * 
+	 * @param docs New documents to be added to the Policy Model Project	
+	 */
+	private populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
-			//const uri : DocumentUri = doc.path
-			//const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
 			const filepath : FilePath = doc.uri
 			const extension = Utils.getFileExtension(filepath)
 			let fileManager : FileManager = this.getFileManager(doc, extension)
@@ -370,13 +411,13 @@ export class LanguageServices {
 		}
 	}
 
-	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+	private getFileManager(doc : PMTextDocument, extension : string) : FileManager {
 		return FileManagerFactory.create(doc, 
 			this.getParserByExtension(extension), 
 			getLanguageByExtension(extension))
 	}
 
-	getFileManagerByLocation(location : Location) : FileManager {
+	private getFileManagerByLocation(location : Location) : FileManager {
 		return this.fileManagers.get(location.uri)
 	}
 
@@ -525,9 +566,6 @@ export abstract class FileManager {
 
 export class FileManagerFactory {
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
-		//const uri = doc.uri
-		//const uri : DocumentUri = doc.path
-		//const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
 		const filepath : FilePath = doc.uri
 		const extension = Utils.getFileExtension(filepath)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
