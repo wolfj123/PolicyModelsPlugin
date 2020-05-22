@@ -374,7 +374,7 @@ export class LanguageServices {
 	 * 
 	 * @param parserPath A path to the plugin's parser folder which contains the WASM parsers
 	 */
-	private async initParsers(parserPath: string) {
+	protected async initParsers(parserPath: string) {
 		this.parsers = new Map()
 		for(let info of parsersInfo) {
 			const wasm = path.join(parserPath,info.wasm);
@@ -392,7 +392,7 @@ export class LanguageServices {
 	 * @param extension The file extension
 	 * @returns A {@link Parser} corresponding to the langauge represented by the file extension
 	 */
-	private getParserByExtension(extension : string) : Parser {
+	protected getParserByExtension(extension : string) : Parser {
 		const language = getLanguageByExtension(extension)
 		return this.parsers.get(language)
 	}
@@ -400,9 +400,9 @@ export class LanguageServices {
 	/**
 	 * Adds the documents to the map
 	 * 
-	 * @param docs New documents to be added to the Policy Model Project	
+	 * @param docs Documents to be added to the Policy Model Project	
 	 */
-	private populateMaps(docs : PMTextDocument[]) {
+	protected populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
 			const filepath : FilePath = doc.uri
 			const extension = Utils.getFileExtension(filepath)
@@ -411,16 +411,35 @@ export class LanguageServices {
 		}
 	}
 
-	private getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+	/**
+	 * Creates a new {@link FileManager} instance for a document
+	 * 
+	 * @param doc The document
+	 * @param extension The file extension of the document
+	 * @returns A new {@link FileManager} represeting the document
+	 */
+	protected getFileManager(doc : PMTextDocument, extension : string) : FileManager {
 		return FileManagerFactory.create(doc, 
 			this.getParserByExtension(extension), 
 			getLanguageByExtension(extension))
 	}
 
-	private getFileManagerByLocation(location : Location) : FileManager {
+	/**
+	 * Find a {@link FileManager} for a {@link Location}
+	 * 
+	 * @param location The location in a document
+	 * @returns A {@link FileManager} that holds the document of the location
+	 */
+	protected getFileManagerByLocation(location : Location) : FileManager {
 		return this.fileManagers.get(location.uri)
 	}
 
+	/**
+	 * Given a location, returns the declarations of the entity found in that location
+	 * 
+	 * @param location The location in a document
+	 * @returns A {@link Location} array that holds all the declarations of the entity
+	 */
 	getDeclarations(location : Location) : Location[] {
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
@@ -433,6 +452,12 @@ export class LanguageServices {
 		return result
 	}
 
+	/**
+	 * Given a location, returns the references of the entity found in that location
+	 * 
+	 * @param location The location in a document
+	 * @returns A {@link Location} array that holds all the references of the entity
+	 */
 	getReferences(location : Location) : Location[] {
 		let result : Location[] = []
 		let declarations : Location[] = []
@@ -440,7 +465,6 @@ export class LanguageServices {
 
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
-		//declarations = fm.getAllDefinitions(entity)
 		this.fileManagers.forEach((fm: FileManager, path: FilePath) => {
 			declarations = declarations.concat(fm.getAllDefinitions(entity))
 		});
@@ -456,6 +480,12 @@ export class LanguageServices {
 		return result
 	}
 
+	/**
+	 * Given a file path of a document, returns the document's range
+	 * 
+	 * @param path The path of the document
+	 * @returns A {@link Range} of the document, null if document not found
+	 */
 	getRangeOfDoc(path: FilePath) : Range | null {
 		let fm : FileManager = this.fileManagers.get(path)
 		if(isNullOrUndefined(fm)) {return null}
@@ -465,6 +495,12 @@ export class LanguageServices {
 		return range
 	}
 
+	/**
+	 * Given a file path of a document, returns the document's range
+	 * 
+	 * @param path The path of the document
+	 * @returns A {@link Range} of the document, null if document not found
+	 */
 	createPolicyModelEntity(location : Location) : PolicyModelEntity | null {
 		let fm : FileManager = this.fileManagers.get(location.uri)
 		if(isNullOrUndefined(fm)) {return null}
