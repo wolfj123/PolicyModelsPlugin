@@ -179,7 +179,7 @@ export class LanguageServicesFacade {
 		let range : Range = Utils.newRange(pos1, pos2)
 		return range
 	}
-	
+
 	/**
 	 * Answers a LSP **onRenameRequest** query
 	 * 
@@ -297,6 +297,10 @@ export class LanguageServicesFacade {
  * This class provides language services for a Policy Model project.
  * It assumes that it was provided all the files of said project, 
  * either in it's initilization or later incrementally.
+ * 
+ * This class holds a map of {@link FileManager}, each answering queries regarding a single file.
+ * Queries that can be answered by anaylizing a single file are solved in the {@link FileManager}. 
+ * Queries that can be answered by anaylizing multiple files (such as auto-completion) are solved in this class.
  */
 export class LanguageServices {
 	/**
@@ -529,9 +533,18 @@ export class LanguageServices {
 }
 
 
-//****File Managers****/
+/**
+ * This class represents a single file in a Policy Models project
+ */
 export abstract class FileManager {
+	/**
+ 	* The parser tree of the file
+	*/
 	tree : Parser.Tree
+	
+	/**
+ 	* The **abolsute** path of the file
+	*/
 	path : FilePath
 
 	constructor(tree : Parser.Tree, path : FilePath){
@@ -539,14 +552,28 @@ export abstract class FileManager {
 		this.path = path
 	}
 
+
+
+
+	/**
+	 * Updates the tree
+	 * 
+	 * @param newTree The new tree of the file to be stored
+	 */
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
 	}
 
+	/**
+	 * Returns the cache of entities collected from the file
+	 * 
+	 * @retuns An array of {@link PolicyModelEntity}
+	 */
 	getCache() : PolicyModelEntity[] {
 		//to be overridden in sub classes that contain a cache
 		return []
 	}
+
 
 	isLocationInDoc(location : Location) : boolean {
 		if (!(location.uri === this.path)) return false
@@ -607,7 +634,19 @@ export abstract class FileManager {
 	abstract getAutoComplete(location : Location, allCaches : PolicyModelEntity[]) : CompletionList
 }
 
+/**
+ * This class is a factory of {@link FileManager}
+ */
 export class FileManagerFactory {
+
+	/**
+	 * Creates an instance of a {@link FileManager}
+	 * 
+	 * @param doc The Policy Model document
+	 * @param parser A {@link Parser} of the Policy Model language
+	 * @param cacheVersion A flag that decides which {@link FileManager} sub-class to instatiate
+	 * @returns A new instance of a {@link FileManager}
+	 */
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
 		const filepath : FilePath = doc.uri
 		const extension = Utils.getFileExtension(filepath)
