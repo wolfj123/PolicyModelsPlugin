@@ -10,6 +10,13 @@ const axiosInstance = axios.create({
   timeout: 1500,
 });
 
+axiosInstance.interceptors.request.use(function (config) {
+  config.url = config.url.replace(/\\/g, '/');
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
+
 export default class PolicyModelLibApi {
   _rootPath: string;
   child: ChildProcess;
