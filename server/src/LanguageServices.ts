@@ -46,15 +46,26 @@ import {
 	ImportMap
 } from './LanguageUtils'
 
-//https://www.npmjs.com/package/web-tree-sitter
-//https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
-//https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
-
+/**
+ * This class exposes the Language Services in the form of LSP-esque queries,
+ * by wrapping a {@link LanguageServices} instance and translating said queries.
+ * It uses a Map to store the original file URIs before converting them to absolute paths.
+ * We do this in order to answer queries with the same URIs given initially.
+ */
 export class LanguageServicesFacade {
 	uriPathMap : Map<DocumentUri, FilePath>
 	services : LanguageServices
 
+	/**
+	 * Creates asynchronously a new instance of {@link LanguageServicesFacade}.
+	 * The creation must be asynchronous due to the asynchronous initilization of {@link Parser}
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
+	 * @returns A promise of a new instance of {@link LanguageServicesFacade}.
+	 */
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
 		instance.addToUriPathMap(docs)
@@ -64,7 +75,14 @@ export class LanguageServicesFacade {
 		return instance
 	}
 
-	addToUriPathMap(docs : PMTextDocument[]) {
+	/**
+	 * Adds new entries to the uriPathMap of this class.
+	 * If the uriPathMap wasn't initilaized, it will initialize it.
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	*/
+	private addToUriPathMap(docs : PMTextDocument[]) {
 		if(isNullOrUndefined(this.uriPathMap)){
 			this.uriPathMap = new Map()
 		}
@@ -75,21 +93,47 @@ export class LanguageServicesFacade {
 		})
 	}
 
+	/**
+	 * Add new documents to the Policy Model project
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 */
 	addDocs(docs : PMTextDocument[]) {
 		this.addToUriPathMap(docs)
 		this.services.addDocs(docs.map(doc => this.convertUri2PathPMTextDocument(doc)))
 	}
 
+	/**
+	 * Updates a document that was changed.
+	 * 
+	 * @param doc The changed document from the Policy Model project.
+	 * Assumes the document was already added.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 */
 	updateDoc(doc : PMTextDocument){
 		this.services.updateDoc(this.convertUri2PathPMTextDocument(doc))
 	}
 
+	/**
+	 * Removes a document that was changed.
+	 * 
+	 * @param docs The document to remove from the Policy Model project.
+	 * Assumes the document was already added.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 */
 	removeDoc(doc : DocumentUri) {
 		const path : FilePath = this.uriPathMap.get(doc)
 		this.services.removeDoc(path)
 		this.uriPathMap.delete(doc)
 	}
 
+	/**
+	 * Answers a LSP **onDefinition** query
+	 *
+	 * @param params LSP **onDefinition** query params
+	 * @returns A {@link LocationLink} array of all definitions
+	 */
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
@@ -107,13 +151,24 @@ export class LanguageServicesFacade {
 		return result.filter(loc => !isNullOrUndefined(loc))
 	}
 
-	// these functions are called when the request is first made from the server
+	/**
+	 * Answers a LSP **onReferences** query
+	 * 
+	 * @param params LSP **onReferences** query params
+	 * @returns A {@link Location} array of all references
+	 */
 	onReferences(params : ReferenceParams):  Location[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
 		return this.services.getReferences(location).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
+	/**
+	 * Answers a LSP **onPrepareRename** query
+	 * 
+	 * @param params LSP **onPrepareRename** query params
+	 * @returns A {@link Range} or null if cannot rename
+	 */
 	onPrepareRename(params : PrepareRenameParams): Range | null {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
@@ -125,27 +180,59 @@ export class LanguageServicesFacade {
 		return range
 	}
 
-	onRenameRequest(params : RenameParams) : Location[]	{		//WorkspaceEdit {
+	
+	/**
+	 * Answers a LSP **onRenameRequest** query
+	 * 
+	 * @param params LSP **onRenameRequest** query params
+	 * @returns A {@link Location} array of all rename requests
+	 */
+	onRenameRequest(params : RenameParams) : Location[]	{
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
 		return this.services.getReferences(location).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
-	onCompletion(params : TextDocumentPositionParams): CompletionList | null { //return a list of labels
+	/**
+	 * Answers a LSP **onCompletion** query
+	 * 
+	 * @param params LSP **onRenameRequest** query params
+	 * @returns A {@link CompletionList} or null if file not found
+	 */
+	onCompletion(params : TextDocumentPositionParams): CompletionList | null {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
 		return this.services.getCompletion(location)
 	}
 
-	onCompletionResolve(params : CompletionItem): CompletionItem | null { //we are not supporting  this right now
+	
+	/**
+	 * Unsupported
+	 */
+	onCompletionResolve(params : CompletionItem): CompletionItem | null { 
 		//TODO:
 		return null
 	}
 
+	/**
+	 * Answers a LSP **onFoldingRanges** query
+	 * 
+	 * @param params LSP **onFoldingRanges** query params
+	 * @returns A {@link Location} array of all references
+	 */
 	onFoldingRanges(params : FoldingRangeParams): Location[] {
 		return this.services.getFoldingRanges(Utils.Uri2FilePath(params.textDocument.uri)).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
+	/**
+	 * Handles the convertion of URI to Absolute Path and vice versa,
+	 * in a {@link Location} instance.
+	 * This method uses the uriPathMap member of this class to resolve the conversion.
+	 * 
+	 * @param toConvert The object whose member must be converted
+	 * @param uri2path A boolean that controls whether the uri must be converted to a path, or the reverse
+	 * @returns A {@link Location} containing the converted value
+	 */
 	private convertUri2PathLocation(toConvert : Location, uri2path : boolean = true) : Location { 
 		let str : string = toConvert.uri
 		let strs : string[] = (uri2path) ?
@@ -160,6 +247,16 @@ export class LanguageServicesFacade {
 		}
 	}
 
+
+	/**
+	 * Handles the convertion of URI to Absolute Path and vice versa,
+	 * in a {@link LocationLink} instance.
+	 * This method uses the uriPathMap member of this class to resolve the conversion.
+	 * 
+	 * @param toConvert The object whose member must be converted
+	 * @param uri2path A boolean that controls whether the uri must be converted to a path, or the reverse
+	 * @returns A {@link LocationLink} containing the converted value
+	 */
 	private convertUri2PathLocationLink(toConvert : LocationLink, uri2path : boolean = true) : LocationLink { 
 		let str : string = toConvert.targetUri
 		let strs : string[] = (uri2path) ?
@@ -175,7 +272,16 @@ export class LanguageServicesFacade {
 			//originSelectionRange: toConvert.originSelectionRange //we leave this as undefined
 		}
 	}
-	
+
+	/**
+	 * Handles the convertion of URI to Absolute Path and vice versa,
+	 * in a {@link PMTextDocument} instance.
+	 * This method uses the uriPathMap member of this class to resolve the conversion.
+	 * 
+	 * @param toConvert The object whose member must be converted
+	 * @param uri2path A boolean that controls whether the uri must be converted to a path, or the reverse
+	 * @returns A {@link PMTextDocument} containing the converted value
+	 */
 	private convertUri2PathPMTextDocument(toConvert : PMTextDocument, uri2path : boolean = true) : PMTextDocument { 
 		let str : string = toConvert.uri
 		let strs : string[] = (uri2path) ?
@@ -186,19 +292,6 @@ export class LanguageServicesFacade {
 		}
 		let newDoc : PMTextDocument = createNewTextDocument(str, toConvert.languageId, toConvert.version, toConvert.getText())
 		newDoc.lastChanges = toConvert.lastChanges
-		// let newDoc : PMTextDocument = {
-		// 	uri: str,
-		// 	path : toConvert.path,
-		// 	languageId: toConvert.languageId,
-		// 	version : toConvert.version,
-		// 	getText : toConvert.getText,
-		// 	positionAt : toConvert.positionAt,
-		// 	offsetAt : toConvert.offsetAt,
-		// 	isEqual : toConvert.isEqual,
-		// 	lineCount : toConvert.lineCount,
-		// 	update : toConvert.update,
-		// 	lastChanges : toConvert.lastChanges	
-		// }
 		return newDoc
 	}
 }
