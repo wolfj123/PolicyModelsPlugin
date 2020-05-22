@@ -18,6 +18,7 @@ export default class PolicyModelLibApi {
 
   private constructor(rootPath: string, printToScreenCallback?: any) {
     this._rootPath = rootPath;
+    this._rootPath = rootPath.replace(/\\/g, '/');
     this._printToScreenCallback = printToScreenCallback;
     this.child = null;
   }
