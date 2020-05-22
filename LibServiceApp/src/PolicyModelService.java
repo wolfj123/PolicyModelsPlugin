@@ -38,9 +38,15 @@ public  class PolicyModelService {
     }
 
     public static void visualizePS(String outputPath) throws  Exception {
-        Class<?> visualizePolicySpaceCommandClass = VisualizePolicySpaceCommand.class;
-        Object visualizePolicySpaceCommandReflection = visualizePolicySpaceCommandClass.newInstance();
-        graphvizCommandExecute(outputPath, visualizePolicySpaceCommandReflection);
+//        Class<?> visualizePolicySpaceCommandClass = VisualizePolicySpaceCommand.class;
+//        Object visualizePolicySpaceCommandReflection = visualizePolicySpaceCommandClass.newInstance();
+//        graphvizCommandExecute(outputPath, visualizePolicySpaceCommandReflection);
+        VisualizePolicySpaceCommand visualizePolicySpaceCommand = new VisualizePolicySpaceCommand();
+        List<String> args = new LinkedList<>();
+        args.add(outputPath);
+        args.add(outputPath);
+        Object x = System.getenv("PATH");
+        visualizePolicySpaceCommand.execute(cli, args);
     }
 
     public static void visualizeDG(String outputPath) throws  Exception {
@@ -51,6 +57,7 @@ public  class PolicyModelService {
 
     private static void graphvizCommandExecute(String outputPath, Object graphvizCommandReflection) throws  Exception{
         String pathToDot = "C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe"; //TODO change to get from client
+
         Field pathToDotField = graphvizCommandReflection.getClass().getSuperclass().getDeclaredField("pathToDot");
         pathToDotField.setAccessible(true);
         pathToDotField.set(graphvizCommandReflection, pathToDot);
