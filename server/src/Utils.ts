@@ -26,6 +26,7 @@ export enum languagesIds {
 import { URI } from 'vscode-uri';
 import { FilePath } from './LanguageUtils';
 import * as path from 'path';
+var os = require('os');
 
 const psExt:string = "ps";
 const pspaceExt:string = "pspace";
@@ -34,6 +35,16 @@ const viExt:string = "vi";
 
 const allFileExtensions: string [] = [psExt, pspaceExt, dgExt, viExt];
 
+
+export const osTypes={
+	MAC: 'darwin',
+	WINDOWS: 'win32',
+	LINUX: 'linux'
+}
+
+export const getOsType = () =>{
+	return os.platform();
+}
 
 //Array functions
 export function flatten (arr: any [][]): any [] {
@@ -44,7 +55,7 @@ export function flatten (arr: any [][]): any [] {
 
 export function uniqueArray(arr : any[]) : any[] {
 	let result = []
-	let clone = arr.slice()  
+	let clone = arr.slice()
 	while(clone.length > 0){
 		let element = clone.shift()
 		if(clone.find(e => _.isEqual(e, element))){
@@ -97,7 +108,7 @@ export function position2Location(p : Position, uri : DocumentUri) : Location {
 
 export function getFileExtension(filename : string) : string {
 	let re = /(?:\.([^.]+))?$/;
-	return re.exec(filename)[1];   
+	return re.exec(filename)[1];
 }
 
 export function mergeCompletionLists(cl1 : CompletionList, cl2 : CompletionList) : CompletionList {
@@ -110,14 +121,14 @@ export function mergeCompletionLists(cl1 : CompletionList, cl2 : CompletionList)
 }
 
 export function changeInfo2Edit(change : changeInfo) {
-	const result =  
+	const result =
 	{
 		startIndex: change.oldRange.start.character,
-		oldEndIndex: change.oldRange.end.character, 
+		oldEndIndex: change.oldRange.end.character,
 		newEndIndex: change.newRange.end.character,
 		startPosition: {row: change.oldRange.start.line, column: change.oldRange.start.character},
-		oldEndPosition: {row: change.oldRange.end.line, column: change.oldRange.end.character}, 
-		newEndPosition: {row: change.newRange.end.line, column: change.newRange.end.character} 
+		oldEndPosition: {row: change.oldRange.end.line, column: change.oldRange.end.character},
+		newEndPosition: {row: change.newRange.end.line, column: change.newRange.end.character}
 	}
 	return result
 }
@@ -128,14 +139,14 @@ export function docChange2Edit(change : TextDocumentContentChangeEvent) : Parser
 		const range : Range = change.range
 		//if(isNullOrUndefined(range)) return null
 		const newEndPosition = getEndRowAndColumnOfString(change.text)
-		const result =  
+		const result =
 		{
 			startIndex: range.start.character,
-			oldEndIndex: range.end.character, 
-			newEndIndex: newEndPosition.column, //TODO: 
+			oldEndIndex: range.end.character,
+			newEndIndex: newEndPosition.column, //TODO:
 			startPosition: {row: range.start.line, column: range.start.character},
-			oldEndPosition: {row: range.end.line, column: range.end.character}, 
-			newEndPosition: {row: newEndPosition.row, column: newEndPosition.column} //TODO: 
+			oldEndPosition: {row: range.end.line, column: range.end.character},
+			newEndPosition: {row: newEndPosition.row, column: newEndPosition.column} //TODO:
 		}
 		return result
 	}
