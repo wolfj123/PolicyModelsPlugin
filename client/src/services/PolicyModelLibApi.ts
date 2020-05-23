@@ -117,16 +117,18 @@ export default class PolicyModelLibApi {
 
   }
 
-  public async _createNewModel(par){
+  public async _createNewModel(par): Promise<string> {
     // return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
-    await axiosInstance.post(`/newModel`,JSON.stringify(par))
+    return await axiosInstance.post(`/newModel`,JSON.stringify(par))
     .then(ans=>{
-      console.log("success", ans);
-
+      if (ans.status !== 200){
+        return Promise.reject(`Failed to create a new model \nadditional info: ${ans.data}`);
+      }
+      return Promise.resolve(ans.data);
     })
     .catch(rej=>{
-      console.log(`new model rejected from server\n\n ${rej}\n\n`);
-
+      // console.log(`new model rejected from server\n\n ${rej}\n\n`);
+      return Promise.reject(`Failed to create a new model \nadditional info: ${rej.data}`);
     });
     
   }

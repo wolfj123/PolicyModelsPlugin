@@ -36,8 +36,11 @@ public class CliRunnerNewModelOverride extends CliRunner {
     private JSONObject currentAuthor;
 
     private String modelPath;
+    private String lastMessage;
 
     public CliRunnerNewModelOverride(String response){
+        modelPath = null;
+        lastMessage = "";
         authorsList = new LinkedList<>();
         try {
             userResponse = (JSONObject) new JSONParser().parse(response);
@@ -72,9 +75,8 @@ public class CliRunnerNewModelOverride extends CliRunner {
             ans = (String) userResponse.getOrDefault(modelNameKey, defaultValue);
             ans = (ans == null || ans.equals("")) ? defaultValue : ans;
         }else if (command.contains(modelPathPrefix)){
-            modelPath = (String) userResponse.getOrDefault(modelPathKey, defaultValue);
-            modelPath = (modelPath == null || modelPath.equals("")) ? defaultValue : modelPath;
-            ans = modelPath;
+            ans = (String) userResponse.getOrDefault(modelPathKey, defaultValue);
+            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
         }else if (command.contains(dgFileNamePrefix)){
             ans = (String) userResponse.getOrDefault(dgFileNameKey, defaultValue);
             ans = (ans == null || ans.equals("")) ? defaultValue : ans;
@@ -120,7 +122,7 @@ public class CliRunnerNewModelOverride extends CliRunner {
     @Override
     public void println(String format, Object... args) {
 //        super.println(format, args);
-        handlePrint(format);
+        handlePrint(format, args);
     }
 
     @Override
@@ -148,10 +150,21 @@ public class CliRunnerNewModelOverride extends CliRunner {
     }
 
     private void handlePrint (String msg, Object... args){
-
+        String modelCreationPrefix = "Creating model at ";
+        if (msg.startsWith(modelCreationPrefix)){
+            String tempPath = msg.substring(modelCreationPrefix.length()).trim();
+            int idx = tempPath.lastIndexOf("...");
+            modelPath = tempPath.substring(0,idx);
+        }else{
+            lastMessage = String.format(msg, args);
+        }
     }
 
     public String getModelPath() {
         return modelPath;
+    }
+
+    public String getLastMessage() {
+        return lastMessage;
     }
 }

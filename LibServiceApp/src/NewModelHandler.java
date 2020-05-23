@@ -1,6 +1,7 @@
 import java.util.Map;
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.NewModelCommand;
+import org.parboiled.common.Tuple2;
 
 public class NewModelHandler extends PolicyModelHttpHandler {
 
@@ -10,12 +11,12 @@ public class NewModelHandler extends PolicyModelHttpHandler {
     }
 
     @Override
-    public String handlePostRequest(String body) {
+    public Tuple2<Integer,String> handlePostRequest(String body) {
+        CliRunnerNewModelOverride cli = new CliRunnerNewModelOverride(body);
         try {
-            CliRunnerNewModelOverride cli = new CliRunnerNewModelOverride(body);
             return PolicyModelService.createNewModel(cli);
         }catch (Exception ex){
-            return "Fail";
+            return  new Tuple2<>(500, "Unknown Error");
         }
     }
 }

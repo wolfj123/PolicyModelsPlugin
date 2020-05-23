@@ -1,5 +1,6 @@
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.*;
+import org.parboiled.common.Tuple2;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -37,12 +38,17 @@ public  class PolicyModelService {
         updateCmd.execute(cli,new LinkedList<>());
     }
 
-    public static String createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
+    public static Tuple2<Integer,String> createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
         NewModelCommand newModelCommand = new NewModelCommand();
         newModelCommand.execute(newCli, Collections.emptyList());
-        if (newCli.getModel() != null)
-            return newCli.getModelPath();
-        return  "FAIL";
+        if (newCli.getModel() != null) {
+            if (newCli.getModelPath() != null ){
+                return new Tuple2<>(200, newCli.getModelPath());
+            }
+            String lastMessage = newCli.getLastMessage().replace("/!\\","");
+            return  new Tuple2<>(500, (!lastMessage.equals("")) ? lastMessage : "Unknown Error");
+        }
+        return  new Tuple2<>(500,"Unknown Error");
     }
 
 }

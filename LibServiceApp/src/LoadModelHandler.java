@@ -1,3 +1,5 @@
+import org.parboiled.common.Tuple2;
+
 import java.util.Map;
 
 public class LoadModelHandler extends PolicyModelHttpHandler {
@@ -9,7 +11,7 @@ public class LoadModelHandler extends PolicyModelHttpHandler {
     }
 
     @Override
-    public String handlePostRequest(String body) {
+    public Tuple2<Integer,String> handlePostRequest(String body) {
         return null;
     }
 }
