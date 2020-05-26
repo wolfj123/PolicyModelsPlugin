@@ -6,7 +6,36 @@ import { URI } from 'vscode-uri';
 import { RenameParams, WorkspaceEdit, TextDocumentEdit } from 'vscode-languageserver';
 import { initLogger } from '../../src/Logger';
 
-describe('Solver Test Suite', ()=>{
+describe('Solver Test Auto Complete', ()=>{
+	let testFolder: string;
+	let testFolderSuffix: string = "/server/tests/sample directory";
+	let solver: SolverInt;
+	let codeFolder: string;
+
+	const uriCreator = (fileName:string): string =>{
+		return URI.file(path.join(codeFolder,fileName)).toString()
+	}
+
+	before(async ()=> {
+		let cwd:string = process.cwd()
+		initLogger(cwd);
+		testFolder = cwd + testFolderSuffix;
+		solver = new PMSolver(cwd);
+		codeFolder =path.join(testFolder,"InferrerExample");
+		await solver.onOpenFolder(URI.file(codeFolder).toString());
+	});
+
+	it('test autocomplete in PS file', ()=> {
+
+	});
+
+
+
+
+	
+});
+
+describe('Solver Test Renaming', ()=>{
 
 	let testFolder: string;
 	let testFolderSuffix: string = "/server/tests/sample directory";

@@ -164,7 +164,7 @@ connection.onInitialized(() => {
 			watchers: [
 				{
 					kind: WatchKind.Create | WatchKind.Delete, // this will notiryf only when files are created or delted from workspace
-					globPattern: "**/*.{ps,pspace}"
+					globPattern: "**/*{.ps,.pspace,definitions.ts}"
 				},
 				{
 					kind: WatchKind.Create | WatchKind.Delete,
@@ -188,7 +188,7 @@ connection.onInitialized(() => {
 		[
 			{
 				language:'policyspace',
-				pattern:"**/*.{ps,pspace}"
+				pattern:"**/*{.ps,.pspace,definitions.ts}"
 			},
 			{
 				language:'decisiongraph',
@@ -238,15 +238,6 @@ connection.onInitialized(() => {
 				console.log(`finished wiating for open folder`);
 			}
 		});
-
-
-
-		// //this is not needed - returns VS code configurations we don't care
-		// connection.workspace.getConfiguration().then(_event => {
-		// 	connection.console.log('Workspace folder change event received.');
-		// 	console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
-		// 	connection.console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
-		// });
 
 	}
 	console.log('finish on intilized')
