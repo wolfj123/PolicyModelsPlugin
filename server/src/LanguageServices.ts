@@ -1050,8 +1050,6 @@ export class CacheQueries {
 
 	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], currentFile : FilePath, importMap : ImportMap) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
-		let slots : PolicyModelEntity[]
-		let slotvalues : PolicyModelEntity[]
 		let keywords : CompletionItem[] = DecisionGraphKeywords
 
 		nodes = cache
