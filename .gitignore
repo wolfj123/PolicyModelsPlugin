@@ -117,3 +117,5 @@ plugin/cli/java
 !cli/LibServiceApp.jar
 !LibServiceApp/PolicyModel/DataTagsLib.jar
 !cli/DataTagsLib.jar
+
+*.vsix
