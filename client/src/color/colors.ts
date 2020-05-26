@@ -66,10 +66,10 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 			}
 		}
 		// // Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
-			visitedChildren = true
-			continue
-		}
+		// if (!visible(cursor, visibleRanges)) {
+		// 	visitedChildren = true
+		// 	continue
+		// }
 		// Color tokens
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
@@ -157,10 +157,10 @@ export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: numbe
 			}
 		}
 		// Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
-			visitedChildren = true
-			continue
-		}
+		// if (!visible(cursor, visibleRanges)) {
+		// 	visitedChildren = true
+		// 	continue
+		// }
 		// Color tokens
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
@@ -219,10 +219,10 @@ export function colorValueInference(root: Parser.Tree, visibleRanges: {start: nu
 			}
 		}
 		// Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
-			visitedChildren = true
-			continue
-		}
+		// if (!visible(cursor, visibleRanges)) {
+		// 	visitedChildren = true
+		// 	continue
+		// }
 		// Color tokens
 		const parent = parents[parents.length - 1]
 		const grandparent = parents[parents.length - 2]
