@@ -291,13 +291,15 @@ export async function activateSyntaxColoring(context: vscode.ExtensionContext) {
 			}
 		}
 	}
-	const warnedScopes = new Set<string>()
+  const warnedScopes = new Set<string>()
+  const largeFileCharacterLength : Number = 50000
 	function colorEditor(editor: vscode.TextEditor) {
+    const isLargeFile : boolean = true //TODO: editor.document.getText().length >= largeFileCharacterLength
 		const t = trees[editor.document.uri.toString()]
 		if (t == null) return
 		const language = languages[editor.document.languageId]
 		if (language == null) return
-		const scopes = language.color(t, visibleLines(editor))
+		const scopes = language.color(t, visibleLines(editor), isLargeFile)
 		for (const scope of scopes.keys()) {
 			const dec = decoration(scope)
 			if (dec) {
