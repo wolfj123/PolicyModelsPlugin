@@ -9,7 +9,7 @@ import { ChildProcess } from 'child_process';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 1500,
+  timeout: 2000,
 });
 
 export default class PolicyModelLibApi {
@@ -45,8 +45,11 @@ export default class PolicyModelLibApi {
   }
 
   async _startServer(): Promise<boolean> {
-    const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
+    // const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
+    const JavaServerJar: string =  path.join(__dirname,"/../../../LibServiceApp/out/artifacts/LibServiceApp_jar/LibServiceApp.jar" );
+
     this.child = require('child_process').spawn(
+      // `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`,`${JavaServerJar}`] // for debugging the server,,
       'java', ['-jar', `${JavaServerJar}`, null]
     );
 
@@ -54,7 +57,7 @@ export default class PolicyModelLibApi {
       return new Promise<boolean>((resolve) => {
         this.child.stdout.on('data', data => {
           const message: string = data.toString();
-          message === 'ready' ?
+          message.startsWith ('ready') ?
             resolve(true) :
             this._printToScreen(message);
         });
@@ -93,14 +96,28 @@ export default class PolicyModelLibApi {
     return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
   }
 
-  async _requestsWrapper(loadModel: boolean,requestCallback) {
+  async _requestsWrapper(loadModel: boolean,requestCallback): Promise<any> {
+    let myInstance = this;
     const buildSucceeded = await this._buildEnvironment(loadModel);
-    let requestAnswer = false;
-    if (buildSucceeded) {
-      requestAnswer = await requestCallback();
-    }
-    this._terminateProcess();
-    return requestAnswer;
+
+    const ans: Promise<any> = new Promise(async (res,rej) =>{
+      let requestAnswer = false;
+      if (buildSucceeded) {
+        requestAnswer = await requestCallback()
+        .then(resolveAns =>{
+          myInstance._terminateProcess();
+          res(resolveAns);
+        })
+        .catch(rejectAns =>{
+          myInstance._terminateProcess();
+          return rej(rejectAns);
+        });
+      }else{
+        rej(requestAnswer);
+      }
+    });
+
+    return await ans;
   }
 
 
@@ -109,44 +126,68 @@ export default class PolicyModelLibApi {
   }
 
   async createNewLocalization(name: string): Promise<boolean> {
-    return await this._requestsWrapper(true, () => this.createNewLocalization(name));
+    return await this._requestsWrapper(true, () => this._createNewLocalization(name));
   }
 
-  public async createNewModel(){
+  public async createNewModel():Promise<string> {
+    const JavaServerJar: string = path.join(__dirname, "/../../../cli/testJar.jar");
+    let childProcess = require('child_process').spawn(
+      'java', ['-jar', JavaServerJar, "new"]
+    );
+
+    const myInstance = this;
+    
+    const ans:Promise<string> = new Promise((res,rej)=>{
+      childProcess.stdout.on('data',async  function(data) {
+        const newModelAns: string = "res---new---"
+        const cancelModelAns: string = "res---cancel---"
+        let newModelDataAns:string = (data.toString());
+        if (newModelDataAns.startsWith(newModelAns)){
+          let modelInfo:string = newModelDataAns.substring(newModelAns.length).trim();
+          // return res(myInstance._requestsWrapper(false, () => myInstance._createNewModel(modelInfo)));
+          let modelCreationAns: Promise<string> = myInstance._requestsWrapper(false, () => myInstance._createNewModel(modelInfo));
+          // let modelCreationAns: Promise<string> = myInstance._createNewModel(modelInfo);
+          modelCreationAns.then(resAns=>{
+            res(resAns);
+          })
+          .catch(rejAns=>{
+            rej(rejAns);
+          });
+
+        }else{
+          return rej("Canceled model creation");
+        }
+      });
+
+      childProcess.stderr.on("data", function (data) {
+        console.log(data.toString());
+        return rej("Error in model creation");
+      });
+    });
     // return await this._requestsWrapper(false, () => {this._createNewModel()});
 
+    return ans;
   }
 
   public async _createNewModel(par): Promise<string> {
     // return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
-    return await axiosInstance.post(`/newModel`,JSON.stringify(par))
-    .then(ans=>{
-      if (ans.status !== 200){
-        return Promise.reject(`Failed to create a new model \nadditional info: ${ans.data}`);
-      }
-      return Promise.resolve(ans.data);
-    })
-    .catch(rej=>{
-      // console.log(`new model rejected from server\n\n ${rej}\n\n`);
-      return Promise.reject(`Failed to create a new model \nadditional info: ${rej.data}`);
+    const ans:Promise<string> =  new Promise(async (resolve,reject)=>{    
+    return await axiosInstance.post(`/newModel`,par)
+      .then(ans=>{
+        if (ans.status === 200){
+          return resolve(ans.data);
+        }else if (ans.status === 500){
+          return reject(`Failed to create a new model \nadditional info: ${ans.data}`);
+        }else{
+          return reject(`Failed to create a new model unknown error`);
+        }
+      })
+      .catch(rej=>{
+        // console.log(`new model rejected from server\n\n ${rej}\n\n`);
+        return reject(`Failed to create a new model \nadditional info: ${rej.response.data}`);
+      });
     });
-    
+   
+    return ans;
   }
-
-
 }
-
-export interface newModleRequest {
-  modelName: string,
-  modelPath: string,
-  dgFileName: string,
-  psFileName: string,
-  rootSlot: string,
-  AuthorsInfo: {
-    personOrGroup: string,
-    AuthorName: string,
-    authorContact: string
-  }[]
-}
-
-

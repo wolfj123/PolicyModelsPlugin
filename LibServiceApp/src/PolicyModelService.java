@@ -39,16 +39,21 @@ public  class PolicyModelService {
     }
 
     public static Tuple2<Integer,String> createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
+
         NewModelCommand newModelCommand = new NewModelCommand();
-        newModelCommand.execute(newCli, Collections.emptyList());
-        if (newCli.getModel() != null) {
-            if (newCli.getModelPath() != null ){
-                return new Tuple2<>(200, newCli.getModelPath());
+        try {
+            newModelCommand.execute(newCli, Collections.emptyList());
+            if (newCli.getModel() != null) {
+                if (newCli.getModelPath() != null) {
+                    return new Tuple2<>(200, newCli.getModelPath());
+                }
+                String lastMessage = newCli.getLastMessage().replace("/!\\", "");
+                return new Tuple2<>(511, (!lastMessage.equals("")) ? lastMessage : "Unknown Error");
             }
-            String lastMessage = newCli.getLastMessage().replace("/!\\","");
-            return  new Tuple2<>(500, (!lastMessage.equals("")) ? lastMessage : "Unknown Error");
+        }catch (Exception e){
+            return new Tuple2<>(513,"CLI internal error");
         }
-        return  new Tuple2<>(500,"Unknown Error");
+        return new Tuple2<>(512,"Unknown Error");
     }
 
 }

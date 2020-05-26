@@ -1,16 +1,10 @@
 import edu.harvard.iq.policymodels.cli.CliRunner;
 
 import java.io.IOException;
-import java.util.*;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class CliRunnerNewModelOverride extends CliRunner {
 
-    // keys for JSON information
+/*    // keys for JSON information
     public String modelNameKey = "modelName";
     public String modelPathKey = "modelPath";
     public String dgFileNameKey = "dgFileName";
@@ -19,7 +13,7 @@ public class CliRunnerNewModelOverride extends CliRunner {
     public String AuthorsInfoKey = "AuthorsInfo";
     public String personOrGroupKey = "personOrGroup";
     public String AuthorNameKey = "AuthorName";
-    public String authorContactKey = "authorContact";
+    public String authorContactKey = "authorContact";*/
 
     private String modelNamePrefix = "Model title:";
     private String modelPathPrefix = "Model Path:";
@@ -30,83 +24,51 @@ public class CliRunnerNewModelOverride extends CliRunner {
     private String personOrGroupPrefix = "Person or Group?";
     private String authorNamePrefix = "Name:";
     private String authorContactPrefix = "Contact:";
-    private JSONObject userResponse;
+    private String authorAffiliationPrefix = "Affiliation:";
+/*    private JSONObject userResponse;
     private List<JSONObject> authorsList;
     private Iterator<JSONObject> authorsIterator;
-    private JSONObject currentAuthor;
+    private JSONObject currentAuthor;*/
 
-    private String modelPath;
     private String lastMessage;
+    private NewModelInputData modelData;
+    private String modelPath;
 
-    public CliRunnerNewModelOverride(String response){
-        modelPath = null;
-        lastMessage = "";
-        authorsList = new LinkedList<>();
-        try {
-            userResponse = (JSONObject) new JSONParser().parse(response);
-            JSONArray authors = (JSONArray) userResponse.getOrDefault(AuthorsInfoKey,null);
-            for (var element: authors){
-                authorsList.add((JSONObject) element);
-            }
-            authorsIterator = authorsList.iterator();
-        } catch (ParseException e) {
-            userResponse =  new JSONObject();
-
-            authorsIterator = new Iterator<JSONObject>() {
-                @Override
-                public boolean hasNext() {
-                    return false;
-                }
-
-                @Override
-                public JSONObject next() {
-                    return null;
-                }
-            };
-
-        }
+    public CliRunnerNewModelOverride(NewModelInputData inputData) {
+        modelData = inputData;
     }
 
     @Override
     public String readLineWithDefault(String command, String defaultValue, Object... args) throws IOException {
 
-        String ans = defaultValue;
         if (command.contains(modelNamePrefix)){
-            ans = (String) userResponse.getOrDefault(modelNameKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getModelName();
         }else if (command.contains(modelPathPrefix)){
-            ans = (String) userResponse.getOrDefault(modelPathKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getModelPath();
         }else if (command.contains(dgFileNamePrefix)){
-            ans = (String) userResponse.getOrDefault(dgFileNameKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getDgFileName();
         }else if (command.contains(psFileNamePrefix)){
-            ans = (String) userResponse.getOrDefault(psFileNameKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getPsFileName();
         }else if (command.contains(rootSlotNamePrefix)){
-            ans = (String) userResponse.getOrDefault(rootSlotKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getRootSlot();
         }else if (command.contains(addAuthorPrefix)) {
-
-            if(authorsIterator.hasNext()){
-                currentAuthor = authorsIterator.next();
+            if (modelData.hasMoreAuthors()) {
+                modelData.nextAuthor();
                 return "y";
             }else{
                 return "n";
             }
-
         }else if (command.contains(personOrGroupPrefix)){
-            ans = (String) currentAuthor.getOrDefault(personOrGroupKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.isAuthorPerson() ? "p" : "g";
         }else if (command.contains(authorNamePrefix)){
-            ans = (String) currentAuthor.getOrDefault(AuthorNameKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getAuthorName();
+        }else if(command.contains(authorAffiliationPrefix)){
+            return modelData.getAuthorAffiliation();
         }else if (command.contains(authorContactPrefix)) {
-            ans = (String) currentAuthor.getOrDefault(authorContactKey, defaultValue);
-            ans = (ans == null || ans.equals("")) ? defaultValue : ans;
+            return modelData.getAuthorContact();
         }
 
-        return ans;
+        return defaultValue;
     }
 
     @Override
