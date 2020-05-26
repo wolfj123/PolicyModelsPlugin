@@ -1,8 +1,3 @@
-import edu.harvard.iq.policymodels.model.metadata.AuthorData;
-import edu.harvard.iq.policymodels.model.metadata.GroupAuthorData;
-import edu.harvard.iq.policymodels.model.metadata.PersonAuthorData;
-import org.parboiled.common.Tuple3;
-
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;

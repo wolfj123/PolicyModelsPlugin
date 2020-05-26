@@ -115,23 +115,14 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
   subscriptions.push(
     vscode.commands.registerCommand(myCommandId,async () => {
       
-      let x = PolicyModelLibApi.getInstance().createNewModel();
-      
-      x.then(async newModelPath => {
+     PolicyModelLibApi.getInstance().createNewModel()
+      .then(async newModelPath => {
           let uri:vscode.Uri = vscode.Uri.file(newModelPath);
           await vscode.commands.executeCommand('vscode.openFolder', uri)
         })
         .catch(rej => 
           vscode.window.showInformationMessage(rej)
-          );
-
-      // await PolicyModelLibApi.getInstance()._createNewModel(x) 
-      // .then(async newModelPath=>{
-      //   let uri:vscode.Uri = vscode.Uri.file(newModelPath);
-      //   await vscode.commands.executeCommand('vscode.openFolder', uri)
-      // })
-      // .catch(rej => vscode.window.showInformationMessage(rej));
-
+        );
 
     })
   );

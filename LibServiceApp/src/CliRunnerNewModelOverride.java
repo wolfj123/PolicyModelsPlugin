@@ -1,19 +1,9 @@
+
 import edu.harvard.iq.policymodels.cli.CliRunner;
 
 import java.io.IOException;
 
 public class CliRunnerNewModelOverride extends CliRunner {
-
-/*    // keys for JSON information
-    public String modelNameKey = "modelName";
-    public String modelPathKey = "modelPath";
-    public String dgFileNameKey = "dgFileName";
-    public String psFileNameKey = "psFileName";
-    public String rootSlotKey = "rootSlot";
-    public String AuthorsInfoKey = "AuthorsInfo";
-    public String personOrGroupKey = "personOrGroup";
-    public String AuthorNameKey = "AuthorName";
-    public String authorContactKey = "authorContact";*/
 
     private String modelNamePrefix = "Model title:";
     private String modelPathPrefix = "Model Path:";
@@ -25,10 +15,6 @@ public class CliRunnerNewModelOverride extends CliRunner {
     private String authorNamePrefix = "Name:";
     private String authorContactPrefix = "Contact:";
     private String authorAffiliationPrefix = "Affiliation:";
-/*    private JSONObject userResponse;
-    private List<JSONObject> authorsList;
-    private Iterator<JSONObject> authorsIterator;
-    private JSONObject currentAuthor;*/
 
     private String lastMessage;
     private NewModelInputData modelData;
@@ -40,7 +26,6 @@ public class CliRunnerNewModelOverride extends CliRunner {
 
     @Override
     public String readLineWithDefault(String command, String defaultValue, Object... args) throws IOException {
-
         if (command.contains(modelNamePrefix)){
             return modelData.getModelName();
         }else if (command.contains(modelPathPrefix)){

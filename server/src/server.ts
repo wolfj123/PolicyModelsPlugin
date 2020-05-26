@@ -306,7 +306,7 @@ connection.onRenameRequest(
 function runModel(param: string[]): string {
 	getLogger(logSources.serverHttp).http(`runModel`, param);
 	console.log("server is running the model")
-	let cliJar: string = path.join(__dirname, "/../../cli/DataTagsLib.jar");
+	let cliJar: string = path.join(__dirname, "/../../cli/PolicyModels-1.9.9.uber.jar");
 	const runPolicyModelCommand = folderFS? `java -jar "${cliJar}" "${folderFS}"` : `java -jar "${cliJar}"`;
 	let fullCommand;
 	const os = getOsType();
@@ -314,11 +314,11 @@ function runModel(param: string[]): string {
 		case osTypes.WINDOWS:
 			fullCommand = `start cmd.exe /K ${runPolicyModelCommand}`;
 			break;
-			case osTypes.MAC:
-				fullCommand =`cd ${__dirname}/../../cli ;echo ${runPolicyModelCommand} > run.command; chmod +x run.command;open run.command`;
-				break;
-				default:
-					return "Running the model works ONLY from Windows or Mac Operation System."
+		case osTypes.MAC:
+			fullCommand =`cd ${__dirname}/../../cli ;echo ${runPolicyModelCommand} > run.command; chmod +x run.command;open run.command`;
+			break;
+		default:
+			return "Running the model works ONLY from Windows or Mac Operation System."
 
 	}
 	child_process.exec(fullCommand);

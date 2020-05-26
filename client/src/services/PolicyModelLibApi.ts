@@ -55,12 +55,12 @@ export default class PolicyModelLibApi {
     const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar")
 
     this.child = require('child_process').spawn(
-      `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
-      // 'java', ['-jar', `${JavaServerJar}`, null]
+      //  `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
+      'java', ['-jar', `${JavaServerJar}`, null]
     );
 
     const serverIsReady = async (): Promise<boolean> => {
-      return new Promise<boolean>((resolve) => {
+      return new Promise<boolean>((resolve,reject) => {
         this.child.stdout.on('data', data => {
           const message: string = data.toString();
           message.startsWith ('ready') ?
@@ -71,8 +71,7 @@ export default class PolicyModelLibApi {
         this.child.stderr.on("data", data => {
           this._printToScreen(data.toString());
           this._terminateProcess();
-          resolve(false);
-
+          reject(false);
         });
       });
     };
@@ -119,7 +118,7 @@ export default class PolicyModelLibApi {
           return rej(rejectAns);
         });
       }else{
-        rej(requestAnswer);
+        return rej(requestAnswer);
       }
     });
 
@@ -171,6 +170,7 @@ export default class PolicyModelLibApi {
         }
       });
 
+
       childProcess.stderr.on("data", function (data) {
         console.log(data.toString());
         return rej("Error in model creation");
@@ -196,7 +196,7 @@ export default class PolicyModelLibApi {
       })
       .catch(rej=>{
         // console.log(`new model rejected from server\n\n ${rej}\n\n`);
-        return reject(`Failed to create a new model \nadditional info: ${rej.response.data}`);
+        return reject(`Failed to create a new model \nadditional info: ${rej.response !== undefined ? rej.response.data : rej.message}`);
       });
     });
    

@@ -2,7 +2,7 @@ import CommandCustomize.VisualizeDecisionGraphCommandCustomize;
 import CommandCustomize.VisualizePolicySpaceCommandCustomize;
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.*;
-import org.parboiled.common.Tuple2;
+
 import java.util.Collections;
 
 import java.util.LinkedList;
@@ -40,21 +40,21 @@ public  class PolicyModelService {
         updateCmd.execute(cli,new LinkedList<>());
     }
 
-    public static Tuple2<Integer,String> createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
+    public static Pair<Integer,String> createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
         NewModelCommand newModelCommand = new NewModelCommand();
         try {
             newModelCommand.execute(newCli, Collections.emptyList());
             if (newCli.getModel() != null) {
                 if (newCli.getModelPath() != null) {
-                    return new Tuple2<>(200, newCli.getModelPath());
+                    return new Pair<>(200, newCli.getModelPath());
                 }
                 String lastMessage = newCli.getLastMessage().replace("/!\\", "");
-                return new Tuple2<>(511, (!lastMessage.equals("")) ? lastMessage : "Unknown Error");
+                return new Pair<>(511, (!lastMessage.equals("")) ? lastMessage : "Unknown Error");
             }
         }catch (Exception e){
-            return new Tuple2<>(513,"CLI internal error");
+            return new Pair<>(513,"CLI internal error");
         }
-        return new Tuple2<>(512,"Unknown Error");
+        return new Pair<>(512,"Unknown Error");
     }
 
     public static void visualizePS(String outputPath, String dotPath) throws  Exception {

@@ -1,5 +1,3 @@
-import org.parboiled.common.Tuple2;
-
 import java.util.Map;
 
 public class CreateNewLocalizationhandler extends PolicyModelHttpHandler {
@@ -10,7 +8,7 @@ public class CreateNewLocalizationhandler extends PolicyModelHttpHandler {
     }
 
     @Override
-    public Tuple2<Integer,String> handlePostRequest(String body) {
+    public Pair<Integer, String> handlePostRequest(String body) {
         return null;
     }
 }

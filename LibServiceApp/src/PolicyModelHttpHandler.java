@@ -1,6 +1,5 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.parboiled.common.Tuple2;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,7 +13,7 @@ abstract public class PolicyModelHttpHandler implements HttpHandler {
 
     public abstract String handleGetRequest(Map<String, String> params) throws Exception;
 
-    public abstract Tuple2<Integer,String> handlePostRequest(String body);
+    public abstract Pair<Integer, String> handlePostRequest(String body);
 
 
     @Override
@@ -28,9 +27,9 @@ abstract public class PolicyModelHttpHandler implements HttpHandler {
                 response = handleGetRequest(requestParams);
             } else if ("POST".equals(httpReqMethod)) {
                 String reqBody = getRequestBody(httpExchange);
-                Tuple2<Integer,String> ans = handlePostRequest(reqBody);
-                response = (ans != null) ? ans.b : null;
-                responseCode = (ans != null) ? ans.a : 200;
+                Pair<Integer,String> ans = handlePostRequest(reqBody);
+                response = (ans != null) ? ans.getSecond() : null;
+                responseCode = (ans != null) ? ans.getFirst() : 200;
             }
 
         }catch (Exception e){
