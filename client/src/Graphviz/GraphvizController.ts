@@ -20,11 +20,16 @@ export default class GraphvizController{
 	
 	visualizePolicySpace(){
 		this._policyModelLibApi.visualizePolicySpace(this._outputFolderPath + policySpacePostfix, graphvizDot)
+		.catch(rej => {
+			console.log("can't create visualization for Policy Space\n" + rej);
+		})
 	}
 
 	visualizeDecisionGraph(){
 		this._policyModelLibApi.visualizeDecisionGraph(this._outputFolderPath + decisionGraphPostix, graphvizDot)
-
+		.catch(rej => {
+			console.log("can't create visualization fot Decision Graph\n" + rej);
+		})
 	}
 
 	createOutputFolder(outputFolderPath: string){
@@ -32,4 +37,5 @@ export default class GraphvizController{
 			fs.mkdirSync(outputFolderPath);
 		}
 	}
+
 }
