@@ -820,10 +820,15 @@ export class LanguageServicesWithCache extends LanguageServices {
 		let result : CompletionList = pspaceCompletionList
 		switch(true){
 			case fm instanceof DecisionGraphFileManagerNaive: 
-				let caches : PolicyModelEntity[] = 
-				Utils.uniqueArray(Utils.flatten(
-					Array.from(this.fileManagers.values())
-						.map((fm: FileManager) => fm.getCache())))
+				let caches : PolicyModelEntity[] = []
+				Array.from(this.fileManagers.values()).map(fm => {
+					caches = caches.concat(fm.getCache())
+				})
+
+				//let caches : PolicyModelEntity[] = 
+				// Utils.uniqueArray(Utils.flatten(
+				// 	Array.from(this.fileManagers.values())
+				// 		.map((fm: FileManager) => fm.getCache())))
 				result = Utils.mergeCompletionLists(result,fm.getAutoComplete(location, caches))
 				result.items = result.items.concat(DecisionGraphKeywords)
 				break;	
