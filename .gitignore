@@ -3,7 +3,7 @@ node_modules
 client/server
 .vscode-test
 !cli/*
-!cli/lib/*
+!LibServiceApp/resources
 .idea
 configViewer/configViewer.js
 
@@ -115,7 +115,10 @@ jonathan/lsp_samples/cli/lib/desktop.ini
 plugin/cli/java
 *.png
 !cli/LibServiceApp.jar
-!LibServiceApp/PolicyModel/DataTagsLib.jar
-!cli/DataTagsLib.jar
+!cli/PolicyModels-1.9.9.uber.jar
+!LibServiceApp/resources/PolicyModels-1.9.9.uber.jar
+!LibServiceApp/resources/jackson-annotations-2.11.0.jar
+!LibServiceApp/resources/jackson-core-2.11.0.jar
+!LibServiceApp/resources/jackson-databind-2.11.0.jar
 
 *.vsix
