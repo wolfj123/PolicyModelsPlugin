@@ -184,7 +184,10 @@ export enum PolicyModelEntityType {
 }
 
 export enum PolicyModelEntityCategory {
-	FoldRange,
+	/**
+	 * @deprecated NO LONGER SUPPORTED
+	 */
+	FoldRange, 
 	Declaration,
 	Reference,
 	Special
@@ -507,7 +510,8 @@ export class DecisionGraphServices {
 
 		for (let node of nextNode(tree)) {
 			if(nodeTypes.indexOf(node.type) > -1) {
-				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = DecisionGraphServices.createEntityFromNode(node, currentFile, importsInfo.importMap)
@@ -650,7 +654,8 @@ export class PolicySpaceServices {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(node.type === "slot") {
-				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.Slot, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.Slot, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = PolicySpaceServices.createEntityFromNode(node, currentFile)
@@ -765,10 +770,12 @@ export class ValueInferenceServices {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(node.type === "value_inference") {
-				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.ValueInference, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.ValueInference, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else if(node.type === "inference_pair") {
-				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.InferencePair, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.InferencePair, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = ValueInferenceServices.createEntityFromNode(node, currentFile)
