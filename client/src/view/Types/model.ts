@@ -11,7 +11,7 @@ export interface ICommand {
 
 export enum CommandAction {
   Save,
-  Respone
+  Response
 }
 
 export interface File {

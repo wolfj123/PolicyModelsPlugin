@@ -13,7 +13,7 @@ interface spaceDataSection {
   longNote: string;
 }
 
-const SpaceFileContnet: React.FunctionComponent<Props> = props => {
+const SpaceFileContent: React.FunctionComponent<Props> = props => {
   const { content, onFileChange } = props;
   const [spaceData, setFileData]: [spaceDataSection[], Dispatch<SetStateAction<spaceDataSection[]>>] = React.useState(
     parseContentToSpaceData(content)
@@ -54,7 +54,7 @@ const SpaceFileContnet: React.FunctionComponent<Props> = props => {
     let newContent = '';
     spaceData.forEach(data => {
       const { slot, name, shortNote, longNote } = data;
-      newContent += `# ${slot}\n`;
+      newContent += `# ${slot.trim()}\n`;
       name && (newContent += `${name}\n`);
       shortNote && (newContent += `${shortNote}\n`);
       longNote && (newContent += `---\n`);
@@ -78,20 +78,20 @@ const SpaceFileContnet: React.FunctionComponent<Props> = props => {
         <form>
           <label>
           <p> Name</p>
-            <input  style={{ width: '60%'}} type="text" value={name} onChange={e => onChangeInput(e, i, 'name')} />
+            <input  style={{ width: '99%'}} type="text" value={name} onChange={e => onChangeInput(e, i, 'name')} />
           </label>
         </form>
         <form>
           <label>
           <p>Short Note</p>
-            <input style={{ width: '60%'}} type="text" value={shortNote} onChange={e => onChangeInput(e, i, 'shortNote')} />
+            <input style={{ width: '99%'}} type="text" value={shortNote} onChange={e => onChangeInput(e, i, 'shortNote')} />
           </label>
         </form>
         <form>
           <label>
             <p>Long Note</p>
             <p>
-              <textarea style={{ width: '95%', height: '150px' }} value={longNote} onChange={e => onChangeInput(e, i, 'longNote')} />
+              <textarea style={{ width: '99%', height: '150px' }} value={longNote} onChange={e => onChangeInput(e, i, 'longNote')} />
             </p>
           </label>
         </form>
@@ -105,4 +105,4 @@ function cleanArrayFromSpaces(array) {
   return array.filter(element => element !== '');
 }
 
-export default SpaceFileContnet;
+export default SpaceFileContent;

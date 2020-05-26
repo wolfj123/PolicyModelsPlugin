@@ -27,7 +27,7 @@ public class Server {
 
         try {
             activeServer();
-            System.out.print("ready" +  ProcessHandle.current().pid());
+            System.out.print("ready");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -40,6 +40,8 @@ public class Server {
         server.createContext("/loc/new", new CreateNewLocalizationhandler());
         server.createContext("/loc/update", new UpdateLocalizationHandler());
         server.createContext("/newModel",new NewModelHandler());
+        server.createContext("/visualize-ps", new VisualizePSHandler());
+        server.createContext("/visualize-dg", new VisualizeDGHandler());
         server.setExecutor(executor);
         server.start();
     }

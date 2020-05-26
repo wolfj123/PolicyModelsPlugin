@@ -12,6 +12,13 @@ const axiosInstance = axios.create({
   timeout: 2000,
 });
 
+axiosInstance.interceptors.request.use(function (config) {
+  config.url = config.url.replace(/\\/g, '/');
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
+
 export default class PolicyModelLibApi {
   _rootPath: string;
   child: ChildProcess;
@@ -19,7 +26,7 @@ export default class PolicyModelLibApi {
   private static instance: PolicyModelLibApi;
 
   private constructor(rootPath: string, printToScreenCallback?: any) {
-    this._rootPath = rootPath;
+    this._rootPath = rootPath.replace(/\\/g, '/');
     this._printToScreenCallback = printToScreenCallback;
     this.child = null;
   }
@@ -45,12 +52,11 @@ export default class PolicyModelLibApi {
   }
 
   async _startServer(): Promise<boolean> {
-    // const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
-    const JavaServerJar: string =  path.join(__dirname,"/../../../LibServiceApp/out/artifacts/LibServiceApp_jar/LibServiceApp.jar" );
+    const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar")
 
     this.child = require('child_process').spawn(
-      // `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`,`${JavaServerJar}`] // for debugging the server,,
-      'java', ['-jar', `${JavaServerJar}`, null]
+      `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
+      // 'java', ['-jar', `${JavaServerJar}`, null]
     );
 
     const serverIsReady = async (): Promise<boolean> => {
@@ -119,7 +125,13 @@ export default class PolicyModelLibApi {
 
     return await ans;
   }
+  async _visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}&dotPath=${graphvizDot}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
 
+  async _visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await axiosInstance.get(`/visualize-dg?outputPath=${outputPath}&dotPath=${graphvizDot}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
 
   setPrintToScreenCallback(callback) {
     this._printToScreenCallback = callback;
@@ -130,7 +142,7 @@ export default class PolicyModelLibApi {
   }
 
   public async createNewModel():Promise<string> {
-    const JavaServerJar: string = path.join(__dirname, "/../../../cli/testJar.jar");
+    const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
     let childProcess = require('child_process').spawn(
       'java', ['-jar', JavaServerJar, "new"]
     );
@@ -176,7 +188,7 @@ export default class PolicyModelLibApi {
       .then(ans=>{
         if (ans.status === 200){
           return resolve(ans.data);
-        }else if (ans.status === 500){
+        }else if (ans.status >= 500){
           return reject(`Failed to create a new model \nadditional info: ${ans.data}`);
         }else{
           return reject(`Failed to create a new model unknown error`);
@@ -190,4 +202,13 @@ export default class PolicyModelLibApi {
    
     return ans;
   }
+
+  async visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await this._requestsWrapper(true, () => this._visualizePolicySpace(outputPath, graphvizDot));
+  }
+
+  async visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
+    return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot));
+  }
+
 }

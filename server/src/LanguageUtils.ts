@@ -93,10 +93,6 @@ function resolvePaths(fromAbsolutePath : FilePath, toRelativePath : FilePath) : 
 }
 
 
-
-//****Entities****/
-
-
 /**
  * This class represents an entity found in a parse tree.
  * Instances of this class are the basis of all language services.
@@ -153,11 +149,6 @@ export class PolicyModelEntity {
 			Utils.newRange(
 				Utils.point2Position(syntaxNode.startPosition), 
 				Utils.point2Position(syntaxNode.endPosition)))
-
-		//TODO: fileparse
-		// if(!isNullOrUndefined(sourceFile)) {
-		// 	this.source = resolvePaths(currentFile, sourceFile)
-		// } 
 		this.source = sourceFile
 		this.category = category
 	}
@@ -193,7 +184,10 @@ export enum PolicyModelEntityType {
 }
 
 export enum PolicyModelEntityCategory {
-	FoldRange,
+	/**
+	 * @deprecated NO LONGER SUPPORTED
+	 */
+	FoldRange, 
 	Declaration,
 	Reference,
 	Special
@@ -266,10 +260,10 @@ export function entity2CompletionItem(entity : PolicyModelEntity, currentFile : 
 	if(!isNullOrUndefined(currentFile) && !isNullOrUndefined(importMap)){
 		prefix =
 		(entity.getType() == PolicyModelEntityType.DGNode && 
-		entity.getCategory() == PolicyModelEntityCategory.Reference && 
+		[PolicyModelEntityCategory.Declaration, PolicyModelEntityCategory.Reference].indexOf(entity.getCategory()) > -1 && 
 		!isNullOrUndefined(entity.getSource()) &&
-		entity.getSource() !== currentFile && importMap.has(entity.getSource()))
-			? importMap.get(entity.getSource()) : "" 
+		entity.getSource() !== currentFile && Utils.getMapKeysByValue(importMap, entity.getSource()).length > 0)
+			? Utils.getMapKeysByValue(importMap, entity.getSource())[0].concat(">") : "" 
 	}
 	
 	let label : string = prefix.concat(entity.getName())
@@ -395,7 +389,7 @@ const nodeTypes : string[] = mainNodesTypes.concat(subNodesTypes)
 /**
  * This class is a collection of basic analysis methods of a **Decision Graph** {@link Parser.Tree}
  * All the methods are static and store no information and cause no side-effects.
- * They are to be called by other classes to compose more complex queries
+ * They are to be called by other classes to be composed into more complex queries
  */
 export class DecisionGraphServices {	
 	
@@ -453,7 +447,12 @@ export class DecisionGraphServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * analyzes Decision Graph {@link Parser.Tree} and returns {@link PolicyModelEntity} for all imports 
+	 * and an {@link ImportMap}
+	 *
+	 * @param tree the tree to analyze
+	 * @param currentFile the current file from which the tree originated
+	 * @returns array of {@link PolicyModelEntity} for all import nodes and an {@link ImportMap}
 	 */
 	static getAllImportsInDoc(tree : Parser.Tree, currentFile : FilePath) : {imports: PolicyModelEntity[], importMap : ImportMap}  {
 		let importNodes : Parser.SyntaxNode[] = tree.walk().currentNode().descendantsOfType("import_node")
@@ -474,7 +473,11 @@ export class DecisionGraphServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * creates {@link ImportMap} from {@link PolicyModelEntity} of imports
+	 *
+	 * @param tree import entities
+	 * @param currentFile the current file from which the tree originated
+	 * @returns array of {@link PolicyModelEntity} for all import nodes and an {@link ImportMap}
 	 */
 	static importMapFromImportEntities(imports: PolicyModelEntity[], currentFile : FilePath) : ImportMap {
 		let importMap : ImportMap = new Map()
@@ -494,7 +497,11 @@ export class DecisionGraphServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all {@link PolicyModelEntity} from a Decision Graph {@link Parser.Tree} (and an {@link ImportMap})
+	 *
+	 * @param tree the tree to analyze
+	 * @param currentFile the current file from which the tree originated
+	 * @returns array of {@link PolicyModelEntity} and an {@link ImportMap}
 	 */
 	static getAllEntitiesInDoc(tree : Parser.Tree, currentFile : FilePath) : {entities: PolicyModelEntity[], importMap : ImportMap} {
 		let result : PolicyModelEntity[] = []
@@ -503,7 +510,8 @@ export class DecisionGraphServices {
 
 		for (let node of nextNode(tree)) {
 			if(nodeTypes.indexOf(node.type) > -1) {
-				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.DGNode, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = DecisionGraphServices.createEntityFromNode(node, currentFile, importsInfo.importMap)
@@ -516,7 +524,11 @@ export class DecisionGraphServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **definitions** of a node in a Decision Graph {@link Parser.Tree}
+	 *
+	 * @param name id of the node
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **definition** of the node
 	 */
 	static getAllDefinitionsOfNodeInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -529,40 +541,37 @@ export class DecisionGraphServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **references** of a node in a Decision Graph {@link Parser.Tree}
+	 *
+	 * @param name id of the node
+	 * @param tree the tree to analyze
+	 * @param currentFile the current file from which the tree originated
+	 * @param decisiongraphSource the current file from which the tree originated
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the node
 	 */
 	static getAllReferencesOfNodeInDocument(name : string, tree : Parser.Tree, currentFile : FilePath, decisiongraphSource : FilePath = undefined /*if the node is from another file*/) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
-		let importedGraphName
-
-		if(decisiongraphSource) {
-			let imports : Parser.SyntaxNode[] = root.descendantsOfType("import_node")
-			let importSource : Parser.SyntaxNode = imports.find(
-				node => 
-					{ 
-						return resolvePaths(currentFile, node.descendantsOfType("file_path")[0].text.trim()) === decisiongraphSource
-					}
-				)
-			if(importSource){
-				importedGraphName = importSource.descendantsOfType("decision_graph_name")[0].text
-			}
-		}
+		let importMap : ImportMap = DecisionGraphServices.getAllImportsInDoc(tree, currentFile).importMap
 
 		let references : Parser.SyntaxNode[] = root.descendantsOfType("node_reference")
 		let relevantReferences = references.filter(
 			ref => 
 			{
+				let importedGraphName = ref.descendantsOfType("decision_graph_name").length > 0 ? ref.descendantsOfType("decision_graph_name")[0].text.trim() : undefined
 				return ref.descendantsOfType("node_id_value")[0].text === name &&
-					(!(importedGraphName) || (importedGraphName &&
-					ref.descendantsOfType("decision_graph_name").length > 0 && ref.descendantsOfType("decision_graph_name")[0].text === importedGraphName))
+					(isNullOrUndefined(importedGraphName) || importedGraphName === Utils.getMapKeysByValue(importMap,decisiongraphSource)[0] )
 			}	
 		).map(ref => {return ref.descendantsOfType("node_id_value")[0]})
 		return getRangesOfSyntaxNodes(relevantReferences)
 	}
 
-	/** 
-	 * TODO: add doc
-	 */	
+	/**
+	 * returns all the ranges of the **references** of a slot in a Decision Graph {@link Parser.Tree}
+	 *
+	 * @param name name of the slot
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot
+	 */
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_reference")
@@ -572,8 +581,12 @@ export class DecisionGraphServices {
 	}
 	
 	/**
-	 * TODO: add doc
-	 */		
+	 * returns all the ranges of the **references** of a slot value in a Decision Graph {@link Parser.Tree}
+	 *
+	 * @param name name of the slot value
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot value
+	 */	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slotRefs : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
@@ -582,8 +595,11 @@ export class DecisionGraphServices {
 	}
 	
 	/**
-	 * TODO: add doc
-	 */		
+	 * returns all the ranges of the nodes in a Decision Graph {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a node
+	 */	
 	static getAllNodesInDocument(tree : Parser.Tree) : Range[] {
 		let result : Parser.SyntaxNode[] = []
 		for (let node of nextNode(tree)) {
@@ -598,12 +614,16 @@ export class DecisionGraphServices {
 /**
  * This class is a collection of basic analysis methods of a **Policy Space** {@link Parser.Tree}
  * All the methods are static and store no information and cause no side-effects.
- * They are to be called by other classes to compose more complex queries
+ * They are to be called by other classes to be composed into more complex queries
  */
 export class PolicySpaceServices {
 		
 	/**
-	 * TODO: add doc
+	 * creates an {@link PolicyModelEntity} from a {@link Parser.SyntaxNode}
+	 *
+	 * @param node the syntax node to convert
+	 * @param currentFile the current file from which the syntax node originated
+	 * @returns the {@link PolicyModelEntity} derived from the node
 	 */
 	static createEntityFromNode(node : Parser.SyntaxNode, currentFile : FilePath) : PolicyModelEntity | null {
 		let name : string
@@ -624,13 +644,18 @@ export class PolicySpaceServices {
 	} 
 	
 	/**
-	 * TODO: add doc
+	 * returns all {@link PolicyModelEntity} from a Policy Space {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @param currentFile the current file from which the tree originated
+	 * @returns array of {@link PolicyModelEntity}
 	 */
 	static getAllEntitiesInDoc(tree : Parser.Tree, currentFile : FilePath) : PolicyModelEntity[] {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(node.type === "slot") {
-				result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.Slot, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type, PolicyModelEntityType.Slot, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = PolicySpaceServices.createEntityFromNode(node, currentFile)
@@ -643,8 +668,12 @@ export class PolicySpaceServices {
 	}
 
 	/**
-	 * TODO: add doc
-	 */	
+	 * returns all the ranges of the **definitions** of a slot in a Policy Space {@link Parser.Tree}
+	 *
+	 * @param name name of the slot
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **definitions** of the slot
+	 */
 	static getAllDefinitionsOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let slots : Parser.SyntaxNode[] = root.descendantsOfType("slot")
@@ -656,7 +685,11 @@ export class PolicySpaceServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **references** of a slot in a Policy Space {@link Parser.Tree}
+	 *
+	 * @param name name of the slot
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot
 	 */
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -668,8 +701,12 @@ export class PolicySpaceServices {
 	}
 	
 	/**
-	 * TODO: add doc
-	 */
+	 * returns all the ranges of the **definitions** of a slot value in a Policy Space {@link Parser.Tree}
+	 *
+	 * @param name name of the slot value
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **definitions** of the slot value
+	 */	
 	static getAllDefinitionsOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let values : Parser.SyntaxNode[] = root.descendantsOfType("slot_value")
@@ -680,8 +717,11 @@ export class PolicySpaceServices {
 	}
 	
 	/**
-	 * TODO: add doc
-	 */
+	 * returns all the ranges of the nodes in a Policy Space {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a node
+	 */	
 	static getAllSlotsInDocument(tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
 		let result : Parser.SyntaxNode[] = root.descendantsOfType("slot")
@@ -689,10 +729,19 @@ export class PolicySpaceServices {
 	}
 }
 
+/**
+ * This class is a collection of basic analysis methods of a **Value Inference** {@link Parser.Tree}
+ * All the methods are static and store no information and cause no side-effects.
+ * They are to be called by other classes to be composed into more complex queries
+ */
 export class ValueInferenceServices {
 	
 	/**
-	 * TODO: add doc
+	 * creates an {@link PolicyModelEntity} from a {@link Parser.SyntaxNode}
+	 *
+	 * @param node the syntax node to convert
+	 * @param currentFile the current file from which the syntax node originated
+	 * @returns the {@link PolicyModelEntity} derived from the node
 	 */
 	static createEntityFromNode(node : Parser.SyntaxNode, currentFile : FilePath) : PolicyModelEntity | null {
 		let name : string
@@ -711,16 +760,22 @@ export class ValueInferenceServices {
 	} 
 
 	/**
-	 * TODO: add doc
+	 * returns all {@link PolicyModelEntity} from a Value Inference {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @param currentFile the current file from which the tree originated
+	 * @returns array of {@link PolicyModelEntity}
 	 */
 	static getAllEntitiesInDoc(tree : Parser.Tree, currentFile : FilePath) : PolicyModelEntity[] {
 		let result : PolicyModelEntity[] = []
 		for (let node of nextNode(tree)) {
 			if(node.type === "value_inference") {
-				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.ValueInference, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.ValueInference, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else if(node.type === "inference_pair") {
-				result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.InferencePair, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
+				//We no longer support folding ranges - Do nothing
+				//result.push(new PolicyModelEntity(node.type , PolicyModelEntityType.InferencePair, node, currentFile, currentFile, PolicyModelEntityCategory.FoldRange))
 			}
 			else {
 				let entity = ValueInferenceServices.createEntityFromNode(node, currentFile)
@@ -733,7 +788,11 @@ export class ValueInferenceServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **references** of a slot in a Value Inference {@link Parser.Tree}
+	 *
+	 * @param name name of the slot
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot
 	 */
 	static getAllReferencesOfSlotInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -744,7 +803,11 @@ export class ValueInferenceServices {
 	}
 
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the **references** of a slot value in a Policy Space {@link Parser.Tree}
+	 *
+	 * @param name name of the slot value
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a **references** of the slot value
 	 */	
 	static getAllReferencesOfSlotValueInDocument(name : string, tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -755,7 +818,10 @@ export class ValueInferenceServices {
 	}
 	
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the value-inferences in a Value Inference {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a value-inference
 	 */	
 	static getAllValueInferencesInDocument(tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()
@@ -764,7 +830,10 @@ export class ValueInferenceServices {
 	}
 	
 	/**
-	 * TODO: add doc
+	 * returns all the ranges of the value-inferences pair in a Value Inference {@link Parser.Tree}
+	 *
+	 * @param tree the tree to analyze
+	 * @returns a {@link Range} array in which each element in the range of a value-inference pair
 	 */	
 	static getAllInferencePairsInDocument(tree : Parser.Tree) : Range[] {
 		let root : Parser.SyntaxNode = tree.walk().currentNode()

@@ -10,9 +10,10 @@ import * as Parser from 'web-tree-sitter';
 import * as scopes from './color/scopes';
 import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
-
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 import PolicyModelLibApi from './services/PolicyModelLibApi';
+import GraphvizController from './Graphviz/GraphvizController';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector } from 'vscode-languageclient';
+
 
 let client: LanguageClient;
 
@@ -22,7 +23,8 @@ export function activate(context: ExtensionContext) {
   // The commandId parameter must match the command field in package.json
 
   buildLibServiceAppApiInstance();
-
+  
+  addGraphvizCommand(context);
   addLocalizationCommand(context);
   addRunCommand(context);
   addNewModelCommand(context);
@@ -154,7 +156,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
   const myCommandId = 'policymodel.runModel';
   subscriptions.push(
     vscode.commands.registerCommand(myCommandId, () => {
-      client.sendRequest('Run_Model', ['Params for execute']).then(data => console.log(data));
+      client.sendRequest('Run_Model', ['Params for execute']).then((res:string) => vscode.window.showInformationMessage(res));
     })
   );
 
@@ -332,13 +334,15 @@ export async function activateSyntaxColoring(context: vscode.ExtensionContext) {
 			}
 		}
 	}
-	const warnedScopes = new Set<string>()
+  const warnedScopes = new Set<string>()
+  const largeFileCharacterLength : Number = 50000
 	function colorEditor(editor: vscode.TextEditor) {
+    const isLargeFile : boolean = true //TODO: editor.document.getText().length >= largeFileCharacterLength
 		const t = trees[editor.document.uri.toString()]
 		if (t == null) return
 		const language = languages[editor.document.languageId]
 		if (language == null) return
-		const scopes = language.color(t, visibleLines(editor))
+		const scopes = language.color(t, visibleLines(editor), isLargeFile)
 		for (const scope of scopes.keys()) {
 			const dec = decoration(scope)
 			if (dec) {
@@ -395,3 +399,55 @@ function visibleLines(editor: vscode.TextEditor) {
 function range(x: colors.Range): vscode.Range {
   return new vscode.Range(x.start.row, x.start.column, x.end.row, x.end.column);
 }
+
+
+/**************************************/
+
+
+function addGraphvizCommand(context: vscode.ExtensionContext) {
+  const {subscriptions} = context;
+  const visualizePolicySpaceID = 'graphviz_visualizePolicySpace';
+  const visualizeDecisionGraphID = 'graphviz_visualizeDecisionGraph';
+
+  subscriptions.push(
+    vscode.commands.registerCommand(visualizePolicySpaceID, () => {
+      try{
+      const graphvizController = new GraphvizController(vscode.workspace.rootPath);
+      graphvizController.visualizePolicySpace();
+      }catch(e){
+        console.log(e)
+      }
+    })
+  );
+
+  subscriptions.push(
+    vscode.commands.registerCommand(visualizeDecisionGraphID, () => {
+      try{
+      const graphvizController = new GraphvizController(vscode.workspace.rootPath);
+      graphvizController.visualizeDecisionGraph();
+      }catch(e){
+        console.log(e)
+      }
+    })
+  );
+
+  let statusBarItemPS: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99999);
+  statusBarItemPS.text = '$(graph) Visualization PS';
+  statusBarItemPS.command = visualizePolicySpaceID;
+  statusBarItemPS.show();
+  subscriptions.push(statusBarItemPS);
+
+  let statusBarItemDG: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99998);
+  statusBarItemDG.text = '$(graph) Visualization DG';
+  statusBarItemDG.command = visualizeDecisionGraphID;
+  statusBarItemDG.show();
+  subscriptions.push(statusBarItemDG);
+}
+
+// function graphvizInteractivePreview(context: vscode.ExtensionContext) {
+//   let args = {
+//     content: "C:\\Users\\Shira\\Desktop\\School\\project\\PolicyModelsPlugin\\client\\src\\Graphviz\\example\\test.svg",
+//   }
+//   vscode.commands.executeCommand("graphviz-interactive-preview.preview.beside", args);
+// }
+

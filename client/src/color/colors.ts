@@ -6,10 +6,10 @@
 import * as Parser from 'web-tree-sitter'
 
 export type Range = {start: Parser.Point, end: Parser.Point}
-export type ColorFunction = (x: Parser.Tree, visibleRanges: {start: number, end: number}[]) => Map<string, Range[]>
+export type ColorFunction = (x: Parser.Tree, visibleRanges: {start: number, end: number}[], isLargeFile : boolean) => Map<string, Range[]>
 
 
-export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
+export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: number, end: number}[], isLargeFile) {
 	//const functions: Range[] = []
 	const nodeIds: Range[] = []
 	const nodeTypes: Range[] = []
@@ -66,7 +66,7 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 			}
 		}
 		// // Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
+		if (isLargeFile && !visible(cursor, visibleRanges)) {
 			visitedChildren = true
 			continue
 		}
@@ -127,7 +127,7 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 	])
 }
 
-export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
+export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: number, end: number}[], isLargeFile) {
 	const slots: Range[] = []
 	const slotValues: Range[] = []
 
@@ -156,8 +156,8 @@ export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: numbe
 				continue
 			}
 		}
-		// Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
+		// // Skip nodes that are not visible
+		if (isLargeFile && !visible(cursor, visibleRanges)) {
 			visitedChildren = true
 			continue
 		}
@@ -182,7 +182,7 @@ export function colorPolicySpace(root: Parser.Tree, visibleRanges: {start: numbe
 	])
 }
 
-export function colorValueInference(root: Parser.Tree, visibleRanges: {start: number, end: number}[]) {
+export function colorValueInference(root: Parser.Tree, visibleRanges: {start: number, end: number}[], isLargeFile) {
 	const slots: Range[] = []
 	const slotValues: Range[] = []
 	const keywords : Range[] = []
@@ -219,7 +219,7 @@ export function colorValueInference(root: Parser.Tree, visibleRanges: {start: nu
 			}
 		}
 		// Skip nodes that are not visible
-		if (!visible(cursor, visibleRanges)) {
+		if (isLargeFile && !visible(cursor, visibleRanges)) {
 			visitedChildren = true
 			continue
 		}

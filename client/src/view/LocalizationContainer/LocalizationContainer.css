@@ -3,12 +3,11 @@
   justify-content: center;
 }
 .container {
-  padding-top: 30px;
   display: flex;
   flex-direction: row;
   align-items: start;
-  width: 1000px;
-  margin-top: 100px;
+  width: 100vw;
+  margin-top: 20px;
 }
 
 .panel {

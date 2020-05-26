@@ -32,6 +32,14 @@ describe('API Environment Tests', () => {
 		expect(succeeded).to.be.true;
 	});
 
+	it('should build environment - windows', async () => {
+		const windowsPath = sampleProjectPath.replace(/\//g,"\\");
+		PolicyModelLibApi.buildInstance(windowsPath, message => console.log(message));
+		api = PolicyModelLibApi.getInstance();
+		const succeeded = await api._buildEnvironment();
+		expect(succeeded).to.be.true;
+	});
+
 	it('should failed build environment cause to wrong path', async () => {
 		PolicyModelLibApi.buildInstance(sampleProjectPath + "wrongPath", message => console.log(message));
 		api = PolicyModelLibApi.getInstance();

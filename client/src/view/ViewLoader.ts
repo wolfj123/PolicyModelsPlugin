@@ -38,7 +38,7 @@ export default class ViewLoader {
   }
 
   private updateLanguageFilesData(newLanguageFilesData) {
-    this._panel.webview.postMessage({ action: CommandAction.Respone, content: { languageFilesData: newLanguageFilesData } });
+    this._panel.webview.postMessage({ action: CommandAction.Response, content: { languageFilesData: newLanguageFilesData } });
   }
 
   private getWebviewContent(languageFilesData): string {
@@ -66,7 +66,7 @@ export default class ViewLoader {
           window.initialData = ${languageFilesDataJson};
         </script>
     </head>
-    <body>
+    <body style="background-color:#1e1e1e;color:#d4d4d4;">
         <div id="root"></div>
         <script src="${reactAppUri}"></script>
     </body>

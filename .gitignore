@@ -115,3 +115,7 @@ jonathan/lsp_samples/cli/lib/desktop.ini
 plugin/cli/java
 *.png
 !cli/LibServiceApp.jar
+!LibServiceApp/PolicyModel/DataTagsLib.jar
+!cli/DataTagsLib.jar
+
+*.vsix

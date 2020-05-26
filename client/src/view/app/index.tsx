@@ -37,7 +37,7 @@ const App: FunctionComponent<AppProps> = ({ initialLanguageFilesData }) => {
   React.useEffect(() => {
     window.addEventListener('message', event => {
       const response = event.data;
-      if(response.action === CommandAction.Respone){
+      if(response.action === CommandAction.Response){
         setStore(response.content);
       }
     });

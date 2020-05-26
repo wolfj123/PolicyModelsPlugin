@@ -46,15 +46,26 @@ import {
 	ImportMap
 } from './LanguageUtils'
 
-//https://www.npmjs.com/package/web-tree-sitter
-//https://github.com/bash-lsp/bash-language-server/blob/master/server/src/parser.ts
-//https://github.com/bash-lsp/bash-language-server/blob/790f5a5203af62755d6cec38ef1620e2b2dc0dcd/server/src/analyser.ts#L269
 
-
+/**
+ * This class exposes the Language Services in the form of LSP-esque queries,
+ * by wrapping a {@link LanguageServices} instance and translating said queries.
+ * It uses a Map to store the original file URIs before converting them to absolute paths.
+ * We do this in order to answer queries with the same URIs given initially.
+ */
 export class LanguageServicesFacade {
 	uriPathMap : Map<DocumentUri, FilePath>
 	services : LanguageServices
 
+	/**
+	 * Creates asynchronously a new instance of {@link LanguageServicesFacade}.
+	 * The creation must be asynchronous due to the asynchronous initilization of {@link Parser}
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
+	 * @returns A promise of a new instance of {@link LanguageServicesFacade}.
+	 */
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
 		instance.addToUriPathMap(docs)
@@ -64,7 +75,14 @@ export class LanguageServicesFacade {
 		return instance
 	}
 
-	addToUriPathMap(docs : PMTextDocument[]) {
+	/**
+	 * Adds new entries to the uriPathMap of this class.
+	 * If the uriPathMap wasn't initilaized, it will initialize it.
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	*/
+	private addToUriPathMap(docs : PMTextDocument[]) {
 		if(isNullOrUndefined(this.uriPathMap)){
 			this.uriPathMap = new Map()
 		}
@@ -75,21 +93,47 @@ export class LanguageServicesFacade {
 		})
 	}
 
+	/**
+	 * Add new documents to the Policy Model project
+	 * 
+	 * @param docs New documents to be added to the Policy Model Project
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 */
 	addDocs(docs : PMTextDocument[]) {
 		this.addToUriPathMap(docs)
 		this.services.addDocs(docs.map(doc => this.convertUri2PathPMTextDocument(doc)))
 	}
 
+	/**
+	 * Updates a document that was changed.
+	 * 
+	 * @param doc The changed document from the Policy Model project.
+	 * Assumes the document was already added.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 */
 	updateDoc(doc : PMTextDocument){
 		this.services.updateDoc(this.convertUri2PathPMTextDocument(doc))
 	}
 
+	/**
+	 * Removes a document that was changed.
+	 * 
+	 * @param docs The document to remove from the Policy Model project.
+	 * Assumes the document was already added.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 */
 	removeDoc(doc : DocumentUri) {
 		const path : FilePath = this.uriPathMap.get(doc)
 		this.services.removeDoc(path)
 		this.uriPathMap.delete(doc)
 	}
 
+	/**
+	 * Answers a LSP **onDefinition** query
+	 *
+	 * @param params LSP **onDefinition** query params
+	 * @returns A {@link LocationLink} array of all definitions
+	 */
 	onDefinition(params : DeclarationParams):  LocationLink[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
@@ -107,13 +151,24 @@ export class LanguageServicesFacade {
 		return result.filter(loc => !isNullOrUndefined(loc))
 	}
 
-	// these functions are called when the request is first made from the server
+	/**
+	 * Answers a LSP **onReferences** query
+	 * 
+	 * @param params LSP **onReferences** query params
+	 * @returns A {@link Location} array of all references
+	 */
 	onReferences(params : ReferenceParams):  Location[] {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
 		return this.services.getReferences(location).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
+	/**
+	 * Answers a LSP **onPrepareRename** query
+	 * 
+	 * @param params LSP **onPrepareRename** query params
+	 * @returns A {@link Range} or null if cannot rename
+	 */
 	onPrepareRename(params : PrepareRenameParams): Range | null {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
@@ -125,27 +180,59 @@ export class LanguageServicesFacade {
 		return range
 	}
 
-	onRenameRequest(params : RenameParams) : Location[]	{		//WorkspaceEdit {
+	/**
+	 * Answers a LSP **onRenameRequest** query
+	 * 
+	 * @param params LSP **onRenameRequest** query params
+	 * @returns A {@link Location} array of all rename requests
+	 */
+	onRenameRequest(params : RenameParams) : Location[]	{
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
 		return this.services.getReferences(location).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
-	onCompletion(params : TextDocumentPositionParams): CompletionList | null { //return a list of labels
+	/**
+	 * Answers a LSP **onCompletion** query
+	 * 
+	 * @param params LSP **onRenameRequest** query params
+	 * @returns A {@link CompletionList} or null if file not found
+	 */
+	onCompletion(params : TextDocumentPositionParams): CompletionList | null {
 		let location : Location = Utils.position2Location(params.position, params.textDocument.uri)
 		location = this.convertUri2PathLocation(location)
 		return this.services.getCompletion(location)
 	}
-
-	onCompletionResolve(params : CompletionItem): CompletionItem | null { //we are not supporting  this right now
+	
+	/**
+	 * Unsupported
+	 */
+	onCompletionResolve(params : CompletionItem): CompletionItem | null { 
 		//TODO:
 		return null
 	}
 
+	/**
+	 * Answers a LSP **onFoldingRanges** query
+	 * @deprecated WE NO LONGER SUPPORT THIS
+	 * @param params LSP **onFoldingRanges** query params
+	 * @returns A {@link Location} array of all references
+	 */
 	onFoldingRanges(params : FoldingRangeParams): Location[] {
+		throw new Error("Method not implemented.");
+
 		return this.services.getFoldingRanges(Utils.Uri2FilePath(params.textDocument.uri)).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
+	/**
+	 * Handles the convertion of URI to Absolute Path and vice versa,
+	 * in a {@link Location} instance.
+	 * This method uses the uriPathMap member of this class to resolve the conversion.
+	 * 
+	 * @param toConvert The object whose member must be converted
+	 * @param uri2path A boolean that controls whether the uri must be converted to a path, or the reverse
+	 * @returns A {@link Location} containing the converted value
+	 */
 	private convertUri2PathLocation(toConvert : Location, uri2path : boolean = true) : Location { 
 		let str : string = toConvert.uri
 		let strs : string[] = (uri2path) ?
@@ -160,6 +247,15 @@ export class LanguageServicesFacade {
 		}
 	}
 
+	/**
+	 * Handles the convertion of URI to Absolute Path and vice versa,
+	 * in a {@link LocationLink} instance.
+	 * This method uses the uriPathMap member of this class to resolve the conversion.
+	 * 
+	 * @param toConvert The object whose member must be converted
+	 * @param uri2path A boolean that controls whether the uri must be converted to a path, or the reverse
+	 * @returns A {@link LocationLink} containing the converted value
+	 */
 	private convertUri2PathLocationLink(toConvert : LocationLink, uri2path : boolean = true) : LocationLink { 
 		let str : string = toConvert.targetUri
 		let strs : string[] = (uri2path) ?
@@ -175,7 +271,16 @@ export class LanguageServicesFacade {
 			//originSelectionRange: toConvert.originSelectionRange //we leave this as undefined
 		}
 	}
-	
+
+	/**
+	 * Handles the convertion of URI to Absolute Path and vice versa,
+	 * in a {@link PMTextDocument} instance.
+	 * This method uses the uriPathMap member of this class to resolve the conversion.
+	 * 
+	 * @param toConvert The object whose member must be converted
+	 * @param uri2path A boolean that controls whether the uri must be converted to a path, or the reverse
+	 * @returns A {@link PMTextDocument} containing the converted value
+	 */
 	private convertUri2PathPMTextDocument(toConvert : PMTextDocument, uri2path : boolean = true) : PMTextDocument { 
 		let str : string = toConvert.uri
 		let strs : string[] = (uri2path) ?
@@ -186,32 +291,39 @@ export class LanguageServicesFacade {
 		}
 		let newDoc : PMTextDocument = createNewTextDocument(str, toConvert.languageId, toConvert.version, toConvert.getText())
 		newDoc.lastChanges = toConvert.lastChanges
-		// let newDoc : PMTextDocument = {
-		// 	uri: str,
-		// 	path : toConvert.path,
-		// 	languageId: toConvert.languageId,
-		// 	version : toConvert.version,
-		// 	getText : toConvert.getText,
-		// 	positionAt : toConvert.positionAt,
-		// 	offsetAt : toConvert.offsetAt,
-		// 	isEqual : toConvert.isEqual,
-		// 	lineCount : toConvert.lineCount,
-		// 	update : toConvert.update,
-		// 	lastChanges : toConvert.lastChanges	
-		// }
 		return newDoc
 	}
 }
 
-
+/**
+ * This class provides language services for a Policy Model project.
+ * It assumes that it was provided all the files of said project, 
+ * either in it's initilization or later incrementally.
+ * 
+ * This class holds a map of {@link FileManager}, each answering queries regarding a single file.
+ * Queries that can be answered by anaylizing a single file are solved in the {@link FileManager}. 
+ * Queries that can be answered by anaylizing multiple files (such as auto-completion) are solved in this class.
+ */
 export class LanguageServices {
-	//Workspace
+	/**
+ 	* A map of {@link FileManager} for each Policy Model file in the project
+	*/
 	fileManagers : Map<FilePath, FileManager>
 
-	//config
+	/**
+ 	* A map of {@link Parser} for each Language of Policy Models
+	*/
 	parsers : Map<PolicyModelsLanguage, Parser>
 
-
+	/**
+	 * Creates asynchronously a new instance of {@link LanguageServices}.
+	 * The creation must be asynchronous due to the asynchronous initilization of {@link Parser}
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all files are supplied and their URIs can be converted to absolute values.
+	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
+	 * @returns A promise of a new instance of {@link LanguageServices}.
+	 */
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServices> {
 		let instance : LanguageServices = new LanguageServices();
 		let parsersPath: string = path.join(pluginDir,"parsers");
@@ -221,17 +333,23 @@ export class LanguageServices {
 		return instance
 	}
 
-	//TODO: async
-	// constructor(docs : TextDocWithChanges[] /*uris : DocumentUri[]*/) {
-	// 	this.initParsers()
-	// 	this.fileManagers = new Map()
-	// 	this.populateMaps(docs)
-	// }
-
+	/**
+	 * Adds new entries to the uriPathMap of this class.
+	 * If the uriPathMap wasn't initilaized, it will initialize it.
+	 * 
+	 * @param docs New documents to be added to the Policy Model Project	
+	 * Assumes all documents contain an abolsute path
+	*/
 	addDocs(docs : PMTextDocument[]) {
 		this.populateMaps(docs)
 	}
 
+	/**
+	 * Add new documents to the Policy Model project
+	 * 
+	 * @param docs The documents that compose the Policy Model project.
+	 * Assumes all documents contain an abolsute path
+	 */
 	updateDoc(doc : PMTextDocument){
 		let fileManager : FileManager = this.fileManagers.get(doc.uri)
 		if(isNullOrUndefined(fileManager)) return
@@ -244,12 +362,23 @@ export class LanguageServices {
 		});
 	}
 
+	/**
+	 * Removes a document that was changed.
+	 * 
+	 * @param docs The document to remove from the Policy Model project.
+	 * Assumes the document was already added.
+	 * Assumes all documents contain an abolsute path
+	 */
 	removeDoc(doc : DocumentUri) {
 		this.fileManagers.delete(doc)
 	}
 
-	//maybe this map should be global singleton?
-	async initParsers(parserPath: string) {
+	/**
+	 * Initializing the parsers
+	 * 
+	 * @param parserPath A path to the plugin's parser folder which contains the WASM parsers
+	 */
+	protected async initParsers(parserPath: string) {
 		this.parsers = new Map()
 		for(let info of parsersInfo) {
 			const wasm = path.join(parserPath,info.wasm);
@@ -261,15 +390,24 @@ export class LanguageServices {
 		}
 	}
 
-	getParserByExtension(extension : string) : Parser {
+	/**
+	 * Gets a {@link Parser} by a file extension
+	 * 
+	 * @param extension The file extension
+	 * @returns A {@link Parser} corresponding to the langauge represented by the file extension
+	 */
+	protected getParserByExtension(extension : string) : Parser {
 		const language = getLanguageByExtension(extension)
 		return this.parsers.get(language)
 	}
 
-	populateMaps(docs : PMTextDocument[]) {
+	/**
+	 * Adds the documents to the map
+	 * 
+	 * @param docs Documents to be added to the Policy Model Project	
+	 */
+	protected populateMaps(docs : PMTextDocument[]) {
 		for (let doc of docs) {
-			//const uri : DocumentUri = doc.path
-			//const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
 			const filepath : FilePath = doc.uri
 			const extension = Utils.getFileExtension(filepath)
 			let fileManager : FileManager = this.getFileManager(doc, extension)
@@ -277,16 +415,35 @@ export class LanguageServices {
 		}
 	}
 
-	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+	/**
+	 * Creates a new {@link FileManager} instance for a document
+	 * 
+	 * @param doc The document
+	 * @param extension The file extension of the document
+	 * @returns A new {@link FileManager} represeting the document
+	 */
+	protected getFileManager(doc : PMTextDocument, extension : string) : FileManager {
 		return FileManagerFactory.create(doc, 
 			this.getParserByExtension(extension), 
 			getLanguageByExtension(extension))
 	}
 
-	getFileManagerByLocation(location : Location) : FileManager {
+	/**
+	 * Find a {@link FileManager} for a {@link Location}
+	 * 
+	 * @param location The location in a document
+	 * @returns A {@link FileManager} that holds the document of the location
+	 */
+	protected getFileManagerByLocation(location : Location) : FileManager {
 		return this.fileManagers.get(location.uri)
 	}
 
+	/**
+	 * Given a location, returns the declarations of the entity found in that location
+	 * 
+	 * @param location The location in a document
+	 * @returns A {@link Location} array that holds all the declarations of the entity
+	 */
 	getDeclarations(location : Location) : Location[] {
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
@@ -299,6 +456,12 @@ export class LanguageServices {
 		return result
 	}
 
+	/**
+	 * Given a location, returns the references of the entity found in that location
+	 * 
+	 * @param location The location in a document
+	 * @returns A {@link Location} array that holds all the references of the entity
+	 */
 	getReferences(location : Location) : Location[] {
 		let result : Location[] = []
 		let declarations : Location[] = []
@@ -306,7 +469,6 @@ export class LanguageServices {
 
 		let fm : FileManager = this.getFileManagerByLocation(location)
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
-		//declarations = fm.getAllDefinitions(entity)
 		this.fileManagers.forEach((fm: FileManager, path: FilePath) => {
 			declarations = declarations.concat(fm.getAllDefinitions(entity))
 		});
@@ -322,6 +484,12 @@ export class LanguageServices {
 		return result
 	}
 
+	/**
+	 * Given a file path of a document, returns the document's range
+	 * 
+	 * @param path The path of the document
+	 * @returns A {@link Range} of the document, null if document not found
+	 */
 	getRangeOfDoc(path: FilePath) : Range | null {
 		let fm : FileManager = this.fileManagers.get(path)
 		if(isNullOrUndefined(fm)) {return null}
@@ -331,13 +499,25 @@ export class LanguageServices {
 		return range
 	}
 
+	/**
+	 * Given a location, returns the {@link PolicyModelEntity} found in that location
+	 * 
+	 * @param location The location in a document
+	 * @returns The {@link PolicyModelEntity} found in that location, null if no valid entity found
+	 */
 	createPolicyModelEntity(location : Location) : PolicyModelEntity | null {
 		let fm : FileManager = this.fileManagers.get(location.uri)
 		if(isNullOrUndefined(fm)) {return null}
 		let entity : PolicyModelEntity = fm.createPolicyModelEntity(location)
 		return entity
 	}
-	
+
+	/**
+	 * Given a file path of a document, returns all folding ranges in that document
+	 * @deprecated WE NO LONGER SUPPORT THIS
+	 * @param path The path of the document
+	 * @returns A {@link Location} array of all folding ranges
+	 */
 	getFoldingRanges(path: FilePath) : Location[] | null {
 		let result : Location[] = []
 		let fm : FileManager = this.fileManagers.get(path)
@@ -345,16 +525,27 @@ export class LanguageServices {
 		return fm.getFoldingRanges()
 	}
 
+	/**
+	 * Unsupported in this sub-class
+	 */
 	getCompletion(location : Location) : CompletionList | null {
-		//TODO:
-		throw new Error("Method not implemented.");
+		return null
 	}
 }
 
 
-//****File Managers****/
+/**
+ * This class represents a single file in a Policy Models project
+ */
 export abstract class FileManager {
+	/**
+ 	* The parser tree of the file
+	*/
 	tree : Parser.Tree
+	
+	/**
+ 	* The **abolsute** path of the file
+	*/
 	path : FilePath
 
 	constructor(tree : Parser.Tree, path : FilePath){
@@ -362,14 +553,25 @@ export abstract class FileManager {
 		this.path = path
 	}
 
+	/**
+	 * Updates the tree
+	 * 
+	 * @param newTree The new tree of the file to be stored
+	 */
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
 	}
 
+	/**
+	 * Returns the cache of entities collected from the file
+	 * 
+	 * @retuns An array of {@link PolicyModelEntity}
+	 */
 	getCache() : PolicyModelEntity[] {
 		//to be overridden in sub classes that contain a cache
 		return []
 	}
+
 
 	isLocationInDoc(location : Location) : boolean {
 		if (!(location.uri === this.path)) return false
@@ -425,28 +627,41 @@ export abstract class FileManager {
 	abstract getAllReferencesSlot(name : string, sourceOfEntity : FilePath) : Location[]
 	abstract getAllReferencesSlotValue(name : string, sourceOfEntity : FilePath) : Location[]
 
+	/**
+	 * @deprecated
+	 */
 	abstract getFoldingRanges() : Location[]
 
 	abstract getAutoComplete(location : Location, allCaches : PolicyModelEntity[]) : CompletionList
 }
 
+/**
+ * This class is a factory of {@link FileManager}
+ */
 export class FileManagerFactory {
+
+	/**
+	 * Creates an instance of a {@link FileManager}
+	 * 
+	 * @param doc The Policy Model document
+	 * @param parser A {@link Parser} of the Policy Model language
+	 * @param language the Policy Model language of the document
+	 * @param cacheVersion A flag that decides which {@link FileManager} sub-class to instatiate
+	 * @returns A new instance of a {@link FileManager}
+	 */
 	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
-		//const uri = doc.uri
-		//const uri : DocumentUri = doc.path
-		//const filepath : FilePath = Utils.Uri2FilePath(doc.uri)
 		const filepath : FilePath = doc.uri
 		const extension = Utils.getFileExtension(filepath)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
-				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath) : new DecisionGraphFileManager(tree, filepath)
+				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath) : new DecisionGraphFileManagerNaive(tree, filepath)
 
 			case PolicyModelsLanguage.PolicySpace:
-				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath) : new PolicySpaceFileManager(tree, filepath)	
+				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath) : new PolicySpaceFileManagerNaive(tree, filepath)	
 						
 			case PolicyModelsLanguage.ValueInference:
-				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath) : new ValueInferenceFileManager(tree, filepath)
+				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath) : new ValueInferenceFileManagerNaive(tree, filepath)
 				
 			default:
 				return null
@@ -454,7 +669,7 @@ export class FileManagerFactory {
 	}
 }
 
-export class DecisionGraphFileManager extends FileManager {
+export class DecisionGraphFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -495,7 +710,7 @@ export class DecisionGraphFileManager extends FileManager {
 	}
 }
 
-export class PolicySpaceFileManager extends FileManager {
+export class PolicySpaceFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -533,7 +748,7 @@ export class PolicySpaceFileManager extends FileManager {
 	}
 }
 
-export class ValueInferenceFileManager extends FileManager {
+export class ValueInferenceFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -597,27 +812,32 @@ export class LanguageServicesWithCache extends LanguageServices {
 
 		let pspaceCompletionList : CompletionList = {isIncomplete: false, items: []}
 		this.fileManagers.forEach((fm : FileManager, path : FilePath) => {
-			if(fm instanceof PolicySpaceFileManager) {
+			if(fm instanceof PolicySpaceFileManagerNaive) {
 				pspaceCompletionList = Utils.mergeCompletionLists(pspaceCompletionList, fm.getAutoComplete(null, null))
 			}
 		})
 
 		let result : CompletionList = pspaceCompletionList
 		switch(true){
-			case fm instanceof DecisionGraphFileManager: 
-				let caches : PolicyModelEntity[] = 
-				Utils.uniqueArray(Utils.flatten(
-					Array.from(this.fileManagers.values())
-						.map((fm: FileManager) => fm.getCache())))
+			case fm instanceof DecisionGraphFileManagerNaive: 
+				let caches : PolicyModelEntity[] = []
+				Array.from(this.fileManagers.values()).map(fm => {
+					caches = caches.concat(fm.getCache())
+				})
+
+				//let caches : PolicyModelEntity[] = 
+				// Utils.uniqueArray(Utils.flatten(
+				// 	Array.from(this.fileManagers.values())
+				// 		.map((fm: FileManager) => fm.getCache())))
 				result = Utils.mergeCompletionLists(result,fm.getAutoComplete(location, caches))
 				result.items = result.items.concat(DecisionGraphKeywords)
 				break;	
 	
-			case fm instanceof PolicySpaceFileManager: 
+			case fm instanceof PolicySpaceFileManagerNaive: 
 				result.items = result.items.concat(PolicySpaceKeywords)
 				break;
 
-			case fm instanceof ValueInferenceFileManager: 
+			case fm instanceof ValueInferenceFileManagerNaive: 
 				result.items = result.items.concat(ValueInferenceKeywords)
 				break;
 
@@ -630,7 +850,7 @@ export class LanguageServicesWithCache extends LanguageServices {
 	}
 }
 
-export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
+export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManagerNaive {
 	cache : PolicyModelEntity[]
 	importMap : ImportMap
 
@@ -690,7 +910,7 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 }
 
-export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
+export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManagerNaive {
 	cache : PolicyModelEntity[]
 
 	constructor(tree : Parser.Tree, currentFile: FilePath){
@@ -732,7 +952,7 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 	}
 }
 
-export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManager {
+export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManagerNaive {
 	cache : PolicyModelEntity[]
 
 	constructor(tree : Parser.Tree, path : FilePath){
@@ -818,6 +1038,9 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
+	/**
+	 * @deprecated
+	 */
 	static getFoldingRanges(cache : PolicyModelEntity[]): Location[] {
 		const category = PolicyModelEntityCategory.FoldRange
 		return cache
@@ -827,8 +1050,6 @@ export class CacheQueries {
 
 	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], currentFile : FilePath, importMap : ImportMap) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
-		let slots : PolicyModelEntity[]
-		let slotvalues : PolicyModelEntity[]
 		let keywords : CompletionItem[] = DecisionGraphKeywords
 
 		nodes = cache

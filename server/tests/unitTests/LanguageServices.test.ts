@@ -189,7 +189,7 @@ class LanguageServicesFacade_UnitTests {
 			self.onReferences()
 			self.onPrepareRename()
 			self.onRenameRequest()
-			self.onFoldingRanges()
+			//self.onFoldingRanges() //NO LONGER SUPPORTED
 			//self.onCompletion()
 			//self.onCompletionResolve()
 		})
@@ -563,13 +563,11 @@ class LanguageServices_UnitTests {
 			self.getReferences()
 			self.getRangeOfDoc()
 			self.createPolicyModelEntity()
-			self.getFoldingRanges()
-			//self.getCompletion()
+			//self.getFoldingRanges() //NO LONGER SUPPORTED
 		})
 	}
 
 	async create(filenames : string[]) : Promise<TestTarget.LanguageServices> {
-		//let text : string = getTextFromUri(filename)
 		let docs : PMTextDocument[]
 		docs = filenames.map(createPMTextDocFromUrl)
 		return await TestTarget.LanguageServices.init(docs,process.cwd());
@@ -933,7 +931,7 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 			self.getReferences()
 			self.getRangeOfDoc()
 			self.createPolicyModelEntity()
-			self.getFoldingRanges()
+			//self.getFoldingRanges() //NO LONGER SUPPORTED
 			self.getCompletion()
 		})
 	}
@@ -960,8 +958,17 @@ class LanguageServicesWithCache_UnitTests extends LanguageServices_UnitTests {
 					{label: 'n1', kind: 6},
 					{label: 'n2', kind: 6},
 					{label: 'n3', kind: 6},
-					{label: 'n4', kind: 6},
 					{label: 'n_end', kind: 6},
+
+					{label: 'dg2>n1', kind: 6},
+					//{label: 'dg2>n2', kind: 6},
+					{label: 'dg2>n_end', kind: 6},
+
+					{label: 'dg3>n1', kind: 6},
+					//{label: 'dg3>n2', kind: 6},
+					{label: 'dg3>n_end', kind: 6},
+
+					{label: 'n4', kind: 6},
 					// {label: 'atomic_slot1', kind: 13},
 					// {label: 'compound_slot', kind: 13},
 					// {label: 'aggregate_slot', kind: 13},
@@ -1081,15 +1088,17 @@ class DecisionGraphServices_UnitTests {
 				input: 'dg2.dg',
 				output: [
 					{"category": 3, "name": "dg", "type": 5, }, 
-					{"category": 0, "name": "import_node", "type": 0, }, 
 					{"category": 1, "name": "findme", "type": 0, }, 
-					{"category": 0, "name": "ask_node", "type": 0, }, 
-					{"category": 0, "name": "text_sub_node", "type": 0, }, 
-					{"category": 0, "name": "answer_sub_node", "type": 0, }, 
-					{"category": 0, "name": "answers_sub_node", "type": 0, },
+					{"category": 2, "name": "findme", "type": 0, }, 
 					{"category": 1, "name": "yo", "type": 0, }, 
-					{"category": 0, "name": "call_node", "type": 0, }, 
-					{"category": 2, "name": "findme", "type": 0, }, 		
+
+					// -- old folding range results
+					// {"category": 0, "name": "call_node", "type": 0, }, 
+					// {"category": 0, "name": "import_node", "type": 0, }, 
+					// {"category": 0, "name": "ask_node", "type": 0, }, 
+					// {"category": 0, "name": "text_sub_node", "type": 0, }, 
+					// {"category": 0, "name": "answer_sub_node", "type": 0, }, 
+					// {"category": 0, "name": "answers_sub_node", "type": 0, },	
 				]
 			}
 		]

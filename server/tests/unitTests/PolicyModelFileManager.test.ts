@@ -87,27 +87,27 @@ function getTree(uri) : Promise<Parser.Tree> {
 }
 
 
-class DecisionGraphFileManager_UnitTests {
-	static testTargetClass = TestTarget.DecisionGraphFileManager
+class DecisionGraphFileManagerNaive_UnitTests {
+	static testTargetClass = TestTarget.DecisionGraphFileManagerNaive
 
 	static runTests() {
-		describe(DecisionGraphFileManager_UnitTests.testTargetClass.name + " unit tests", function() {
-			DecisionGraphFileManager_UnitTests.getAllDefinitionsDGNode()
-			DecisionGraphFileManager_UnitTests.getAllDefinitionsSlot()
-			DecisionGraphFileManager_UnitTests.getAllDefinitionsSlotValue()
-			DecisionGraphFileManager_UnitTests.getAllReferencesDGNode()
-			DecisionGraphFileManager_UnitTests.getAllReferencesSlot()
-			DecisionGraphFileManager_UnitTests.getAllReferencesSlotValue()
-			DecisionGraphFileManager_UnitTests.getFoldingRanges()
-			//DecisionGraphFileManager_UnitTests.getAutoComplete()
-			//DecisionGraphFileManager_UnitTests.createPolicyModelEntity()
+		describe(DecisionGraphFileManagerNaive_UnitTests.testTargetClass.name + " unit tests", function() {
+			DecisionGraphFileManagerNaive_UnitTests.getAllDefinitionsDGNode()
+			DecisionGraphFileManagerNaive_UnitTests.getAllDefinitionsSlot()
+			DecisionGraphFileManagerNaive_UnitTests.getAllDefinitionsSlotValue()
+			DecisionGraphFileManagerNaive_UnitTests.getAllReferencesDGNode()
+			DecisionGraphFileManagerNaive_UnitTests.getAllReferencesSlot()
+			DecisionGraphFileManagerNaive_UnitTests.getAllReferencesSlotValue()
+			DecisionGraphFileManagerNaive_UnitTests.getFoldingRanges()
+			//DecisionGraphFileManagerNaive_UnitTests.getAutoComplete()
+			//DecisionGraphFileManagerNaive_UnitTests.createPolicyModelEntity()
 		})
 	}
 
-	static create(filename : string) : Promise<TestTarget.DecisionGraphFileManager>{
+	static create(filename : string) : Promise<TestTarget.DecisionGraphFileManagerNaive>{
 		return getTree(filename).then(tree => {
 			let text : string = getTextFromUri(filename)
-			return new TestTarget.DecisionGraphFileManager(tree, filename)
+			return new TestTarget.DecisionGraphFileManagerNaive(tree, filename)
 		})
 	}
 
@@ -136,13 +136,13 @@ class DecisionGraphFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsDGNode(nodeName, filename)
 				assert.deepEqual(result, output)
 			})
 		}
-		//describe(DecisionGraphFileManager_UnitTests.testTargetClass.name, function() {
+		//describe(DecisionGraphFileManagerNaive_UnitTests.testTargetClass.name, function() {
 			describe('getAllDefinitionsDGNode', function() {
 				testCases.forEach((testCase, index) => {
 					it(testCase.title , function(done) {
@@ -169,7 +169,7 @@ class DecisionGraphFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlot(nodeName)
 				assert.deepEqual(result, output)
@@ -201,7 +201,7 @@ class DecisionGraphFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlotValue(nodeName)
 				assert.deepEqual(result, output)
@@ -234,7 +234,7 @@ class DecisionGraphFileManager_UnitTests {
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
 			const source : string = input.source
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesDGNode(nodeName, filename, source)
 				assert.deepEqual(result, output)
@@ -269,7 +269,7 @@ class DecisionGraphFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlot(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -304,7 +304,7 @@ class DecisionGraphFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlotValue(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -342,7 +342,7 @@ class DecisionGraphFileManager_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filename : string = input.fileName
-			let instancePromise : Promise<TestTarget.DecisionGraphFileManager> = DecisionGraphFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.DecisionGraphFileManagerNaive> = DecisionGraphFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getFoldingRanges()
 				assert.deepEqual(result, output)
@@ -365,27 +365,27 @@ class DecisionGraphFileManager_UnitTests {
 	}
 }
 
-class PolicySpaceFileManager_UnitTests {
-	static testTargetClass = TestTarget.PolicySpaceFileManager
+class PolicySpaceFileManagerNaive_UnitTests {
+	static testTargetClass = TestTarget.PolicySpaceFileManagerNaive
 
 	static runTests() {
-		describe(PolicySpaceFileManager_UnitTests.testTargetClass.name + " unit tests", function() {
-			PolicySpaceFileManager_UnitTests.getAllDefinitionsDGNode()
-			PolicySpaceFileManager_UnitTests.getAllDefinitionsSlot()
-			PolicySpaceFileManager_UnitTests.getAllDefinitionsSlotValue()
-			PolicySpaceFileManager_UnitTests.getAllReferencesDGNode()
-			PolicySpaceFileManager_UnitTests.getAllReferencesSlot()
-			PolicySpaceFileManager_UnitTests.getAllReferencesSlotValue()
-			PolicySpaceFileManager_UnitTests.getFoldingRanges()
-			//PolicySpaceFileManager_UnitTests.getAutoComplete()
-			//PolicySpaceFileManager_UnitTests.createPolicyModelEntity()
+		describe(PolicySpaceFileManagerNaive_UnitTests.testTargetClass.name + " unit tests", function() {
+			PolicySpaceFileManagerNaive_UnitTests.getAllDefinitionsDGNode()
+			PolicySpaceFileManagerNaive_UnitTests.getAllDefinitionsSlot()
+			PolicySpaceFileManagerNaive_UnitTests.getAllDefinitionsSlotValue()
+			PolicySpaceFileManagerNaive_UnitTests.getAllReferencesDGNode()
+			PolicySpaceFileManagerNaive_UnitTests.getAllReferencesSlot()
+			PolicySpaceFileManagerNaive_UnitTests.getAllReferencesSlotValue()
+			PolicySpaceFileManagerNaive_UnitTests.getFoldingRanges()
+			//PolicySpaceFileManagerNaive_UnitTests.getAutoComplete()
+			//PolicySpaceFileManagerNaive_UnitTests.createPolicyModelEntity()
 		})
 	}
 
-	static create(filename : string) : Promise<TestTarget.PolicySpaceFileManager>{
+	static create(filename : string) : Promise<TestTarget.PolicySpaceFileManagerNaive>{
 		return getTree(filename).then(tree => {
 			let text : string = getTextFromUri(filename)
-			return new TestTarget.PolicySpaceFileManager(tree, filename)
+			return new TestTarget.PolicySpaceFileManagerNaive(tree, filename)
 		})
 	}
 
@@ -411,7 +411,7 @@ class PolicySpaceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsDGNode(nodeName, filename)
 				assert.deepEqual(result, output)
@@ -443,7 +443,7 @@ class PolicySpaceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlot(nodeName)
 				assert.deepEqual(result, output)
@@ -479,7 +479,7 @@ class PolicySpaceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlotValue(nodeName)
 				assert.deepEqual(result, output)
@@ -512,7 +512,7 @@ class PolicySpaceFileManager_UnitTests {
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
 			const source : string = input.source
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesDGNode(nodeName, filename, source)
 				assert.deepEqual(result, output)
@@ -546,7 +546,7 @@ class PolicySpaceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlot(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -582,7 +582,7 @@ class PolicySpaceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlotValue(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -618,7 +618,7 @@ class PolicySpaceFileManager_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filename : string = input.fileName
-			let instancePromise : Promise<TestTarget.PolicySpaceFileManager> = PolicySpaceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.PolicySpaceFileManagerNaive> = PolicySpaceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getFoldingRanges()
 				assert.deepEqual(result, output)
@@ -641,27 +641,27 @@ class PolicySpaceFileManager_UnitTests {
 	}
 }
 
-class ValueInferenceFileManager_UnitTests {
-	static testTargetClass = TestTarget.ValueInferenceFileManager
+class ValueInferenceFileManagerNaive_UnitTests {
+	static testTargetClass = TestTarget.ValueInferenceFileManagerNaive
 
 	static runTests() {
-		describe(ValueInferenceFileManager_UnitTests.testTargetClass.name + " unit tests", function() {
-			ValueInferenceFileManager_UnitTests.getAllDefinitionsDGNode()
-			ValueInferenceFileManager_UnitTests.getAllDefinitionsSlot()
-			ValueInferenceFileManager_UnitTests.getAllDefinitionsSlotValue()
-			ValueInferenceFileManager_UnitTests.getAllReferencesDGNode()
-			ValueInferenceFileManager_UnitTests.getAllReferencesSlot()
-			ValueInferenceFileManager_UnitTests.getAllReferencesSlotValue()
-			ValueInferenceFileManager_UnitTests.getFoldingRanges()
-			//ValueInferenceFileManager_UnitTests.getAutoComplete()
-			//ValueInferenceFileManager_UnitTests.createPolicyModelEntity()
+		describe(ValueInferenceFileManagerNaive_UnitTests.testTargetClass.name + " unit tests", function() {
+			ValueInferenceFileManagerNaive_UnitTests.getAllDefinitionsDGNode()
+			ValueInferenceFileManagerNaive_UnitTests.getAllDefinitionsSlot()
+			ValueInferenceFileManagerNaive_UnitTests.getAllDefinitionsSlotValue()
+			ValueInferenceFileManagerNaive_UnitTests.getAllReferencesDGNode()
+			ValueInferenceFileManagerNaive_UnitTests.getAllReferencesSlot()
+			ValueInferenceFileManagerNaive_UnitTests.getAllReferencesSlotValue()
+			ValueInferenceFileManagerNaive_UnitTests.getFoldingRanges()
+			//ValueInferenceFileManagerNaive_UnitTests.getAutoComplete()
+			//ValueInferenceFileManagerNaive_UnitTests.createPolicyModelEntity()
 		})
 	}
 
-	static create(filename : string) : Promise<TestTarget.ValueInferenceFileManager>{
+	static create(filename : string) : Promise<TestTarget.ValueInferenceFileManagerNaive>{
 		return getTree(filename).then(tree => {
 			let text : string = getTextFromUri(filename)
-			return new TestTarget.ValueInferenceFileManager(tree, filename)
+			return new TestTarget.ValueInferenceFileManagerNaive(tree, filename)
 		})
 	}
 
@@ -687,7 +687,7 @@ class ValueInferenceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsDGNode(nodeName, filename)
 				assert.deepEqual(result, output)
@@ -719,7 +719,7 @@ class ValueInferenceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlot(nodeName)
 				assert.deepEqual(result, output)
@@ -751,7 +751,7 @@ class ValueInferenceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllDefinitionsSlotValue(nodeName)
 				assert.deepEqual(result, output)
@@ -784,7 +784,7 @@ class ValueInferenceFileManager_UnitTests {
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
 			const source : string = input.source
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesDGNode(nodeName, filename, source)
 				assert.deepEqual(result, output)
@@ -822,7 +822,7 @@ class ValueInferenceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlot(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -856,7 +856,7 @@ class ValueInferenceFileManager_UnitTests {
 			const output = testCase.output
 			const filename : string = input.fileName
 			const nodeName : string = input.nodeName
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getAllReferencesSlotValue(nodeName, undefined)
 				assert.deepEqual(result, output)
@@ -892,7 +892,7 @@ class ValueInferenceFileManager_UnitTests {
 			const input = testCase.input
 			const output = testCase.output
 			const filename : string = input.fileName
-			let instancePromise : Promise<TestTarget.ValueInferenceFileManager> = ValueInferenceFileManager_UnitTests.create(filename)
+			let instancePromise : Promise<TestTarget.ValueInferenceFileManagerNaive> = ValueInferenceFileManagerNaive_UnitTests.create(filename)
 			return instancePromise.then(instance =>{
 				const result = instance.getFoldingRanges()
 				assert.deepEqual(result, output)
@@ -916,6 +916,6 @@ class ValueInferenceFileManager_UnitTests {
 }
 
 
-DecisionGraphFileManager_UnitTests.runTests()
-PolicySpaceFileManager_UnitTests.runTests()
-ValueInferenceFileManager_UnitTests.runTests()
+DecisionGraphFileManagerNaive_UnitTests.runTests()
+PolicySpaceFileManagerNaive_UnitTests.runTests()
+ValueInferenceFileManagerNaive_UnitTests.runTests()
