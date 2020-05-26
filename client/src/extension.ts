@@ -113,7 +113,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
   const myCommandId = 'policymodel.runModel';
   subscriptions.push(
     vscode.commands.registerCommand(myCommandId, () => {
-      client.sendRequest('Run_Model', ['Params for execute']).then(data => console.log(data));
+      client.sendRequest('Run_Model', ['Params for execute']).then((res:string) => vscode.window.showInformationMessage(res));
     })
   );
 

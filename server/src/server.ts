@@ -42,6 +42,7 @@ import * as path from 'path';
 import {SolverInt, PMSolver} from './Solver';
 import {initLogger, logSources,Logger, getLogger} from './Logger';
 import { URI } from 'vscode-uri';
+import {getOsType, osTypes} from './Utils';
 
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -67,7 +68,7 @@ let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 
 
-connection.onInitialize((params: InitializeParams): InitializeResult => {	
+connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 	// console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
 	// connection.console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
@@ -87,12 +88,12 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 		capabilities.textDocument.publishDiagnostics &&
 		capabilities.textDocument.publishDiagnostics.relatedInformation
 	);
-	
+
 	// the didChangeWatchedFiles is used to notify the server when a new file was opned a file was delted or renamed
-	clientSupportswatchedFiles = capabilities.workspace.didChangeWatchedFiles.dynamicRegistration; 
+	clientSupportswatchedFiles = capabilities.workspace.didChangeWatchedFiles.dynamicRegistration;
 
 	return {
-		capabilities: {		
+		capabilities: {
 			/*
 				not supported:
 				workspaceFolders,
@@ -107,7 +108,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 				workspaceSymbolProvider - symbol serach feautre we don't support this,
 				implementationProvider, - go to implementation - we support go to definiton as the sam I think
 				colorProvider, - sets colors for user for now will be set to VS code defaults
-				documentLinkProvider - a link to another file / URL 
+				documentLinkProvider - a link to another file / URL
 				documentFormattingProvider - allows some basic formatting to the file like Lint
 				documentRangeFormattingProvider - same as documentFormattingProvider but in a specifc range
 				documentOnTypeFormattingProvider - same as documentFormattingProvider during typing
@@ -117,12 +118,12 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			 		openClose:true,
 			 		change:TextDocumentSyncKind.Full
 				},
-				 
+
 				to check:
 				documentHighlightProvider, - to check with others
 				documentSymbolProvider, - WTF
 			*/
-			
+
 			workspace:{
 				workspaceFolders:{
 					supported: false,
@@ -132,7 +133,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 			completionProvider: {
 				resolveProvider: true
 			},
-			
+
 			definitionProvider: true,
 			//foldingRangeProvider: true,
 			referencesProvider: true,
@@ -142,7 +143,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 		},
 		serverInfo:{
 			name: 'Ps server to extened',
-			version: '0.1'	
+			version: '0.1'
 		}
 	};
 });
@@ -157,7 +158,7 @@ connection.onInitialized(() => {
 		console.log("finish init from client");
 		return null;
 	})
-	
+
 	if (clientSupportswatchedFiles){
 		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
 			watchers: [
@@ -180,10 +181,10 @@ connection.onInitialized(() => {
 		//TODO amsel what wolud happen if we don't support (we will need to check the filesystem all the time to see if file was created or delted)
 		console.log("client doesn't support watched files - is this a problem??");
 	}
-	
+
 	let textDocumnetNotificationOptions: TextDocumentChangeRegistrationOptions = {
 		syncKind: TextDocumentSyncKind.Incremental,
-		documentSelector: 
+		documentSelector:
 		[
 			{
 				language:'policyspace',
@@ -219,7 +220,7 @@ connection.onInitialized(() => {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
 			connection.console.log('Workspace folder change event received.');
 			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-			
+
 			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
 		});
 
@@ -237,7 +238,7 @@ connection.onInitialized(() => {
 				console.log(`finished wiating for open folder`);
 			}
 		});
-		
+
 
 
 		// //this is not needed - returns VS code configurations we don't care
@@ -261,7 +262,7 @@ connection.onExit(():void => {
 
 connection.onCompletion(
 (params: TextDocumentPositionParams): CompletionList => {
-	getLogger(logSources.serverHttp).http(`onCompletion`, params);	
+	getLogger(logSources.serverHttp).http(`onCompletion`, params);
 	return solver.onCompletion(params);
 });
 
@@ -289,7 +290,7 @@ connection.onReferences(
 		return solver.onReferences(params);
 });
 
-connection.onPrepareRename ( 
+connection.onPrepareRename (
 	//this reutnrs the range of the word if can be renamed and null if it can't
 	(params:PrepareRenameParams) =>  {
 		getLogger(logSources.serverHttp).http(`onPrepareRename`,params);
@@ -302,16 +303,26 @@ connection.onRenameRequest(
 		return solver.onRenameRequest(params);
 });
 
-function runModel(param : string[]) : string {
-	getLogger(logSources.serverHttp).http(`runModel`,param);
+function runModel(param: string[]): string {
+	getLogger(logSources.serverHttp).http(`runModel`, param);
 	console.log("server is running the model")
-	let cliJar: string = path.join(__dirname,"/../../cli/DataTagsLib.jar");
-	if (folderFS === undefined){
-		child_process.exec(`start cmd.exe /K java -jar "${cliJar}"`);
-	}else{
-		child_process.exec(`start cmd.exe /K java -jar "${cliJar}" "${folderFS}"`);
+	let cliJar: string = path.join(__dirname, "/../../cli/DataTagsLib.jar");
+	const runPolicyModelCommand = folderFS? `java -jar "${cliJar}" "${folderFS}"` : `java -jar "${cliJar}"`;
+	let fullCommand;
+	const os = getOsType();
+	switch (os) {
+		case osTypes.WINDOWS:
+			fullCommand = `start cmd.exe /K ${runPolicyModelCommand}`;
+			break;
+			case osTypes.MAC:
+				fullCommand =`cd ${__dirname}/../../cli ;echo ${runPolicyModelCommand} > run.command; chmod +x run.command;open run.command`;
+				break;
+				default:
+					return "Running the model works ONLY from Windows or Mac Operation System."
+
 	}
-	return "execute ends";
+	child_process.exec(fullCommand);
+	return "Model is running";
 }
 
 
@@ -333,7 +344,7 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 	});
 	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
-			
+
 connection.onDidChangeTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidChangeTextDocument`,event);
 	console.log("onDidChangeTextDocument")
