@@ -1,23 +1,26 @@
 const axios = require('axios');
 const SUCCESS = true;
-const PORT = 5001;
-const BASE_URL = `http://localhost:${PORT}`;
+// const BASE_URL = `http://localhost:${PORT}`;
 import * as path from 'path';
 import { ChildProcess } from 'child_process';
 
 // import * as axios from 'axios';
+ 
+let axiosInstance;// axios.AxiosInstance;
 
-const axiosInstance = axios.create({
-  baseURL: BASE_URL,
-  timeout: 2000,
-});
 
-axiosInstance.interceptors.request.use(function (config) {
-  config.url = config.url.replace(/\\/g, '/');
-  return config;
-}, function (error) {
-  return Promise.reject(error);
-});
+const createAxiosInstace = async (url: string):Promise<any> =>{
+  axiosInstance = axios.create({
+    baseURL: url,
+    timeout: 2000,
+  });
+  await axiosInstance.interceptors.request.use(function (config) {
+    config.url = config.url.replace(/\\/g, '/');
+    return config;
+  }, function (error) {
+    return Promise.reject(error);
+  });
+}
 
 export default class PolicyModelLibApi {
   _rootPath: string;
@@ -55,17 +58,21 @@ export default class PolicyModelLibApi {
     const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar")
 
     this.child = require('child_process').spawn(
-      //  `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
-      'java', ['-jar', `${JavaServerJar}`, null]
+       `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
+      // 'java', ['-jar', `${JavaServerJar}`, null]
     );
 
     const serverIsReady = async (): Promise<boolean> => {
       return new Promise<boolean>((resolve,reject) => {
         this.child.stdout.on('data', data => {
           const message: string = data.toString();
-          message.startsWith ('ready') ?
-            resolve(true) :
-            this._printToScreen(message);
+          if (message.startsWith('ready')){
+            let port = message.substring('ready -port:'.length)
+            createAxiosInstace(`http://localhost:${port}`)
+            .catch(rejAns => reject(false));
+
+            resolve(true);
+          }
         });
 
         this.child.stderr.on("data", data => {

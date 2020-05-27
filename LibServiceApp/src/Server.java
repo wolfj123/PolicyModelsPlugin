@@ -12,8 +12,6 @@ import java.util.concurrent.Executors;
 
 public class Server {
 
-    private static String tempAns;//TODO delete
-
     public static void main(String[] args) {
         if (args.length != 0 && args[0].equals("new")){
             handleNewModelData();
@@ -21,16 +19,18 @@ public class Server {
         }
 
         try {
-            activeServer();
-            System.out.print("ready");
+            int portNum = activeServer();
+            System.out.print("ready -port:"+portNum);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void activeServer() throws IOException {
+    public static int activeServer() throws IOException {
         ExecutorService executor =  Executors.newSingleThreadExecutor();
-        HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 5001), 0);
+        InetSocketAddress socket =  new InetSocketAddress("localhost", 0);
+        HttpServer server = HttpServer.create();
+        server.bind(socket,0);
         server.createContext("/load", new LoadModelHandler());
         server.createContext("/loc/new", new CreateNewLocalizationhandler());
         server.createContext("/loc/update", new UpdateLocalizationHandler());
@@ -39,6 +39,7 @@ public class Server {
         server.createContext("/visualize-dg", new VisualizeDGHandler());
         server.setExecutor(executor);
         server.start();
+        return server.getAddress().getPort();
     }
 
 
@@ -70,7 +71,6 @@ public class Server {
             String ans = "";
             try {
                 ans = mapper.writeValueAsString(modelData);
-                tempAns = ans;
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 System.out.println(errorResponse);
