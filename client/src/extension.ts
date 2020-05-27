@@ -13,6 +13,7 @@ import LocalizationController from './Localization/LocalizationController';
 import PolicyModelLibApi from './services/PolicyModelLibApi';
 import GraphvizController from './Graphviz/GraphvizController';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector } from 'vscode-languageclient';
+import * as FS from 'fs';
 
 
 let client: LanguageClient;
@@ -114,16 +115,16 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
   const myCommandId = 'policymodel.newModel';
   subscriptions.push(
     vscode.commands.registerCommand(myCommandId,async () => {
-      
      PolicyModelLibApi.getInstance().createNewModel()
       .then(async newModelPath => {
-          let uri:vscode.Uri = vscode.Uri.file(newModelPath);
-          await vscode.commands.executeCommand('vscode.openFolder', uri)
+          if (FS.existsSync(newModelPath)){
+            let uri:vscode.Uri = vscode.Uri.file(newModelPath);
+            await vscode.commands.executeCommand('vscode.openFolder', uri)
+          }
         })
         .catch(rej => 
           vscode.window.showInformationMessage(rej)
         );
-
     })
   );
 

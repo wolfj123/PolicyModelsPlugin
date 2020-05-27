@@ -4,9 +4,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,17 +20,16 @@ public class NewModelInputForm {
     private JButton cancelButton;
     private JPanel mainPanel;
     private JPanel buttonsPanel;
-    private JTextField authorNameTextField;
-    private JTextField authorContactTextField;
     /// authors fields
     private JScrollPane scrollPane;
     private JButton addAuthorButton;
     private JButton removeAuthorButton;
     private JLabel authorAmountLabel;
+    private JButton folderSelectorButton;
     private JPanel authorsContainerPanel; // panel inside scroll pane that holds all author info panel
     private List<NewAuthorInfoPanel> newAuthorInfoPanelList;
 
-    private JFrame frame;
+    private JFrame containingFrame;
 
     private String homeFolder;
     private String authorAmountFormat = "Current Authors: %s";
@@ -59,8 +58,6 @@ public class NewModelInputForm {
         dgFileNameTextField = new HintTextField("decision-graph.dg");
         psFileNameTextField = new HintTextField("policy-space.pspace");
         rootSlotTextField = new HintTextField("DataTags");
-        authorNameTextField = new HintTextField("");
-        authorContactTextField = new HintTextField("");
         authorAmountLabel = new JLabel(String.format(authorAmountFormat,1));
 
         authorsContainerPanel = new JPanel();
@@ -84,15 +81,15 @@ public class NewModelInputForm {
 
     public void init() {
         ans = null;
-        this.frame = (JFrame) getMainPanel().getRootPane().getParent();
+        this.containingFrame = (JFrame) getMainPanel().getRootPane().getParent();
 
         newAuthorInfoPanelList.get(0).setMaxHeight(newAuthorInfoPanelList.get(0).getHeight());
         addAuthorButton.addActionListener(e -> addAuthor());
         removeAuthorButton.addActionListener(e -> removeAuthor());
-        cancelButton.addActionListener(e -> this.frame.dispatchEvent(new WindowEvent(this.frame, WindowEvent.WINDOW_CLOSING)) );
+        cancelButton.addActionListener(e -> this.containingFrame.dispatchEvent(new WindowEvent(this.containingFrame, WindowEvent.WINDOW_CLOSING)) );
         createNewModelButton.addActionListener(e -> {
             collectAllData();
-            this.frame.dispatchEvent(new WindowEvent(this.frame, WindowEvent.WINDOW_CLOSING));
+            this.containingFrame.dispatchEvent(new WindowEvent(this.containingFrame, WindowEvent.WINDOW_CLOSING));
         });
 
         modelNameTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -115,14 +112,25 @@ public class NewModelInputForm {
                 ((HintTextField)modelPathTextField).setHint(((HintTextField)modelNameTextField).getFinalValue());
             }
         });
-    /*    modelNameTextField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println(e.toString());
-                ((HintTextField)modelPathTextField).setHint(modelNameTextField.getText());
+
+        this.folderSelectorButton.setMargin(new Insets(2,1,2,2));
+        this.folderSelectorButton.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new File(homeFolder));
+            chooser.setDialogTitle("Select Folder");
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+            JFrame chooserFrame =  new JFrame();
+            chooserFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            chooserFrame.setContentPane(chooser);
+            chooserFrame.pack();
+
+            int chooserRetVal = chooser.showOpenDialog(chooserFrame);
+            if (chooserRetVal == JFileChooser.APPROVE_OPTION) {
+                this.modelPathTextField.setText(chooser.getSelectedFile().getAbsolutePath());
             }
         });
-*/
+
         try {
             Thread.sleep(250);
         } catch (InterruptedException e) {
@@ -191,6 +199,19 @@ public class NewModelInputForm {
             this.setForeground(Color.gray);
         }
 
+
+        @Override
+        public void setText(String t) {
+            super.setText(t);
+            if (t != null && !t.equals("")) {
+                this.showingHint = false;
+                this.setForeground(Color.black);
+            }else{
+                this.showingHint = true;
+                this.setForeground(Color.gray);
+            }
+        }
+
         @Override
         public void focusGained(FocusEvent e) {
             if(this.getText().isEmpty()) {
@@ -222,8 +243,10 @@ public class NewModelInputForm {
                 return;
             }
             this.hint = Paths.get(homeFolder,(newHint == null ? "": newHint.trim())).toString();
-            if (this.showingHint){
+            if (this.showingHint) {
                 this.setText(this.hint);
+                this.showingHint = true;
+                this.setForeground(Color.gray);
             }
         }
     }
