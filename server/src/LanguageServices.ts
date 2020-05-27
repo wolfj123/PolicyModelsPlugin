@@ -565,29 +565,51 @@ export abstract class FileManager {
 	/**
 	 * Returns the cache of entities collected from the file
 	 * 
-	 * @retuns An array of {@link PolicyModelEntity}
+	 * @returns An array of {@link PolicyModelEntity}
 	 */
 	getCache() : PolicyModelEntity[] {
 		//to be overridden in sub classes that contain a cache
 		return []
 	}
 
-
+	/**
+	 * Checks whether the location is in the document
+	 * 
+	 * @param location 
+	 * @returns whether the location is in the document
+	 */
 	isLocationInDoc(location : Location) : boolean {
 		if (!(location.uri === this.path)) return false
 		return true
 	}
 
+	/**
+	 * Returns the {@link Parser.SyntaxNode} found in a location in the document
+	 * 
+	 * @param location 
+	 * @returns The node in that location, null if the location is not in this document
+	 */
 	getNodeFromLocation(location : Location) : Parser.SyntaxNode | null {
 		if(!this.isLocationInDoc(location)) return null
 		const position : Position = location.range.start
 	 	return this.tree.walk().currentNode().namedDescendantForPosition(Utils.position2Point(position))
 	}
 
+	/**
+	 * Converts a {@link Range} array to a {@link Location} array
+	 * It includes the path of this document as the uri
+	 * @param ranges
+	 * @returns a {@link Location} array
+	 */
 	rangeArray2LocationArray(ranges : Range[]) : Location[] {
 		return ranges.map(range => Utils.newLocation(this.path, range))
 	}
 
+	/**
+	 * Returns all the locations of an entity's **definitions**
+	 * @param entity
+	 * @returns a {@link Location} array
+	 */
 	getAllDefinitions(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
 		switch(entity.getType()){
@@ -603,6 +625,11 @@ export abstract class FileManager {
 
 	}
 
+	/**
+	 * Returns all the locations of an entity's **references**
+	 * @param entity
+	 * @returns a {@link Location} array
+	 */
 	getAllReferences(entity : PolicyModelEntity) : Location[] {
 		if(isNullOrUndefined(entity)) {return []}
 		switch(entity.getType()){
@@ -616,6 +643,7 @@ export abstract class FileManager {
 				return undefined
 		}
 	}
+
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
 
