@@ -3,6 +3,7 @@ import CommandCustomize.VisualizePolicySpaceCommandCustomize;
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.*;
 
+import java.net.URLDecoder;
 import java.util.Collections;
 
 import java.util.LinkedList;
@@ -68,7 +69,6 @@ public  class PolicyModelService {
     }
 
     public static void visualizeDG(String outputPath, String dotPath) throws  Exception {
-        dotPath = dotPath.replace("%20", " ");
         VisualizeDecisionGraphCommandCustomize visualizeDecisionGraphCmd = new VisualizeDecisionGraphCommandCustomize();
         List<String> args = new LinkedList<>();
         args.add(outputPath);
