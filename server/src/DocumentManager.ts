@@ -341,6 +341,7 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		switch(fileEnding) {
 			case 'ps':
 			case 'pspace':
+			case 'ts':
 				result = languagesIds.policyspace;
 				break;
 			case 'dg':

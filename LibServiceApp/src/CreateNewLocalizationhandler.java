@@ -8,7 +8,7 @@ public class CreateNewLocalizationhandler extends PolicyModelHttpHandler {
     }
 
     @Override
-    public String handlePostRequest(String body) {
+    public Pair<Integer, String> handlePostRequest(String body) {
         return null;
     }
 }

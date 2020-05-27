@@ -471,6 +471,7 @@ export class PMSolver implements SolverInt{
 	}
 
 	public async onOpenFolder(pathUri: string | null) {
+		console.log(`open folder - ${pathUri}`);
 		let folderFSPath: string = URI.parse(pathUri).fsPath;
 		this._workspaceFolderFSPath = folderFSPath;
 		this._documentManagerForFolder.openedFolder(pathUri);

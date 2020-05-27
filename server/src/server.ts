@@ -164,7 +164,7 @@ connection.onInitialized(() => {
 			watchers: [
 				{
 					kind: WatchKind.Create | WatchKind.Delete, // this will notiryf only when files are created or delted from workspace
-					globPattern: "**/*.{ps,pspace}"
+					globPattern: "**/*{.ps,.pspace,definitions.ts}"
 				},
 				{
 					kind: WatchKind.Create | WatchKind.Delete,
@@ -188,7 +188,7 @@ connection.onInitialized(() => {
 		[
 			{
 				language:'policyspace',
-				pattern:"**/*.{ps,pspace}"
+				pattern:"**/*{.ps,.pspace,definitions.ts}"
 			},
 			{
 				language:'decisiongraph',
@@ -238,15 +238,6 @@ connection.onInitialized(() => {
 				console.log(`finished wiating for open folder`);
 			}
 		});
-
-
-
-		// //this is not needed - returns VS code configurations we don't care
-		// connection.workspace.getConfiguration().then(_event => {
-		// 	connection.console.log('Workspace folder change event received.');
-		// 	console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
-		// 	connection.console.log(`getConfiguration params: \n${JSON.stringify(_event)}`);
-		// });
 
 	}
 	console.log('finish on intilized')
@@ -306,7 +297,7 @@ connection.onRenameRequest(
 function runModel(param: string[]): string {
 	getLogger(logSources.serverHttp).http(`runModel`, param);
 	console.log("server is running the model")
-	let cliJar: string = path.join(__dirname, "/../../cli/DataTagsLib.jar");
+	let cliJar: string = path.join(__dirname, "/../../cli/PolicyModels-1.9.9.uber.jar");
 	const runPolicyModelCommand = folderFS? `java -jar "${cliJar}" "${folderFS}"` : `java -jar "${cliJar}"`;
 	let fullCommand;
 	const os = getOsType();
@@ -314,11 +305,11 @@ function runModel(param: string[]): string {
 		case osTypes.WINDOWS:
 			fullCommand = `start cmd.exe /K ${runPolicyModelCommand}`;
 			break;
-			case osTypes.MAC:
-				fullCommand =`cd ${__dirname}/../../cli ;echo ${runPolicyModelCommand} > run.command; chmod +x run.command;open run.command`;
-				break;
-				default:
-					return "Running the model works ONLY from Windows or Mac Operation System."
+		case osTypes.MAC:
+			fullCommand =`cd ${__dirname}/../../cli ;echo ${runPolicyModelCommand} > run.command; chmod +x run.command;open run.command`;
+			break;
+		default:
+			return "Running the model works ONLY from Windows or Mac Operation System."
 
 	}
 	child_process.exec(fullCommand);

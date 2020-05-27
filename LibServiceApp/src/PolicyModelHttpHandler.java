@@ -13,29 +13,31 @@ abstract public class PolicyModelHttpHandler implements HttpHandler {
 
     public abstract String handleGetRequest(Map<String, String> params) throws Exception;
 
-    public abstract String handlePostRequest(String body);
+    public abstract Pair<Integer, String> handlePostRequest(String body);
 
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
+        int responseCode = 200;
         String response = null;
         try {
             String httpReqMethod = httpExchange.getRequestMethod();
-
             if ("GET".equals(httpReqMethod)) {
                 Map<String, String> requestParams = getRequestParams(httpExchange);
                 response = handleGetRequest(requestParams);
             } else if ("POST".equals(httpReqMethod)) {
                 String reqBody = getRequestBody(httpExchange);
-                response = handlePostRequest(reqBody);
+                Pair<Integer,String> ans = handlePostRequest(reqBody);
+                response = (ans != null) ? ans.getSecond() : null;
+                responseCode = (ans != null) ? ans.getFirst() : 200;
             }
-
 
         }catch (Exception e){
            response= e.toString();
         }
+
         OutputStream outputStream = httpExchange.getResponseBody();
-        httpExchange.sendResponseHeaders(200, response.length());
+        httpExchange.sendResponseHeaders(responseCode, response.length());
         outputStream.write(response.getBytes());
         outputStream.flush();
         outputStream.close();

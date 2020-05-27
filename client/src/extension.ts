@@ -12,9 +12,9 @@ import * as colors from './color/colors';
 import LocalizationController from './Localization/LocalizationController';
 import PolicyModelLibApi from './services/PolicyModelLibApi';
 import GraphvizController from './Graphviz/GraphvizController';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector } from 'vscode-languageclient';
+import * as FS from 'fs';
 
-
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector, RequestType0 } from 'vscode-languageclient';
 
 let client: LanguageClient;
 
@@ -23,10 +23,12 @@ export function activate(context: ExtensionContext) {
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
 
+  buildLibServiceAppApiInstance();
+  
   addGraphvizCommand(context);
   addLocalizationCommand(context);
-  buildLibServiceAppApiInstance();
   addRunCommand(context);
+  addNewModelCommand(context);
   activateSyntaxColoring(context);
 
   // The server is implemented in node
@@ -106,6 +108,39 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 let myStatusBarItem: vscode.StatusBarItem;
+
+export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
+  let myStatusBarItem: vscode.StatusBarItem;
+
+  const myCommandId = 'policymodel.newModel';
+  subscriptions.push(
+    vscode.commands.registerCommand(myCommandId,async () => {
+     PolicyModelLibApi.getInstance().createNewModel()
+      .then(async newModelPath => {
+          if (FS.existsSync(newModelPath)){
+            let uri:vscode.Uri = vscode.Uri.file(newModelPath);
+            await vscode.commands.executeCommand('vscode.openFolder', uri)
+          }
+        })
+        .catch(rej => 
+          vscode.window.showInformationMessage(rej)
+        );
+    })
+  );
+
+  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
+  myStatusBarItem.command = myCommandId;
+  subscriptions.push(myStatusBarItem);
+
+  // register some listener that make sure the status bar
+  // item always up-to-date
+  // subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
+  // subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
+
+  // update status bar item once at start
+  myStatusBarItem.text = '$(play) new Model';
+  myStatusBarItem.show();
+}
 
 export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
   // register a command that is invoked when the status bar
@@ -291,13 +326,15 @@ export async function activateSyntaxColoring(context: vscode.ExtensionContext) {
 			}
 		}
 	}
-	const warnedScopes = new Set<string>()
+  const warnedScopes = new Set<string>()
+  const largeFileCharacterLength : Number = 50000
 	function colorEditor(editor: vscode.TextEditor) {
+    const isLargeFile : boolean = true //TODO: editor.document.getText().length >= largeFileCharacterLength
 		const t = trees[editor.document.uri.toString()]
 		if (t == null) return
 		const language = languages[editor.document.languageId]
 		if (language == null) return
-		const scopes = language.color(t, visibleLines(editor))
+		const scopes = language.color(t, visibleLines(editor), isLargeFile)
 		for (const scope of scopes.keys()) {
 			const dec = decoration(scope)
 			if (dec) {

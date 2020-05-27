@@ -6,7 +6,7 @@ import { URI } from 'vscode-uri';
 import { RenameParams, WorkspaceEdit, TextDocumentEdit } from 'vscode-languageserver';
 import { initLogger } from '../../src/Logger';
 
-describe('Solver Test Suite', ()=>{
+describe('Solver Test Renaming', ()=>{
 
 	let testFolder: string;
 	let testFolderSuffix: string = "/server/tests/sample directory";

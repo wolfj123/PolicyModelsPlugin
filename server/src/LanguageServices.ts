@@ -214,11 +214,13 @@ export class LanguageServicesFacade {
 
 	/**
 	 * Answers a LSP **onFoldingRanges** query
-	 * 
+	 * @deprecated WE NO LONGER SUPPORT THIS
 	 * @param params LSP **onFoldingRanges** query params
 	 * @returns A {@link Location} array of all references
 	 */
 	onFoldingRanges(params : FoldingRangeParams): Location[] {
+		throw new Error("Method not implemented.");
+
 		return this.services.getFoldingRanges(Utils.Uri2FilePath(params.textDocument.uri)).map(loc => this.convertUri2PathLocation(loc, false))
 	}
 
@@ -512,7 +514,7 @@ export class LanguageServices {
 
 	/**
 	 * Given a file path of a document, returns all folding ranges in that document
-	 * 
+	 * @deprecated WE NO LONGER SUPPORT THIS
 	 * @param path The path of the document
 	 * @returns A {@link Location} array of all folding ranges
 	 */
@@ -524,11 +526,10 @@ export class LanguageServices {
 	}
 
 	/**
-	 * Unsupported
+	 * Unsupported in this sub-class
 	 */
 	getCompletion(location : Location) : CompletionList | null {
-		//TODO:
-		throw new Error("Method not implemented.");
+		return null
 	}
 }
 
@@ -551,9 +552,6 @@ export abstract class FileManager {
 		this.tree = tree
 		this.path = path
 	}
-
-
-
 
 	/**
 	 * Updates the tree
@@ -629,6 +627,9 @@ export abstract class FileManager {
 	abstract getAllReferencesSlot(name : string, sourceOfEntity : FilePath) : Location[]
 	abstract getAllReferencesSlotValue(name : string, sourceOfEntity : FilePath) : Location[]
 
+	/**
+	 * @deprecated
+	 */
 	abstract getFoldingRanges() : Location[]
 
 	abstract getAutoComplete(location : Location, allCaches : PolicyModelEntity[]) : CompletionList
@@ -644,6 +645,7 @@ export class FileManagerFactory {
 	 * 
 	 * @param doc The Policy Model document
 	 * @param parser A {@link Parser} of the Policy Model language
+	 * @param language the Policy Model language of the document
 	 * @param cacheVersion A flag that decides which {@link FileManager} sub-class to instatiate
 	 * @returns A new instance of a {@link FileManager}
 	 */
@@ -653,13 +655,13 @@ export class FileManagerFactory {
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
-				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath) : new DecisionGraphFileManager(tree, filepath)
+				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath) : new DecisionGraphFileManagerNaive(tree, filepath)
 
 			case PolicyModelsLanguage.PolicySpace:
-				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath) : new PolicySpaceFileManager(tree, filepath)	
+				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath) : new PolicySpaceFileManagerNaive(tree, filepath)	
 						
 			case PolicyModelsLanguage.ValueInference:
-				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath) : new ValueInferenceFileManager(tree, filepath)
+				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath) : new ValueInferenceFileManagerNaive(tree, filepath)
 				
 			default:
 				return null
@@ -667,7 +669,7 @@ export class FileManagerFactory {
 	}
 }
 
-export class DecisionGraphFileManager extends FileManager {
+export class DecisionGraphFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -708,7 +710,7 @@ export class DecisionGraphFileManager extends FileManager {
 	}
 }
 
-export class PolicySpaceFileManager extends FileManager {
+export class PolicySpaceFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -746,7 +748,7 @@ export class PolicySpaceFileManager extends FileManager {
 	}
 }
 
-export class ValueInferenceFileManager extends FileManager {
+export class ValueInferenceFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
 		let node : Parser.SyntaxNode = this.getNodeFromLocation(location)
 		if(isNullOrUndefined(node)) {return null}
@@ -810,27 +812,32 @@ export class LanguageServicesWithCache extends LanguageServices {
 
 		let pspaceCompletionList : CompletionList = {isIncomplete: false, items: []}
 		this.fileManagers.forEach((fm : FileManager, path : FilePath) => {
-			if(fm instanceof PolicySpaceFileManager) {
+			if(fm instanceof PolicySpaceFileManagerNaive) {
 				pspaceCompletionList = Utils.mergeCompletionLists(pspaceCompletionList, fm.getAutoComplete(null, null))
 			}
 		})
 
 		let result : CompletionList = pspaceCompletionList
 		switch(true){
-			case fm instanceof DecisionGraphFileManager: 
-				let caches : PolicyModelEntity[] = 
-				Utils.uniqueArray(Utils.flatten(
-					Array.from(this.fileManagers.values())
-						.map((fm: FileManager) => fm.getCache())))
+			case fm instanceof DecisionGraphFileManagerNaive: 
+				let caches : PolicyModelEntity[] = []
+				Array.from(this.fileManagers.values()).map(fm => {
+					caches = caches.concat(fm.getCache())
+				})
+
+				//let caches : PolicyModelEntity[] = 
+				// Utils.uniqueArray(Utils.flatten(
+				// 	Array.from(this.fileManagers.values())
+				// 		.map((fm: FileManager) => fm.getCache())))
 				result = Utils.mergeCompletionLists(result,fm.getAutoComplete(location, caches))
 				result.items = result.items.concat(DecisionGraphKeywords)
 				break;	
 	
-			case fm instanceof PolicySpaceFileManager: 
+			case fm instanceof PolicySpaceFileManagerNaive: 
 				result.items = result.items.concat(PolicySpaceKeywords)
 				break;
 
-			case fm instanceof ValueInferenceFileManager: 
+			case fm instanceof ValueInferenceFileManagerNaive: 
 				result.items = result.items.concat(ValueInferenceKeywords)
 				break;
 
@@ -843,7 +850,7 @@ export class LanguageServicesWithCache extends LanguageServices {
 	}
 }
 
-export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager {
+export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManagerNaive {
 	cache : PolicyModelEntity[]
 	importMap : ImportMap
 
@@ -903,7 +910,7 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManager 
 	}
 }
 
-export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
+export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManagerNaive {
 	cache : PolicyModelEntity[]
 
 	constructor(tree : Parser.Tree, currentFile: FilePath){
@@ -945,7 +952,7 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManager {
 	}
 }
 
-export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManager {
+export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManagerNaive {
 	cache : PolicyModelEntity[]
 
 	constructor(tree : Parser.Tree, path : FilePath){
@@ -1031,6 +1038,9 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
+	/**
+	 * @deprecated
+	 */
 	static getFoldingRanges(cache : PolicyModelEntity[]): Location[] {
 		const category = PolicyModelEntityCategory.FoldRange
 		return cache
@@ -1040,8 +1050,6 @@ export class CacheQueries {
 
 	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], currentFile : FilePath, importMap : ImportMap) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
-		let slots : PolicyModelEntity[]
-		let slotvalues : PolicyModelEntity[]
 		let keywords : CompletionItem[] = DecisionGraphKeywords
 
 		nodes = cache

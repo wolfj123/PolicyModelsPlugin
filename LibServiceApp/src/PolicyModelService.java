@@ -3,6 +3,9 @@ import CommandCustomize.VisualizePolicySpaceCommandCustomize;
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.*;
 
+import java.net.URLDecoder;
+import java.util.Collections;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +41,23 @@ public  class PolicyModelService {
         updateCmd.execute(cli,new LinkedList<>());
     }
 
+    public static Pair<Integer,String> createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
+        NewModelCommand newModelCommand = new NewModelCommand();
+        try {
+            newModelCommand.execute(newCli, Collections.emptyList());
+            if (newCli.getModel() != null) {
+                if (newCli.getModelPath() != null) {
+                    return new Pair<>(200, newCli.getModelPath());
+                }
+                String lastMessage = newCli.getLastMessage().replace("/!\\", "");
+                return new Pair<>(511, (!lastMessage.equals("")) ? lastMessage : "Unknown Error");
+            }
+        }catch (Exception e){
+            return new Pair<>(513,"CLI internal error");
+        }
+        return new Pair<>(512,"Unknown Error");
+    }
+
     public static void visualizePS(String outputPath, String dotPath) throws  Exception {
         dotPath = dotPath.replace("%20", " ");
         VisualizePolicySpaceCommandCustomize visualizePolicySpaceCmd = new VisualizePolicySpaceCommandCustomize();
@@ -49,7 +69,6 @@ public  class PolicyModelService {
     }
 
     public static void visualizeDG(String outputPath, String dotPath) throws  Exception {
-        dotPath = dotPath.replace("%20", " ");
         VisualizeDecisionGraphCommandCustomize visualizeDecisionGraphCmd = new VisualizeDecisionGraphCommandCustomize();
         List<String> args = new LinkedList<>();
         args.add(outputPath);

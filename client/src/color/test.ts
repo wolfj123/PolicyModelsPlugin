@@ -153,7 +153,7 @@ async function test(testCases: TestCase[], wasm: string, color: colors.ColorFunc
     parser.setLanguage(lang) 
     for (const [src, ...expect] of testCases) {
         const tree = parser.parse(src)
-        const scope2ranges = color(tree, [{start: 0, end: tree.rootNode.endPosition.row}])
+        const scope2ranges = color(tree, [{start: 0, end: tree.rootNode.endPosition.row}], false)
         const code2scopes = new Map<string, Set<string>>()
         for (const [scope, ranges] of scope2ranges) {
             for (const range of ranges) {

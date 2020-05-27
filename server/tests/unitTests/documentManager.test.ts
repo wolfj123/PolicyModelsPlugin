@@ -5,7 +5,6 @@ import { URI } from 'vscode-uri';
 import { TextDocumentItem, DidChangeTextDocumentParams, Range, Position } from 'vscode-languageserver';
 import * as fs from 'fs';
 import { PMTextDocument, changeInfo } from '../../src/Documents';
-import { languagesIds } from '../../src/Utils';
 import { initLogger } from '../../src/Logger';
 
 
@@ -38,7 +37,8 @@ describe('Document Manger unit tets', ()=>{
 				"medical.dg",
 				"ppra.dg",
 				"questionnaire.dg",
-				"test.pspace"
+				"test.pspace",
+				"definitions.ts"
 			]
 		},
 		{	//2
