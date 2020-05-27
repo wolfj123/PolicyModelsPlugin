@@ -68,7 +68,7 @@ export class LanguageServicesFacade {
 	 */
 	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
-		instance.addToUriPathMap(docs)
+		await instance.addToUriPathMap(docs)
 		let convertedDocs : PMTextDocument[] = docs.map(doc => instance.convertUri2PathPMTextDocument(doc))
 		let services : LanguageServices = await LanguageServicesWithCache.init(convertedDocs, pluginDir)
 		instance.services = services
@@ -82,11 +82,11 @@ export class LanguageServicesFacade {
 	 * @param docs The documents that compose the Policy Model project.
 	 * Assumes all files are supplied and their URIs can be converted to absolute values.
 	*/
-	private addToUriPathMap(docs : PMTextDocument[]) {
+	private async addToUriPathMap(docs : PMTextDocument[]) {
 		if(isNullOrUndefined(this.uriPathMap)){
 			this.uriPathMap = new Map()
 		}
-		docs.forEach(doc => {
+		await docs.forEach(doc => {
 			const uri : DocumentUri = doc.uri
 			const path : FilePath = Utils.Uri2FilePath(uri)
 			this.uriPathMap.set(uri, path)
@@ -795,7 +795,7 @@ export class LanguageServicesWithCache extends LanguageServices {
 		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
 		instance.fileManagers = new Map()
-		instance.populateMaps(docs)
+		await instance.populateMaps(docs)
 		return instance
 	}
 

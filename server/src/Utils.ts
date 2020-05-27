@@ -18,14 +18,33 @@ import {
 import * as Parser from 'web-tree-sitter'
 import * as _ from 'underscore'
 import { changeInfo } from './Documents';
+import { URI } from 'vscode-uri';
+import { FilePath } from './LanguageUtils';
+import * as path from 'path';
+
 export enum languagesIds {
 	policyspace =  0,
 	decisiongraph =  1,
 	valueinference = 2
 }
-import { URI } from 'vscode-uri';
-import { FilePath } from './LanguageUtils';
-import * as path from 'path';
+
+export const getLanguageIdFromfile = (file:string):languagesIds => {	
+	let ext: string = file === "definitions.ts" ? file : path.extname(file);
+	switch (ext){
+		case "ps":
+		case "pspace":
+		case "definitions.ts":
+			return languagesIds.policyspace;
+		case "dg":
+			return languagesIds.decisiongraph;
+		case "vi":
+			return languagesIds.valueinference
+		default:
+			return undefined;
+	}
+}
+
+
 var os = require('os');
 
 const psExt:string = "ps";

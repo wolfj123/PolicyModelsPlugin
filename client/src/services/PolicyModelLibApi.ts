@@ -58,8 +58,8 @@ export default class PolicyModelLibApi {
     const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar")
 
     this.child = require('child_process').spawn(
-       `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
-      // 'java', ['-jar', `${JavaServerJar}`, null]
+      //  `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
+      'java', ['-jar', `${JavaServerJar}`, null]
     );
 
     const serverIsReady = async (): Promise<boolean> => {
