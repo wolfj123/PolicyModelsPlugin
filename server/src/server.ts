@@ -356,6 +356,8 @@ connection.onDidOpenTextDocument(event => {
 });
 
 
+
+
 //------------------------------ UNKOWNN CODE   ----------------------------------------------
 /*
 // The example settings

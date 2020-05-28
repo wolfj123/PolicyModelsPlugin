@@ -200,7 +200,6 @@ export class PMSolver implements SolverInt{
 				this._facdeForFolder = facadeAns;
 			}else{
 				this._facdeForFilesFS[fileDir] = facadeAns;
-				console.log("init facade file");
 			}
 		})
 		.catch(rej => {
@@ -231,7 +230,6 @@ export class PMSolver implements SolverInt{
 		
 		if (facade === undefined || facade === null){
 			await this.initParser(uri).then (_ =>{
-				console.log("init end")
 				facade = isFolderRelevant ? this._facdeForFolder : this._facdeForFilesFS[uriFolder]
 				facade[funcName](params);
 			});
