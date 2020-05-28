@@ -13,7 +13,7 @@ const Select: React.FunctionComponent<Props> = props => {
     onSelect(event.target.value);
   };
 
-  const optionsJsxList = options.map(option => <option value={option}>{option}</option>);
+  const optionsJsxList = options.map(option => <option key={option} value={option}>{option}</option>);
   return (
     <select value={selected} onChange={handleChange}>
       {optionsJsxList}

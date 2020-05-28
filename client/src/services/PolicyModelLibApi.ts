@@ -5,11 +5,11 @@ import * as path from 'path';
 import { ChildProcess } from 'child_process';
 
 // import * as axios from 'axios';
- 
+
 let axiosInstance;// axios.AxiosInstance;
 
 
-const createAxiosInstace = async (url: string):Promise<any> =>{
+const createAxiosInstance = async (url: string):Promise<any> =>{
   axiosInstance = axios.create({
     baseURL: url,
     timeout: 2000,
@@ -45,7 +45,7 @@ export default class PolicyModelLibApi {
     return PolicyModelLibApi.instance;
   }
 
-  async _buildEnvironment(loadModel:boolean) {
+  async _buildEnvironment(loadModel:boolean = true) {
     let isSucceed: boolean = true;
     isSucceed = isSucceed && await this._startServer();
     if (loadModel){
@@ -68,7 +68,7 @@ export default class PolicyModelLibApi {
           const message: string = data.toString();
           if (message.startsWith('ready')){
             let port = message.substring('ready -port:'.length)
-            createAxiosInstace(`http://localhost:${port}`)
+            createAxiosInstance(`http://localhost:${port}`)
             .catch(rejAns => reject(false));
 
             resolve(true);
@@ -158,7 +158,7 @@ export default class PolicyModelLibApi {
     );
 
     const myInstance = this;
-    
+
     const ans:Promise<string> = new Promise((res,rej)=>{
       childProcess.stdout.on('data',async  function(data) {
         const newModelAns: string = "res---new---"
@@ -194,7 +194,7 @@ export default class PolicyModelLibApi {
 
   public async _createNewModel(par): Promise<string> {
     // return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
-    const ans:Promise<string> =  new Promise(async (resolve,reject)=>{    
+    const ans:Promise<string> =  new Promise(async (resolve,reject)=>{
     return await axiosInstance.post(`/newModel`,par)
       .then(ans=>{
         if (ans.status === 200){
@@ -210,7 +210,7 @@ export default class PolicyModelLibApi {
         return reject(`Failed to create a new model \nadditional info: ${rej.response !== undefined ? rej.response.data : rej.message}`);
       });
     });
-   
+
     return ans;
   }
 

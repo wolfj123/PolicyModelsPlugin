@@ -33,13 +33,13 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
   let backButton;
   if (panelType === PANELS_TYPES.LANGUAGES) {
     menu = languagesMenuData.map((language) => {
-      const { onClick, text, isSelected } = language;
+      const { onClick, text, isSelected,id } = language;
       let onClickLanguage = () => {
         setPanelType(PANELS_TYPES.FILES);
         onClick();
       };
       return (
-        <IconWrapper icon={'>'} onHover={true}>
+        <IconWrapper key={id} icon={' >'} onHover={true}>
           <Text key={text} onClick={onClickLanguage} isSelected={isSelected}>
             {text}
           </Text>
@@ -52,9 +52,9 @@ const SideBarMenu: React.FunctionComponent<Props> = ({ languagesMenuData, filesM
 		 const selectedLanguage = languagesMenuData.find(({isSelected}) => isSelected );
 		 const selectedLanguageName = selectedLanguage.text;
     menu = filesMenuData.map((file) => {
-      const { onClick, text, isSelected } = file;
+      const { onClick, text, isSelected,id } = file;
       return (
-        <Text key={text} onClick={onClick} isSelected={isSelected}>
+        <Text key={id} onClick={onClick} isSelected={isSelected}>
           {text}
         </Text>
       );

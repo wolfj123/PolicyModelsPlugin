@@ -6,5 +6,12 @@
 	"cSpell.words": [
 		"dirent",
 		"splitted"
+	],
+	"cSpell.ignoreWords": [
+		"agentlib",
+		"graphviz",
+		"jdwp",
+		"ofirb",
+		"scrollable"
 	]
 }

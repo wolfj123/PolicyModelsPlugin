@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import * as mock from 'mock-fs';
 import LocalizationController from '../src/Localization/LocalizationController';
-import { LanguageData, File } from '../src/view/Types/model';
+import { LanguageData } from '../src/view/Types/model';
 import PolicyModelLibApi from '../src/services/PolicyModelLibApi';
 import 'mocha';
 
 const rootPath = '.';
-const filecontent = fileName => fileName + 'file content';
+const fileContent = fileName => fileName + 'file content';
 let localizationController;
 
 before(() => {
-  PolicyModelLibApi.buildInstance(rootPath,e => e);
+  PolicyModelLibApi.buildInstance(rootPath, e => e);
   localizationController = new LocalizationController({}, rootPath, e => {
     throw Error(e);
   });
@@ -29,15 +29,15 @@ describe('Building files structure', () => {
       {
         languages: {
           language1: {
-            'answers.txt': filecontent('answer.txt'),
-            'space.md': filecontent('space.md'),
+            'answers.txt': fileContent('answer.txt'),
+            'space.md': fileContent('space.md'),
           }
         },
       },
       { createCwd: true, createTmp: true }
     );
 
-    const expectedFiles: LanguageData[] =[ {
+    const expectedFiles: LanguageData[] = [{
       language: 'language1',
       files: [
         {
@@ -45,16 +45,17 @@ describe('Building files structure', () => {
           name: 'answers.txt',
           path: './languages/language1/answers.txt',
           extension: '.txt',
-          content: filecontent('answer.txt'),
+          content: fileContent('answer.txt'),
         },
         {
           id: './languages/language1/space.md',
           name: 'space.md',
           path: './languages/language1/space.md',
           extension: '.md',
-          content: filecontent('space.md'),
+          content: fileContent('space.md'),
         },
       ],
+      id: "./languages/language1"
     }];
     const files = localizationController.getLanguagesFilesData();
     expect(expectedFiles).to.deep.equal(files);
@@ -65,26 +66,26 @@ describe('Building files structure', () => {
       {
         'languages': {
           'language1': {
-            'answers.txt': filecontent('answer.txt'),
-            'space.md': filecontent('space.md'),
-            'nodes':{
-              'folder1':{
-                'file1.md': filecontent('file1.md')
+            'answers.txt': fileContent('answer.txt'),
+            'space.md': fileContent('space.md'),
+            'nodes': {
+              'folder1': {
+                'file1.md': fileContent('file1.md')
               },
-              'folder2':{
-                'file2.md': filecontent('file2.md')
+              'folder2': {
+                'file2.md': fileContent('file2.md')
               }
             }
           },
           'language2': {
-            'answers.txt': filecontent('answer.txt'),
-            'space.md': filecontent('space.md'),
-            'nodes':{
-              'folder1':{
-                'file1.md': filecontent('file1.md')
+            'answers.txt': fileContent('answer.txt'),
+            'space.md': fileContent('space.md'),
+            'nodes': {
+              'folder1': {
+                'file1.md': fileContent('file1.md')
               },
-              'folder2':{
-                'file2.md': filecontent('file2.md')
+              'folder2': {
+                'file2.md': fileContent('file2.md')
               }
             }
           },
@@ -93,7 +94,7 @@ describe('Building files structure', () => {
       { createCwd: true, createTmp: true }
     );
 
-    const expectedFiles: LanguageData[] =[ {
+    const expectedFiles: LanguageData[] = [{
       language: 'language1',
       files: [
         {
@@ -101,30 +102,31 @@ describe('Building files structure', () => {
           name: 'answers.txt',
           path: './languages/language1/answers.txt',
           extension: '.txt',
-          content: filecontent('answer.txt'),
+          content: fileContent('answer.txt'),
         },
         {
           id: './languages/language1/nodes/folder1/file1.md',
           name: 'file1.md',
           path: './languages/language1/nodes/folder1/file1.md',
           extension: '.md',
-          content: filecontent('file1.md'),
+          content: fileContent('file1.md'),
         },
         {
           id: './languages/language1/nodes/folder2/file2.md',
           name: 'file2.md',
           path: './languages/language1/nodes/folder2/file2.md',
           extension: '.md',
-          content: filecontent('file2.md'),
+          content: fileContent('file2.md'),
         },
         {
           id: './languages/language1/space.md',
           name: 'space.md',
           path: './languages/language1/space.md',
           extension: '.md',
-          content: filecontent('space.md'),
+          content: fileContent('space.md'),
         },
       ],
+      id:"./languages/language1"
     },
     {
       language: 'language2',
@@ -134,30 +136,31 @@ describe('Building files structure', () => {
           name: 'answers.txt',
           path: './languages/language2/answers.txt',
           extension: '.txt',
-          content: filecontent('answer.txt'),
+          content: fileContent('answer.txt'),
         },
         {
           id: './languages/language2/nodes/folder1/file1.md',
           name: 'file1.md',
           path: './languages/language2/nodes/folder1/file1.md',
           extension: '.md',
-          content: filecontent('file1.md'),
+          content: fileContent('file1.md'),
         },
         {
           id: './languages/language2/nodes/folder2/file2.md',
           name: 'file2.md',
           path: './languages/language2/nodes/folder2/file2.md',
           extension: '.md',
-          content: filecontent('file2.md'),
+          content: fileContent('file2.md'),
         },
         {
           id: './languages/language2/space.md',
           name: 'space.md',
           path: './languages/language2/space.md',
           extension: '.md',
-          content: filecontent('space.md'),
+          content: fileContent('space.md'),
         },
       ],
+      id: "./languages/language2"
     }];
     const files = localizationController.getLanguagesFilesData();
     expect(files.length).to.equal(expectedFiles.length);
@@ -167,20 +170,20 @@ describe('Building files structure', () => {
     }
   });
 
-  it('should filter unsuported extension', () => {
+  it('should filter unsupported extension', () => {
     mock(
       {
         languages: {
           language1: {
-            'answers.txt': filecontent('answer.txt'),
-            'space.md': filecontent('space.md'),
-            'file.unsupportedExtension': filecontent('file.unsupportedExtension'),
+            'answers.txt': fileContent('answer.txt'),
+            'space.md': fileContent('space.md'),
+            'file.unsupportedExtension': fileContent('file.unsupportedExtension'),
           }
         },
       },
       { createCwd: true, createTmp: true }
     );
-    const expectedFiles: LanguageData[] =[ {
+    const expectedFiles: LanguageData[] = [{
       language: 'language1',
       files: [
         {
@@ -188,43 +191,45 @@ describe('Building files structure', () => {
           name: 'answers.txt',
           path: './languages/language1/answers.txt',
           extension: '.txt',
-          content: filecontent('answer.txt'),
+          content: fileContent('answer.txt'),
         },
         {
           id: './languages/language1/space.md',
           name: 'space.md',
           path: './languages/language1/space.md',
           extension: '.md',
-          content: filecontent('space.md'),
+          content: fileContent('space.md'),
         },
-      ]}
-      ];
-      const files = localizationController.getLanguagesFilesData();
-      expect(expectedFiles).to.deep.equal(files);
+      ],
+      id: './languages/language1'
+    }
+    ];
+    const files = localizationController.getLanguagesFilesData();
+    expect(expectedFiles).to.deep.equal(files);
 
   });
 
 });
 
 describe('Editing localization files', () => {
-beforeEach(()=>{
-  mock(
-    {
-      languages: {
-        language1: {
-          'answers.txt': filecontent('answer.txt'),
-          'space.md': filecontent('space.md'),
-        }
+  beforeEach(() => {
+    mock(
+      {
+        languages: {
+          language1: {
+            'answers.txt': fileContent('answer.txt'),
+            'space.md': fileContent('space.md'),
+          }
+        },
       },
-    },
-    { createCwd: true, createTmp: true }
-  );
-})
+      { createCwd: true, createTmp: true }
+    );
+  })
 
-  it('should save file',()=>{
+  it('should save file', () => {
     const newContent = 'newContent';
 
-    const expectedFiles: LanguageData[] =[ {
+    const expectedFiles: LanguageData[] = [{
       language: 'language1',
       files: [
         {
@@ -232,7 +237,7 @@ beforeEach(()=>{
           name: 'answers.txt',
           path: './languages/language1/answers.txt',
           extension: '.txt',
-          content: filecontent('answer.txt'),
+          content: fileContent('answer.txt'),
         },
         {
           id: './languages/language1/space.md',
@@ -242,19 +247,20 @@ beforeEach(()=>{
           content: newContent,
         },
       ],
+      id: './languages/language1'
     }];
 
-    const newFiles = localizationController.onSaveFile('./languages/language1/space.md',newContent);
+    const newFiles = localizationController.onSaveFile('./languages/language1/space.md', newContent);
     expect(expectedFiles).to.deep.equal(newFiles);
   });
 
-  it('should failed on saving file with wrong path',()=>{
+  it('should failed on saving file with wrong path', () => {
     const newContent = 'newContent';
-    const unFamillierPath = './someWrongPath';
-    try{
-    const newFiles = localizationController.onSaveFile(unFamillierPath,newContent);
-    expect(false).true;
-    }catch(e){
+    const unFamiliarPath = './someWrongPath';
+    try {
+      const newFiles = localizationController.onSaveFile(unFamiliarPath, newContent);
+      expect(false).true;
+    } catch (e) {
       expect(true).true;
     }
 
