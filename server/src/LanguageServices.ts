@@ -22,6 +22,7 @@ import {
 	TextDocumentChangeEvent,
 	DidChangeWatchedFilesParams,
 	PrepareRenameParams,
+	DiagnosticSeverity,
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter';
 import * as Utils from './Utils'
@@ -43,7 +44,9 @@ import {
 	PolicySpaceServices,
 	ValueInferenceServices,
 	FilePath,
-	ImportMap
+	ImportMap,
+	getAllErrorNodes,
+	getLocationOfSyntaxNode
 } from './LanguageUtils'
 
 
@@ -544,13 +547,19 @@ export abstract class FileManager {
 	tree : Parser.Tree
 	
 	/**
- 	* The **abolsute** path of the file
+ 	* The **absolute** path of the file
 	*/
 	path : FilePath
+
+	/**
+	 * All syntax nodes that contain an error in the parse tree
+	 */
+	errorNodes : Parser.SyntaxNode[]
 
 	constructor(tree : Parser.Tree, path : FilePath){
 		this.tree = tree
 		this.path = path
+		this.errorNodes = getAllErrorNodes(tree)
 	}
 
 	/**
@@ -560,6 +569,7 @@ export abstract class FileManager {
 	 */
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
+		this.errorNodes = getAllErrorNodes(newTree)
 	}
 
 	/**
@@ -644,6 +654,16 @@ export abstract class FileManager {
 		}
 	}
 
+	//{[id: string]: {module: string, color: colors.ColorFunction, parser?: Parser}}
+
+	getAllSyntaxErrors() : {location : Location, source : string, message : string /*, severity : DiagnosticSeverity*/ }[] {
+		let result = this.errorNodes.map(
+			node => {return {
+				location: getLocationOfSyntaxNode(node, this.path), source: node.text, message: "Syntax Error"
+			}}
+		)
+		return result
+	}
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
 
@@ -696,6 +716,8 @@ export class FileManagerFactory {
 		}
 	}
 }
+
+
 
 export class DecisionGraphFileManagerNaive extends FileManager {
 	createPolicyModelEntity(location : Location): PolicyModelEntity | null {
