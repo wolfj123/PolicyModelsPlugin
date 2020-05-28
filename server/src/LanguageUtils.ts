@@ -184,13 +184,13 @@ export enum PolicyModelEntityType {
 }
 
 export enum PolicyModelEntityCategory {
+	Declaration,
+	Reference,
+	Special,
 	/**
 	 * @deprecated NO LONGER SUPPORTED
 	 */
-	FoldRange, 
-	Declaration,
-	Reference,
-	Special
+	FoldRange
 }
 
 
@@ -275,16 +275,21 @@ export function entity2CompletionItem(entity : PolicyModelEntity, currentFile : 
 	return result
 }
 
-function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
-	return nodes.map(
-		id => {
-			return Utils.newRange(Utils.point2Position(id.startPosition), Utils.point2Position(id.endPosition))
-		}
-	)
+export function getRangeOfSyntaxNode(node : Parser.SyntaxNode) : Range {
+	return Utils.newRange(Utils.point2Position(node.startPosition), Utils.point2Position(node.endPosition))
 }
 
+export function getLocationOfSyntaxNode(node : Parser.SyntaxNode, uri : DocumentUri) : Location {
+	return {range: getRangeOfSyntaxNode(node), uri: uri}
+}
+
+export function getRangesOfSyntaxNodes(nodes : Parser.SyntaxNode[]) : Range[] {
+	return nodes.map(getRangeOfSyntaxNode)
+}
+
+
 /**
- * Generator gunction to iterate a {@link Parser.Tree} 
+ * Generator function to iterate a {@link Parser.Tree} 
  *
  * @param root the {@link Parser.Tree} to iterate
  * @param visibleRanges the range of the visible text
@@ -339,6 +344,25 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
 	}
 }
 
+/**
+ * Get all error nodes in a {@link Parser.Tree}
+ *
+ * @param tree the {@link Parser.Tree} to iterate
+ * @returns an array of {@link Parser.SyntaxNode} 
+ */
+export function getAllErrorNodes(tree : Parser.Tree) : Parser.SyntaxNode[] {
+	let result : Parser.SyntaxNode[] = []
+	for (let node of nextNode(tree)) {
+		if(node.hasError()){
+			result.push(node)
+		}
+	}
+	return result
+	
+	// let root : Parser.SyntaxNode = tree.walk().currentNode()
+	// let errors : Parser.SyntaxNode[] = root.descendantsOfType(["ERROR", "MISSING"])
+	// return errors
+}
 
 //****Language Specific Static Services****/
 

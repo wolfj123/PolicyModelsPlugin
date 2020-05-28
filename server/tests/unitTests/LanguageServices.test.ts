@@ -1087,10 +1087,10 @@ class DecisionGraphServices_UnitTests {
 				title: 'sanity',
 				input: 'dg2.dg',
 				output: [
-					{"category": 3, "name": "dg", "type": 5, }, 
-					{"category": 1, "name": "findme", "type": 0, }, 
-					{"category": 2, "name": "findme", "type": 0, }, 
-					{"category": 1, "name": "yo", "type": 0, }, 
+					{"category": PolicyModelEntityCategory.Special, "name": "dg", "type": PolicyModelEntityType.ImportGraph, }, 
+					{"category": PolicyModelEntityCategory.Declaration, "name": "findme", "type": PolicyModelEntityType.DGNode, }, 
+					{"category": PolicyModelEntityCategory.Reference, "name": "findme", "type": PolicyModelEntityType.DGNode, }, 
+					{"category": PolicyModelEntityCategory.Declaration, "name": "yo", "type": PolicyModelEntityType.DGNode, }, 
 
 					// -- old folding range results
 					// {"category": 0, "name": "call_node", "type": 0, }, 
