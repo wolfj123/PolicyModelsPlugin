@@ -153,24 +153,27 @@ export class PMSolver implements SolverInt{
 		this._publishDiagnosticsCallback = diagnosticsCallback;
 	}
 
-	public diagnositcsCallback(uri: DocumentUri, errors: SyntaxError []){
-		let diagnostics: Diagnostic [] = []
-		if (errors !== null && errors !== undefined){
-			errors.forEach(currError =>{
-				diagnostics.push({
-					message: currError.message,
-					source: currError.message,
-					range: currError.location.range
+	public creatediagnosticsCallback() : (uri: DocumentUri, errors: SyntaxError []) => void {
+		let pmsolverRef : PMSolver = this
+		const callback = (uri: DocumentUri, errors: SyntaxError []) => {
+			let diagnostics: Diagnostic [] = []
+			if (errors !== null && errors !== undefined){
+				errors.forEach(currError =>{
+					diagnostics.push({
+						message: currError.message,
+						source: currError.message,
+						range: currError.location.range
+					});
 				});
-			});
+			}
+
+			let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
+	
+			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
 		}
-
-
-		let docVersion: number = this.getDocManager(uri).getDocument(uri).version;
-
-		this._publishDiagnosticsCallback(uri,diagnostics,docVersion);
+			
+		return callback
 	}
-
 
 	//#region private functions
 	/**
@@ -223,7 +226,7 @@ export class PMSolver implements SolverInt{
 		}
 
 		// initialize facade and set class variables
-		await LanguageServicesFacade.init([], this._pluginFSPath,this.diagnositcsCallback)
+		await LanguageServicesFacade.init([], this._pluginFSPath,this.creatediagnosticsCallback())
 		.then(facadeAns => {
 			getLogger(logSources.server).info(`generated new LanguageServicesFacade for file ${fileUri}`)
 			if (fileUri === null){
