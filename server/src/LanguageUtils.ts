@@ -351,7 +351,7 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
  * @returns an array of {@link Parser.SyntaxNode} 
  */
 export function getAllErrorNodes(tree : Parser.Tree) : Parser.SyntaxNode[] {
-	const errorNodeTypes : string[] = ["ERROR", "MISSING"]
+	const errorNodeTypes : string[] = ["ERROR", "MISSING", "UNEXPECTED"]
 	let result : Parser.SyntaxNode[] = []
 	for (let node of nextNode(tree)) {
 		if(errorNodeTypes.indexOf(node.type) >= 0){
