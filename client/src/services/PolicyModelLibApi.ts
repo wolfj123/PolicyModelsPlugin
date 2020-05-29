@@ -152,9 +152,9 @@ export default class PolicyModelLibApi {
   }
 
   public async createNewModel():Promise<string> {
-    const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar");
+    const JavaServerJar: string = path.join(__dirname, "/../../../LibServiceApp/resources/GuiApp.jar");
     let childProcess = require('child_process').spawn(
-      'java', ['-jar', JavaServerJar, "new"]
+      'java', ['-jar', JavaServerJar, null]
     );
 
     const myInstance = this;
