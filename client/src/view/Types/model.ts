@@ -25,10 +25,12 @@ export interface File {
 export interface LanguageData {
   files: File[];
   language: string;
+  id: string
 }
 
 export interface ItemMenuData{
   isSelected: boolean;
   onClick(): void;
   text:string
+  id: string
 }

@@ -9,13 +9,13 @@ interface Props {
 }
 
 const IconWrapper: React.FunctionComponent<Props> = (props) => {
-  const { children, icon, Left = false, onHover = true } = props;
-	let Components = [<div className={'icon'}>{icon}</div>, children];
+  const  {children, icon, Left = false, onHover = true } = props;
+	let Components = [<div key={1} className={'icon'}>{icon}</div>, children];
 	if(!Left){
 		Components.reverse();
 	}
   return (
-    <div className={onHover ? 'showIconOnHoverWrapper' : 'showIconWrapper'}>
+    <div key={1} className={onHover ? 'showIconOnHoverWrapper' : 'showIconWrapper'}>
 			{Components}
     </div>
   );
