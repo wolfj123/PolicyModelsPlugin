@@ -50,6 +50,8 @@ import {
 } from './LanguageUtils'
 
 
+export declare type SyntaxError = {location : Location, source: string, text : string, message : string};
+
 /**
  * This class exposes the Language Services in the form of LSP-esque queries,
  * by wrapping a {@link LanguageServices} instance and translating said queries.
@@ -213,6 +215,17 @@ export class LanguageServicesFacade {
 	onCompletionResolve(params : CompletionItem): CompletionItem | null { 
 		//TODO:
 		return null
+	}
+
+	getErrors(uri : DocumentUri) : SyntaxError[] | null {
+		let path : FilePath = this.uriPathMap.get(uri)
+		if(isNullOrUndefined(path)) {return null}
+		let errors : SyntaxError[] = this.services.getSyntaxErrors(path)
+		errors = errors.map(err => {
+			let loc = this.convertUri2PathLocation(err.location, false)
+			return {location : err.location, source: err.source, text: err.text, message: err.message}
+		})
+		return errors
 	}
 
 	/**
@@ -534,7 +547,15 @@ export class LanguageServices {
 	getCompletion(location : Location) : CompletionList | null {
 		return null
 	}
+
+	getSyntaxErrors(path : FilePath) : SyntaxError[] {
+		let fm : FileManager = this.fileManagers.get(path);
+		if(isNullOrUndefined(fm)) {return []}
+		return fm.getAllSyntaxErrors()
+	}
 }
+
+
 
 
 /**
@@ -552,14 +573,14 @@ export abstract class FileManager {
 	path : FilePath
 
 	/**
-	 * All syntax nodes that contain an error in the parse tree
+	 * All errors found in the syntax tree
 	 */
-	errorNodes : Parser.SyntaxNode[]
+	errors : SyntaxError[]
 
 	constructor(tree : Parser.Tree, path : FilePath){
 		this.tree = tree
 		this.path = path
-		this.errorNodes = getAllErrorNodes(tree)
+		this.errors = getAllErrorNodes(tree).map(err => {return this.errorNodeToErrorDescription(err)})
 	}
 
 	/**
@@ -569,7 +590,7 @@ export abstract class FileManager {
 	 */
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.errorNodes = getAllErrorNodes(newTree)
+		this.errors = getAllErrorNodes(newTree).map(err => {return this.errorNodeToErrorDescription(err)})
 	}
 
 	/**
@@ -654,15 +675,17 @@ export abstract class FileManager {
 		}
 	}
 
-	//{[id: string]: {module: string, color: colors.ColorFunction, parser?: Parser}}
+	private errorNodeToErrorDescription(node : Parser.SyntaxNode) : SyntaxError {
+		let syntaxErr = {
+			location: getLocationOfSyntaxNode(node, this.path), 
+			source: "tree-sitter parser", 
+			text: node.text, 
+			message: "Syntax Error"}
+		return syntaxErr
+	}
 
-	getAllSyntaxErrors() : {location : Location, source : string, message : string /*, severity : DiagnosticSeverity*/ }[] {
-		let result = this.errorNodes.map(
-			node => {return {
-				location: getLocationOfSyntaxNode(node, this.path), source: node.text, message: "Syntax Error"
-			}}
-		)
-		return result
+	getAllSyntaxErrors() : SyntaxError[] {
+		return this.errors
 	}
 
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
