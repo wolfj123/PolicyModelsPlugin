@@ -81,7 +81,6 @@
 					"definitions.ts",
 					".pspace",
 					".ps"
-					
 				],
 				"configuration": "./pspace-language-configuration.json"
 			},
