@@ -66,7 +66,7 @@ export const parsersInfo =
 ]
 
 /**
- * Returns the sum of two numbers.
+ * Returns the sum of two numbers. 
  *
  * @param extension - the file type extension
  * @returns The PolicyModelsLanguage corresponding to the provided file extension
