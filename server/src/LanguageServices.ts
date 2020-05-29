@@ -556,8 +556,6 @@ export class LanguageServices {
 }
 
 
-
-
 /**
  * This class represents a single file in a Policy Models project
  */
