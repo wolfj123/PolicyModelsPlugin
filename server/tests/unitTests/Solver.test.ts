@@ -162,10 +162,10 @@ describe('Auto complete Tests', ()=>{
 
 	it ("autocomplete with single Files",async ()=> {
 		// open 2 files
-		let recFolder: string = path.join(testFolder,"a\\Recursive-Sections");
+		let recFolder: string = path.join(testFolder,"a/Recursive-Sections");
 		let recDGFile = "decision-graph.dg"
 		let recPSFile: string  = "policy-space.pspace"
-		let playFolder: string =  path.join(testFolder,"a\\a\\Find-Runs-playground");
+		let playFolder: string =  path.join(testFolder,"a/a/Find-Runs-playground");
 		let playVIFile: string = "valueInference.vi"
 
 		let recPSSlots: string [] = ["DataTags","A","B"];
@@ -224,9 +224,6 @@ describe('Auto complete Tests', ()=>{
 	it ("autocomplete adding text",async ()=> {
 
 		const emptyPSFile: string = "emptyText.ps";
-		const fullPSFile: string = "policy-space.pspace";
-		const viFile: string = "valueInference.vi";
-		const dgFile: string = "decision-graph.dg";
 
 		let changeParams: DidChangeTextDocumentParams = {
 			textDocument:{
