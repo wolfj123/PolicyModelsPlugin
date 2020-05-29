@@ -21,7 +21,7 @@ const AnswersPreview: React.FunctionComponent<Props> = (props) => {
   return (
     <>
       {Object.entries(answersData).map(([originalAnswer, value]) =>
-      <div style={{ display: 'flex', margin: '9px 3px' }}>
+      <div key={originalAnswer + value} style={{ display: 'flex', margin: '9px 3px', height: '23px' }}>
       <div style={{flex: '1 1 30%'}}>{originalAnswer} :</div>
       <div style={{flex: '1 1 50%'}}>{value}</div>
     </div>

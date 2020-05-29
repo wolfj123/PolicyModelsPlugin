@@ -1,0 +1,1 @@
+java -jar /Users/ofirb/Desktop/University/Final_Project/PolicyModelsPlugin/cli/PolicyModels-1.9.9.uber.jar /Users/ofirb/Desktop/University/FinalProject/PolicyModelsPlugin/client/testFixture/dg-large-modular
