@@ -160,7 +160,7 @@ describe('Auto complete Tests', ()=>{
 		await testInferrerExample();
 	});
 
-	it ("autocomplete for File",async ()=> {
+	it ("autocomplete with single Files",async ()=> {
 		// open 2 files
 		let recFolder: string = path.join(testFolder,"a\\Recursive-Sections");
 		let recDGFile = "decision-graph.dg"
