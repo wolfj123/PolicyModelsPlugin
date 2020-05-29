@@ -71,7 +71,7 @@ export class LanguageServicesFacade {
 	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
 	 * @returns A promise of a new instance of {@link LanguageServicesFacade}.
 	 */
-	static async init(docs : PMTextDocument[], pluginDir: string, callback) : Promise<LanguageServicesFacade> {
+	static async init(docs : PMTextDocument[], pluginDir: string, callback?) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
 		instance.addToUriPathMap(docs)
 		let convertedDocs : PMTextDocument[] = docs.map(doc => instance.convertUri2PathPMTextDocument(doc))
