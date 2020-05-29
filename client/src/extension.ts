@@ -93,8 +93,9 @@ export function activate(context: ExtensionContext) {
   });
 }
 
-function buildLibServiceAppApiInstance(){
-  const rootPath: string = vscode.workspace.rootPath;
+function buildLibServiceAppApiInstance() {
+  let rootPath: string = vscode.workspace.rootPath;
+  rootPath  = rootPath === undefined ? "" : rootPath;
   const onMessage = message => vscode.window.showInformationMessage("Policy Model CLI: ",message);
   PolicyModelLibApi.buildInstance(rootPath,onMessage);
 }

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { FileTransportInstance } from 'winston/lib/winston/transports';
 
-const logFolder:string = 'Logs/'
+const logFolder:string = 'Logs_'+ new Date().getTime();
 const serverLogFileName:string =   'serverLog.log';
 const serverHttpFileName: string =  'serverHttp.log';
 const documentsFileName: string = 'documents.log'
@@ -60,12 +60,6 @@ export function getLogger(source: logSources): Logger {
 export function initLogger(pluginDir: string): void {
 	
 	if (globalLog === undefined){
-		try {
-			fs.unlinkSync(path.join(pluginDir, logFolder,"globalLog.log"));
-		}catch (err){
-			console.log(`this should show \n` + err);
-		}
-
 		let fileForLog: FileTransportInstance = new winston.transports.File({filename: path.join(pluginDir, logFolder,"globalLog.log")});
 		globalLog = winston.createLogger({
 			level:'info',
@@ -89,11 +83,6 @@ export function initLogger(pluginDir: string): void {
 	}))
 
 	allLogs.forEach(currLog => {
-		try {
-			fs.unlinkSync(path.join(pluginDir,logFolder,currLog.name));
-		} catch (error) {
-			globalLog.error(`can't delete log ${currLog.name}, error msg: ${error}`);
-		}
 
 		allLoggers.push({
 			source:currLog.source,
