@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 export default class FileService {
-  getDirectoryContent(dirPath) {
+  static getDirectoryContent(dirPath) {
     let direntFiles;
     try {
       direntFiles = fs.readdirSync(dirPath, { withFileTypes: true });
@@ -11,7 +11,7 @@ export default class FileService {
     return direntFiles;
   }
 
-  writeToFile(path, newData) {
+  static writeToFile(path, newData) {
     try {
       fs.writeFileSync(path, newData);
     } catch (err) {
@@ -19,12 +19,16 @@ export default class FileService {
     }
   }
 
-  readFromFile(path) {
+  static readFromFile(path) {
     try {
       const content = fs.readFileSync(path, 'utf8');
       return content;
     } catch (e) {
       throw new Error(`Cannot read file ${path}`);
     }
+  }
+
+  static isFolderExist(path: string): boolean {
+    return fs.existsSync(path);
   }
 }
