@@ -22,7 +22,7 @@ import {
 	VersionedTextDocumentIdentifier
 } from 'vscode-languageserver';
 
-import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt } from './DocumentManager';
+import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt, DocumentManagerResult } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
 import { logSources, getLogger } from './Logger';
 import * as Path from 'path';
@@ -89,7 +89,7 @@ export interface SolverInt {
 	 * 
 	 * @param opendDocParam TextDocumentItem as receievd from VS-Code
 	 */
-	onDidOpenTextDocument (opendDocParam: TextDocumentItem);
+	onDidOpenTextDocument (opendDocParam: TextDocumentItem): Promise<void>;
 
 	/**
 	 * updates document state to closed and updates LanguageServicesFacade if necessary
@@ -218,7 +218,6 @@ export class PMSolver implements SolverInt{
 	 * @param uri uri of the file the request was made on
 	 */
 	private async facdeCallWrapperForDocumentEvents (params: any, funcName: string, uri: DocumentUri | null): Promise<void> {
-		console.log("warpper ");
 		if (! this._sovlerReady){
 			return new Promise(resolve =>
 				setTimeout(() => resolve(this.facdeCallWrapperForDocumentEvents(params,funcName,uri)) , 100)
@@ -228,17 +227,13 @@ export class PMSolver implements SolverInt{
 		let uriFolder: string = this.getFSFolderFromUri(uri);
 		let isFolderRelevant = this.isFolderRelevant(uri);
 		let facade: LanguageServicesFacade = isFolderRelevant ? this._facdeForFolder : this._facdeForFilesFS[uriFolder];
-
-		console.log(`facade wrapper, folder? ${isFolderRelevant},   ${uri}`)
 		
 		if (facade === undefined || facade === null){
-			await this.initParser(uri).then ( _ =>{
+			await this.initParser(uri).then (_ =>{
 				facade = isFolderRelevant ? this._facdeForFolder : this._facdeForFilesFS[uriFolder]
-				console.log(`facade wrapper 1 facade is ${facade}`);
 				facade[funcName](params);
 			});
 		}else {
-			console.log(`facade wrapper 2 facade is ${facade}`);
 			facade[funcName](params);
 		}
 	}
@@ -276,7 +271,8 @@ export class PMSolver implements SolverInt{
 	//----------------------------  user/client event handlers --------------------------------------
 
 	onCompletion(params: TextDocumentPositionParams): CompletionList {
-		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri, "onCompletion");
+		let ans = this.facadeCallWrapperForUserEvents(params, params.textDocument.uri, "onCompletion");
+		return ans;
 	}
 
 	onCompletionResolve(params: CompletionItem): CompletionItem {
@@ -346,7 +342,7 @@ export class PMSolver implements SolverInt{
 	//#region 
 	//----------------------------   document control envents handlers --------------------------------------------
 
-	public async onDidOpenTextDocument(opendDocParam: TextDocumentItem) {
+	public async onDidOpenTextDocument(opendDocParam: TextDocumentItem): Promise<void> {
 		if (! this._sovlerReady){
 			return new Promise(resolve =>
 				setTimeout(() => resolve(this.onDidOpenTextDocument(opendDocParam)) , 150)
@@ -354,27 +350,51 @@ export class PMSolver implements SolverInt{
 		}
 
 		let docManager: TextDocumentManagerInt = this.getDocManager(opendDocParam.uri);
-		await docManager.openedDocumentInClient(opendDocParam)
-		.then(changeResults=> {
-			changeResults.forEach(currChange => {
-				switch(currChange.type){
-					case documentManagerResultTypes.noChange:
-						break;
-					case documentManagerResultTypes.newFile:
-						this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
-						// this._languageFacade.addDocs([currChange.result]);
-						break;
-					case documentManagerResultTypes.removeFile:
-						this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
-						// this._languageFacade.removeDoc(currChange.result)
-						break;
-					default:
-						getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
-						break;
-				}
-			});
-		})
+		let openDocumentsResults : DocumentManagerResult [] = await docManager.openedDocumentInClient(opendDocParam)
 		.catch(rej => getLogger(logSources.server).error(`onDidOpenTextDocument was rejected`,{rej}));
+
+		
+		for (let i =0; i < openDocumentsResults.length; i++){
+			let currChange: DocumentManagerResult = openDocumentsResults[i];
+			switch(currChange.type){
+				case documentManagerResultTypes.noChange:
+					break;
+				case documentManagerResultTypes.newFile:
+					await this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
+					// this._languageFacade.addDocs([currChange.result]);
+					break;
+				case documentManagerResultTypes.removeFile:
+					this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
+					// this._languageFacade.removeDoc(currChange.result)
+					break;
+				default:
+					getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
+					break;
+			}
+		}
+
+		
+		
+		// .then(async changeResults => {
+		// 	changeResults.forEach(async currChange => {
+		// 		switch(currChange.type){
+		// 			case documentManagerResultTypes.noChange:
+		// 				break;
+		// 			case documentManagerResultTypes.newFile:
+		// 				await this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
+		// 				// this._languageFacade.addDocs([currChange.result]);
+		// 				break;
+		// 			case documentManagerResultTypes.removeFile:
+		// 				this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
+		// 				// this._languageFacade.removeDoc(currChange.result)
+		// 				break;
+		// 			default:
+		// 				getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
+		// 				break;
+		// 		}
+		// 	});
+		// })
+		
 	}
 
 	public async onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
@@ -386,10 +406,10 @@ export class PMSolver implements SolverInt{
 
 		let docManager: TextDocumentManagerInt = this.getDocManager(closedDcoumentParams.uri);
 		await docManager.closedDocumentInClient(closedDcoumentParams)
-		.then(change=>{
+		.then(async change=>{
 			switch(change.type){
 				case documentManagerResultTypes.removeFile:
-					this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",closedDcoumentParams.uri);
+					await this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",closedDcoumentParams.uri);
 					// this._languageFacade.removeDoc(change.result);
 					break;
 				default:

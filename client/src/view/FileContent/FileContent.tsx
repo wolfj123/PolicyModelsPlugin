@@ -19,16 +19,20 @@ const FileContent: React.FunctionComponent<Props> = props => {
   };
 
   let RendererComponent;
+  let editorHeader;
   switch (name) {
     case 'answers.txt':
       RendererComponent = <AnswersFileContent key={id} content={content} onFileChange={handleFileChange} />;
+      editorHeader = "answer.txt editor"
       break;
     case 'space.md':
     case 'sections.md':
       RendererComponent = <SpaceFileContent key={id} content={content} onFileChange={handleFileChange} />;
+      editorHeader = "MarkDown editor"
       break;
     default:
       RendererComponent = <TextEditor key={id} content={content} onFileChange={handleFileChange} />;
+      editorHeader = "MarkDown editor"
       break;
   }
 
@@ -39,7 +43,7 @@ const FileContent: React.FunctionComponent<Props> = props => {
           {name}
         </Text>
         <Text key={'md'} size={'smaller'}>
-          MarkDown editor
+          {editorHeader}
         </Text>
       </div>
     );

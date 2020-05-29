@@ -37,8 +37,9 @@ export default class LocalizationController {
   }
 
   createLanguageFilesData(languageDir): LanguageData {
+    const languagePath = this._localizationPath + '/' + languageDir.name;
     const allFiles = this.getFiles(this._localizationPath + '/' + languageDir.name);
-    return { language: languageDir.name, files: allFiles };
+    return { language: languageDir.name, files: allFiles, id:languagePath };
   }
 
   getFiles = (path: string): File[] => {
