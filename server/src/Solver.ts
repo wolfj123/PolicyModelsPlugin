@@ -19,15 +19,17 @@ import {
 	TextEdit,
 	Position,
 	TextDocumentEdit,
-	VersionedTextDocumentIdentifier
+	VersionedTextDocumentIdentifier,
+	Diagnostic
 } from 'vscode-languageserver';
 
 import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt, DocumentManagerResult } from './DocumentManager';
-import { LanguageServicesFacade } from './LanguageServices';
+import { LanguageServicesFacade, SyntaxError } from './LanguageServices';
 import { logSources, getLogger } from './Logger';
 import * as Path from 'path';
 import { URI } from 'vscode-uri';
 import { isNullOrUndefined } from 'util';
+import { version } from 'punycode';
 
 export interface SolverInt {
 
@@ -137,8 +139,9 @@ export class PMSolver implements SolverInt{
 	private _facdeForFolder: LanguageServicesFacade;
 	private _facdeForFilesFS: {[id: string]: LanguageServicesFacade};  // id is fodler FS path
 	private _sovlerReady: boolean;
+	private _publishDiagnosticsCallback: (uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number) => void;
 
-	constructor(pluginDir: string){
+	constructor(pluginDir: string, diagnosticsCallback: (uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number) => void){
 		this._documentManagerForFolder = new TextDocumentManager();
 		this._documentManagerSingleFiles = new TextDocumentManager(); 
 		this._documentManagerSingleFiles.openedFolder(null);
@@ -147,12 +150,25 @@ export class PMSolver implements SolverInt{
 		this._facdeForFilesFS = {};
 		this._facdeForFolder = undefined;
 		this._sovlerReady = false;
+		this._publishDiagnosticsCallback = diagnosticsCallback;
 	}
 
+	public diagnositcsCallback(uri: DocumentUri, errors: SyntaxError []){
+		let diagnostics: Diagnostic [] = []
+		if (errors !== null && errors !== undefined){
+			errors.forEach(currError =>{
+				diagnostics.push({
+					message: currError.message,
+					source: currError.message,
+					range: currError.location.range
+				});
+			});
+		}
 
-	private getFSFolderFromUri(uri: DocumentUri): string{
-		let fileFSPath: string = URI.parse(uri).fsPath;
-		return Path.dirname(fileFSPath);
+
+		let docVersion: number = this.getDocManager(uri).getDocument(uri).version;
+
+		this._publishDiagnosticsCallback(uri,diagnostics,docVersion);
 	}
 
 
@@ -167,6 +183,20 @@ export class PMSolver implements SolverInt{
 		return folderFSPath === this._workspaceFolderFSPath;
 	}
 
+	private clearDiagnostics(uri: DocumentUri){
+		this._publishDiagnosticsCallback(uri,[]);
+	}
+	
+	private getFSFolderFromUri(uri: DocumentUri): string{
+		let fileFSPath: string = URI.parse(uri).fsPath;
+		return Path.dirname(fileFSPath);
+	}
+
+	/**
+	 * 
+	 * @param uri 
+	 * @returns relevant DocumentManager according to URI
+	 */
 	private getDocManager(uri: DocumentUri): TextDocumentManagerInt{
 		if (this.isFolderRelevant(uri)){
 			return this._documentManagerForFolder;
@@ -193,7 +223,7 @@ export class PMSolver implements SolverInt{
 		}
 
 		// initialize facade and set class variables
-		await LanguageServicesFacade.init([], this._pluginFSPath)
+		await LanguageServicesFacade.init([], this._pluginFSPath,this.diagnositcsCallback)
 		.then(facadeAns => {
 			getLogger(logSources.server).info(`generated new LanguageServicesFacade for file ${fileUri}`)
 			if (fileUri === null){
@@ -352,7 +382,6 @@ export class PMSolver implements SolverInt{
 		let docManager: TextDocumentManagerInt = this.getDocManager(opendDocParam.uri);
 		let openDocumentsResults : DocumentManagerResult [] = await docManager.openedDocumentInClient(opendDocParam)
 		.catch(rej => getLogger(logSources.server).error(`onDidOpenTextDocument was rejected`,{rej}));
-
 		
 		for (let i =0; i < openDocumentsResults.length; i++){
 			let currChange: DocumentManagerResult = openDocumentsResults[i];
@@ -361,40 +390,16 @@ export class PMSolver implements SolverInt{
 					break;
 				case documentManagerResultTypes.newFile:
 					await this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
-					// this._languageFacade.addDocs([currChange.result]);
 					break;
 				case documentManagerResultTypes.removeFile:
 					this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
-					// this._languageFacade.removeDoc(currChange.result)
+					this.clearDiagnostics(currChange.result);
 					break;
 				default:
 					getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
 					break;
 			}
 		}
-
-		
-		
-		// .then(async changeResults => {
-		// 	changeResults.forEach(async currChange => {
-		// 		switch(currChange.type){
-		// 			case documentManagerResultTypes.noChange:
-		// 				break;
-		// 			case documentManagerResultTypes.newFile:
-		// 				await this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
-		// 				// this._languageFacade.addDocs([currChange.result]);
-		// 				break;
-		// 			case documentManagerResultTypes.removeFile:
-		// 				this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
-		// 				// this._languageFacade.removeDoc(currChange.result)
-		// 				break;
-		// 			default:
-		// 				getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
-		// 				break;
-		// 		}
-		// 	});
-		// })
-		
 	}
 
 	public async onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier) {
@@ -410,7 +415,7 @@ export class PMSolver implements SolverInt{
 			switch(change.type){
 				case documentManagerResultTypes.removeFile:
 					await this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",closedDcoumentParams.uri);
-					// this._languageFacade.removeDoc(change.result);
+					this.clearDiagnostics(change.result);
 					break;
 				default:
 					getLogger(logSources.server).error('onDidCloseTextDocument wrong change type',change);
@@ -459,7 +464,7 @@ export class PMSolver implements SolverInt{
 			switch(change.type){
 				case documentManagerResultTypes.removeFile:
 					this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",deletedFileUri)
-					// this._languageFacade.removeDoc(change.result);
+					this.clearDiagnostics(change.result);
 				default:
 					getLogger(logSources.server).error('onDeleteFile wrong change type',change);
 					break;

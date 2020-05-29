@@ -35,6 +35,7 @@ import {
 	DidChangeWatchedFilesParams,
 	FileEvent,
 	FileChangeType,
+	DocumentUri,
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -153,7 +154,23 @@ connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
 	connection.onRequest("setPluginDir", async (dir:string) => {
 		initLogger(dir);
-		solver = new PMSolver(dir);
+		
+		solver = new PMSolver(dir,(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
+			if (docVersion !== undefined){
+				connection.sendDiagnostics({
+					uri: uri,
+					version: docVersion,
+					diagnostics: diagnostics
+				})
+			}else{
+				connection.sendDiagnostics({
+					uri: uri,
+					diagnostics: diagnostics
+				});
+			}
+		});
+
+
 		// await solver.initParser(dir);
 		console.log("finish init from client");
 		return null;

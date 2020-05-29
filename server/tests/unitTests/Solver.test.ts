@@ -104,7 +104,7 @@ describe('Auto complete Tests', ()=>{
 
 	beforeEach (async () => {
 		let cwd:string = process.cwd()
-		solver = new PMSolver(cwd);
+		solver = new PMSolver(cwd,(a,b,c?)=>{});
 		codeFolder = path.join(testFolder,"InferrerExample");
 		await solver.onOpenFolder(URI.file(codeFolder).toString());
 	});
@@ -264,7 +264,7 @@ describe('Solver Test Renaming', ()=>{
 	before(async ()=> {
 		let cwd:string = process.cwd()
 		testFolder = cwd + testFolderSuffix;
-		solver = new PMSolver(cwd);
+		solver = new PMSolver(cwd,(a,b,c?)=>{});
 		codeFolder =path.join(testFolder,"InferrerExample");
 		await solver.onOpenFolder(URI.file(codeFolder).toString());
 	});
