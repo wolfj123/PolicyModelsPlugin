@@ -17,11 +17,15 @@ const createLocalizationApp = (extensionPath: string): void => {
 }
 
 function activeLocalization() {
+
 	const languagesFolderExist = FileService.isFolderExist(_localizationPath);
 	if (languagesFolderExist) {
 		const localization = new LocalizationController({ extensionPath: _extensionPath }, _localizationPath, _onError);
 		try {
-			localization.activateLocalization();
+			const a = PolicyModelLibApi.getInstance().updateLocalization().then(() => {
+				localization.activateLocalization();
+			});
+
 		} catch (e) {
 			_onError(e);
 		}
