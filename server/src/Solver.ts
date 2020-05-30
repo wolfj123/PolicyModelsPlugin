@@ -167,9 +167,6 @@ export class PMSolver implements SolverInt{
 					});
 				});
 			}
-
-			if (pmsolverRef === undefined || pmsolverRef === null) {return}
-			// let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
 			
 			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics);
 		}
