@@ -156,7 +156,7 @@ export class PMSolver implements SolverInt{
 	public creatediagnosticsCallback() : (uri: DocumentUri, errors: SyntaxError []) => void {
 		let pmsolverRef : PMSolver = this;
 		const callback = (uri: DocumentUri, errors: SyntaxError []) => {
-			if (__dirname.includes("travis")) {return}
+			
 			let diagnostics: Diagnostic [] = []
 			if (errors !== null && errors !== undefined){
 				errors.forEach(currError =>{
@@ -168,6 +168,7 @@ export class PMSolver implements SolverInt{
 				});
 			}
 
+			if (__dirname.includes("travis")) {return}
 			let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
 			
 			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
