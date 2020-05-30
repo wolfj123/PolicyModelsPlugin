@@ -155,6 +155,7 @@ connection.onInitialized(() => {
 
 	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean) => {
 		initLogger(dir,shouldLog);
+		
 		solver = new PMSolver(dir,(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
 			if (! hasDiagnosticRelatedInformationCapability){
 				return;
