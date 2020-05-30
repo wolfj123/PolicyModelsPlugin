@@ -169,7 +169,7 @@ export class PMSolver implements SolverInt{
 
 			let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
 			
-			// pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
+			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
 		}
 			
 		return callback;
