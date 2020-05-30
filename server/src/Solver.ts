@@ -142,7 +142,6 @@ export class PMSolver implements SolverInt{
 	private _publishDiagnosticsCallback: (uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number) => void;
 
 	constructor(pluginDir: string, diagnosticsCallback: (uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number) => void){
-		console.log("build solver ansans");
 		this._documentManagerForFolder = new TextDocumentManager();
 		this._documentManagerSingleFiles = new TextDocumentManager(); 
 		this._documentManagerSingleFiles.openedFolder(null);
@@ -155,10 +154,8 @@ export class PMSolver implements SolverInt{
 	}
 
 	public creatediagnosticsCallback() : (uri: DocumentUri, errors: SyntaxError []) => void {
-		let pmsolverRef : PMSolver = this
-		console.log("\n-------------------- diagnostics ans create calll back");
+		let pmsolverRef : PMSolver = this;
 		const callback = (uri: DocumentUri, errors: SyntaxError []) => {
-			console.log(`\n ---------------------------diagnostics ans 1- ${uri} , \n ${errors}\n\n`);
 			let diagnostics: Diagnostic [] = []
 			if (errors !== null && errors !== undefined){
 				errors.forEach(currError =>{
@@ -171,9 +168,7 @@ export class PMSolver implements SolverInt{
 			}
 
 			let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
-	
-			console.log(`\n ---------------------------diagnostics ans 2- ${uri} , \n ${diagnostics}\n\n`);
-
+			
 			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
 		}
 			

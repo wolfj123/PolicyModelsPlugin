@@ -89,7 +89,6 @@ export class LanguageServicesFacade {
 			let uris : DocumentUri[] = Utils.getMapKeysByValue(uriPathMapRef, path)
 			if(isNullOrUndefined(uris) || uris.length == 0) {return}
 			let uri  : DocumentUri = uris[0]
-			console.log("\n ------------------------------ diagnostics call 0 ")
 			callbackRef(uri, errors)
 		}
 		return errorCallback
@@ -614,9 +613,7 @@ export abstract class FileManager {
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
 		this.errors = getAllErrorNodes(newTree).map(err => {return this.errorNodeToErrorDescription(err)})
-		console.log("\n ------------------------------ diagnostics call -2 ")
 		if(!isNullOrUndefined(this.errorCallback)){
-			console.log("\n ------------------------------ diagnostics call -1 ")
 			this.errorCallback(this.path, this.errors)
 		}
 	}

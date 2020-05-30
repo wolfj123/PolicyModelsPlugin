@@ -10,8 +10,6 @@ testRunner.configure({
     useColors: true,
     timeout: 100000,
     retries: 0,
-    ignoreLeaks: true,
-    globals:['WWWWWWWWWWWWWWWWW']
 });
 
 module.exports = testRunner;

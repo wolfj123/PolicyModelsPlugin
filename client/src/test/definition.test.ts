@@ -174,15 +174,13 @@ async function testDefinition(
 ) {
 
 	// Executing the command `vscode.executeDefinitionProvider` to simulate triggering definition
-	console.log("tes tes tse tes tes st ansans")
 	const actualDefinitionList = (await vscode.commands.executeCommand(
 		'vscode.executeDefinitionProvider',
 		docUri,
 		position,
 	)) as DefinitionResolve;
 
-	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,
-		`--------------------\namsel test --- expected ${JSON.stringify(expectedDefinitionList)}\n\n actual: ${JSON.stringify(actualDefinitionList)}`);
+	assert.equal(actualDefinitionList.length, expectedDefinitionList.length);
 
 	expectedDefinitionList.forEach((expectedItem, i) => {
 		const actualItem = actualDefinitionList[i];
