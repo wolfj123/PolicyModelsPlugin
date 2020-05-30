@@ -120,5 +120,6 @@ plugin/cli/java
 !LibServiceApp/resources/jackson-annotations-2.11.0.jar
 !LibServiceApp/resources/jackson-core-2.11.0.jar
 !LibServiceApp/resources/jackson-databind-2.11.0.jar
+!LibServiceApp/resources/GuiApp.jar
 
 *.vsix

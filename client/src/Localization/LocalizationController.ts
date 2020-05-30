@@ -6,26 +6,25 @@ var PATH = require('path');
 
 const systemFilesNameToFilter = ['.DS_Store'];
 const supportedExtensions = ['.md', '.txt'];
-const localizationRootFolder = '/languages';
+
 
 export default class LocalizationController {
   _localizationPath: string;
   _extensionProps: any;
-  _fileService: any;
   _onError: any;
 
-  constructor(extensionProps, rootPath, onError) {
+  constructor(extensionProps, localizationPath, onError) {
     this._extensionProps = extensionProps;
-    this._fileService = new FileService();
-    this._localizationPath = rootPath + localizationRootFolder;
+    this._localizationPath = localizationPath;
     this._onError = onError;
     const instance: PolicyModelLibApi = PolicyModelLibApi.getInstance();
   }
 
-  activateLocalization({ onError }) {
+  activateLocalization() {
     const languagesFilesData = this.getLanguagesFilesData();
     const ViewLoader = require('../view/ViewLoader').default; //lazy loading require for testing this component without 'vscode' dependency
-    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile, onError);
+    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile, this._onError);
+
   }
 
   filterSystemFiles(direntFiles) {
@@ -39,13 +38,13 @@ export default class LocalizationController {
   createLanguageFilesData(languageDir): LanguageData {
     const languagePath = this._localizationPath + '/' + languageDir.name;
     const allFiles = this.getFiles(this._localizationPath + '/' + languageDir.name);
-    return { language: languageDir.name, files: allFiles, id:languagePath };
+    return { language: languageDir.name, files: allFiles, id: languagePath };
   }
 
   getFiles = (path: string): File[] => {
     let directoryContent;
     try {
-      directoryContent = this._fileService.getDirectoryContent(path);
+      directoryContent = FileService.getDirectoryContent(path);
     } catch (err) {
       this._onError(err);
       return;
@@ -56,14 +55,14 @@ export default class LocalizationController {
       const filePath = path + '/' + name;
       let currData = [];
       if (dirent.isFile()) {
-        if(this.isSupportedFile(filePath)){
-        try {
-          const content = this._fileService.readFromFile(filePath);
-          currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath) }];
-        } catch (err) {
-          this._onError(err);
+        if (this.isSupportedFile(filePath)) {
+          try {
+            const content = FileService.readFromFile(filePath);
+            currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath) }];
+          } catch (err) {
+            this._onError(err);
+          }
         }
-      }
       } else if (dirent.isDirectory()) {
         currData = this.getFiles(filePath);
       } else {
@@ -75,7 +74,7 @@ export default class LocalizationController {
   };
 
   onSaveFile = (path, newData) => {
-    this._fileService.writeToFile(path, newData);
+    FileService.writeToFile(path, newData);
     const newLanguagesFilesData = this.getLanguagesFilesData();
     return newLanguagesFilesData;
   };
@@ -83,7 +82,7 @@ export default class LocalizationController {
   getLanguagesFilesData(): LanguageData[] {
     let languages_dirent;
     try {
-      languages_dirent = this._fileService.getDirectoryContent(this._localizationPath);
+      languages_dirent = FileService.getDirectoryContent(this._localizationPath);
     } catch (e) {
       throw new Error('Cannot read main localization folder.');
     }

@@ -59,7 +59,7 @@ public  class PolicyModelService {
     }
 
     public static void visualizePS(String outputPath, String dotPath) throws  Exception {
-        dotPath = dotPath.replace("%20", " ");
+//        dotPath = dotPath.replace("%20", " ");
         VisualizePolicySpaceCommandCustomize visualizePolicySpaceCmd = new VisualizePolicySpaceCommandCustomize();
         List<String> args = new LinkedList<>();
         args.add(outputPath);
