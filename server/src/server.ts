@@ -163,12 +163,20 @@ connection.onInitialized(() => {
 				connection.sendDiagnostics({
 					uri: uri,
 					version: docVersion,
-					diagnostics: diagnostics
+					diagnostics: [
+						{
+						message: "test this",
+						range:{start:{line:0,character:0},end:{line:0,character:0}}
+
+					}]
 				})
 			}else{
 				connection.sendDiagnostics({
 					uri: uri,
-					diagnostics: diagnostics
+					diagnostics: [{
+						message: "test this 2",
+						range:{start:{line:0,character:0},end:{line:0,character:0}}
+					}]
 				});
 			}
 		});
