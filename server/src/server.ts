@@ -156,10 +156,10 @@ connection.onInitialized(() => {
 		initLogger(dir);
 		
 		solver = new PMSolver(dir,(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
+			if (! hasDiagnosticRelatedInformationCapability){
+				return;
+			}
 			if (docVersion !== undefined){
-				if (! hasDiagnosticRelatedInformationCapability){
-					return;
-				}
 				connection.sendDiagnostics({
 					uri: uri,
 					version: docVersion,
