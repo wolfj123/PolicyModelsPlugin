@@ -142,6 +142,7 @@ export class PMSolver implements SolverInt{
 	private _publishDiagnosticsCallback: (uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number) => void;
 
 	constructor(pluginDir: string, diagnosticsCallback: (uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number) => void){
+		console.log("build solver ansans");
 		this._documentManagerForFolder = new TextDocumentManager();
 		this._documentManagerSingleFiles = new TextDocumentManager(); 
 		this._documentManagerSingleFiles.openedFolder(null);
@@ -318,6 +319,7 @@ export class PMSolver implements SolverInt{
 	}
 
 	onDefinition(params: DeclarationParams): LocationLink[] {
+		console.log("on definition ansans")
 		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onDefinition");
 	}
 
