@@ -178,8 +178,9 @@ async function testDefinition(
 		'vscode.executeDefinitionProvider',
 		docUri,
 		position,
-	)) as DefinitionResolve;
+	));
 
+	//@ts-ignore
 	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,
 		`--------------------\namsel test --- expected ${JSON.stringify(expectedDefinitionList)}\n\n actual: ${JSON.stringify(actualDefinitionList)}`);
 
