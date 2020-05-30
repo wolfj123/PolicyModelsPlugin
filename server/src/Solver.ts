@@ -168,7 +168,7 @@ export class PMSolver implements SolverInt{
 				});
 			}
 
-			if (__dirname.includes("travis")) {return}
+			if (pmsolverRef === undefined || pmsolverRef === null) {return}
 			let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
 			
 			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
