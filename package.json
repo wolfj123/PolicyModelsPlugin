@@ -43,6 +43,11 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
+				},
+				"PolicyModelsServer.Logging":{
+					"scope": "resource",
+					"type": "boolean",
+					"default": "false"
 				}
 			}
 		},

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { FileTransportInstance } from 'winston/lib/winston/transports';
 
-const logFolder:string = 'Logs_'+ new Date().getTime();
+const logFolder:string = 'Logs'
 const serverLogFileName:string =   'serverLog.log';
 const serverHttpFileName: string =  'serverHttp.log';
 const documentsFileName: string = 'documents.log'
@@ -46,7 +46,7 @@ const logsFormat = winston.format.combine(
 	printFormat
 )
 
-let globalLog: winston.Logger = undefined;
+let globalLog: winston.Logger | DummyLogger = undefined;
 
 export function getLogger(source: logSources): Logger {
 	let logger = allLoggers.find(curr => curr.source === source);
@@ -57,9 +57,28 @@ export function getLogger(source: logSources): Logger {
 	return logger.log;
 }
 
-export function initLogger(pluginDir: string): void {
+export function initLogger(pluginDir: string, shouldLog: boolean = false): void {
 	
+	if (! shouldLog){
+		globalLog = new DummyLogger();
+		allLogs.forEach(currLog => {
+			allLoggers.push({
+				source:currLog.source,
+				log: new DummyLogger
+			})
+		});
+
+		return;
+	}
+
 	if (globalLog === undefined){
+		try {
+			console.log(`unlink server for global`)
+			fs.unlinkSync(path.join(pluginDir, logFolder,"globalLog.log"));
+		}catch (err){
+			console.log(`this should show \n` + err);
+		}
+
 		let fileForLog: FileTransportInstance = new winston.transports.File({filename: path.join(pluginDir, logFolder,"globalLog.log")});
 		globalLog = winston.createLogger({
 			level:'info',
@@ -77,12 +96,19 @@ export function initLogger(pluginDir: string): void {
 		globalLog.info(`the plugin dir is: ${pluginDir}`);
 	}
 
-	globalLog.add(new winston.transports.File({
+	(<winston.Logger>globalLog).add(new winston.transports.File({
 		filename:  path.join(pluginDir, logFolder,"unhandeled_exceptions.log"),
 		handleExceptions: true
 	}))
 
 	allLogs.forEach(currLog => {
+		try {
+			console.log("unlikf server for " + path.join(pluginDir,logFolder,currLog.name))
+			fs.unlinkSync(path.join(pluginDir,logFolder,currLog.name));
+		} catch (error) {
+			console.log (`unlink server for ${path.join(pluginDir,logFolder,currLog.name)} ,error is ${error}`)
+			globalLog.error(`can't delete log ${currLog.name}, error msg: ${error}`);
+		}
 
 		allLoggers.push({
 			source:currLog.source,
@@ -102,12 +128,33 @@ export interface Logger {
 	http (funcName:string, funcParmas?: any);
 }
 
+class DummyLogger implements Logger{
+
+	constructor(source?: logSources, fileName?: string,pluginDir?:string){
+	}
+
+	error(msg: string, moreData?: any) {
+		
+	}
+	warn(msg: string, moreData?: any) {
+		
+	}
+	info(msg: string, moreData?: any) {
+		
+	}
+	http(funcName: string, funcParmas?: any) {
+		
+	}
+
+}
+
 class Logger1 implements Logger {
 	private _log: winston.Logger;
 	private _type: logSources;
 	
 	constructor(source: logSources, fileName: string,pluginDir:string){
 		this._type = source;
+
 
 		this._log = winston.createLogger({
 			level: source !== logSources.serverHttp ? 'info' : 'http',
@@ -116,6 +163,7 @@ class Logger1 implements Logger {
 				//new winston.transports.Console (),
 				new winston.transports.File({filename: path.join(pluginDir,logFolder,fileName)})]
 		})
+
 	}
 
 	async error (msg: string, moreData?: any){

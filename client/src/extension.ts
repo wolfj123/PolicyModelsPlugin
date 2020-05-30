@@ -81,7 +81,8 @@ export function activate(context: ExtensionContext) {
   client.start();
 
   client.onReady().then(_ => {
-    client.sendRequest("setPluginDir",context.extensionPath);
+    let shouldLog:boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Logging") !== "false";
+    client.sendRequest("setPluginDir",[context.extensionPath,shouldLog]);
 
     client.onRequest("getPluginDir",(a)=>{
       console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
