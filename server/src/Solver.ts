@@ -172,7 +172,7 @@ export class PMSolver implements SolverInt{
 			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
 		}
 			
-		return callback
+		return callback;
 	}
 
 	//#region private functions
@@ -226,7 +226,7 @@ export class PMSolver implements SolverInt{
 		}
 
 		// initialize facade and set class variables
-		await LanguageServicesFacade.init([], this._pluginFSPath ) //,this.creatediagnosticsCallback())
+		await LanguageServicesFacade.init([], this._pluginFSPath,this.creatediagnosticsCallback ) //,this.creatediagnosticsCallback())
 		.then(facadeAns => {
 			getLogger(logSources.server).info(`generated new LanguageServicesFacade for file ${fileUri}`)
 			if (fileUri === null){
