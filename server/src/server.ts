@@ -152,11 +152,11 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
+
 	connection.onRequest("setPluginDir", async (dir:string) => {
-		initLogger(dir);
-		
+		initLogger(dir);	
 		solver = new PMSolver(dir,(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
-			if (! hasDiagnosticRelatedInformationCapability){
+			if (! hasDiagnosticRelatedInformationCapability && ! __dirname.includes("/home/travis/build")){
 				return;
 			}
 			if (docVersion !== undefined){
