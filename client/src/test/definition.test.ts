@@ -179,7 +179,8 @@ async function testDefinition(
 		position,
 	)) as DefinitionResolve;
 
-	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,`expected ${expectedDefinitionList.length}\n\n actual: ${actualDefinitionList.length} `);
+	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,
+		`--------------------\namsel test --- expected ${expectedDefinitionList}\n\n actual: ${actualDefinitionList}`);
 
 	expectedDefinitionList.forEach((expectedItem, i) => {
 		const actualItem = actualDefinitionList[i];
