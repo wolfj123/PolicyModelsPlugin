@@ -154,25 +154,26 @@ export class PMSolver implements SolverInt{
 	}
 
 	public creatediagnosticsCallback() : (uri: DocumentUri, errors: SyntaxError []) => void {
-		let pmsolverRef : PMSolver = this;
-		const callback = (uri: DocumentUri, errors: SyntaxError []) => {
-			let diagnostics: Diagnostic [] = []
-			if (errors !== null && errors !== undefined){
-				errors.forEach(currError =>{
-					diagnostics.push({
-						message: currError.message,
-						source: currError.message,
-						range: currError.location.range
-					});
-				});
-			}
+		// let pmsolverRef : PMSolver = this;
+		// const callback = (uri: DocumentUri, errors: SyntaxError []) => {
+		// 	let diagnostics: Diagnostic [] = []
+		// 	if (errors !== null && errors !== undefined){
+		// 		errors.forEach(currError =>{
+		// 			diagnostics.push({
+		// 				message: currError.message,
+		// 				source: currError.message,
+		// 				range: currError.location.range
+		// 			});
+		// 		});
+		// 	}
 
-			let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
+		// 	let docVersion: number = pmsolverRef.getDocManager(uri).getDocument(uri).version;
 			
-			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
-		}
+		// 	pmsolverRef._publishDiagnosticsCallback(uri,diagnostics,docVersion);
+		// }
 			
-		return callback;
+		// return callback;
+		return undefined;
 	}
 
 	//#region private functions

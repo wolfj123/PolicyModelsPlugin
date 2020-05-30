@@ -89,7 +89,6 @@ export class LanguageServicesFacade {
 			let uris : DocumentUri[] = Utils.getMapKeysByValue(uriPathMapRef, path)
 			if(isNullOrUndefined(uris) || uris.length == 0) {return}
 			let uri  : DocumentUri = uris[0]
-			if (__dirname.includes("travis")) {return}
 			callbackRef(uri, errors)
 		}
 		return errorCallback
