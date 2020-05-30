@@ -156,27 +156,19 @@ connection.onInitialized(() => {
 	connection.onRequest("setPluginDir", async (dir:string) => {
 		initLogger(dir);	
 		solver = new PMSolver(dir,(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
-			if (! hasDiagnosticRelatedInformationCapability && ! __dirname.includes("/home/travis/build")){
+			if (! hasDiagnosticRelatedInformationCapability){
 				return;
 			}
 			if (docVersion !== undefined){
 				connection.sendDiagnostics({
 					uri: uri,
 					version: docVersion,
-					diagnostics: [
-						{
-						message: "test this",
-						range:{start:{line:0,character:0},end:{line:0,character:0}}
-
-					}]
+					diagnostics: diagnostics
 				})
 			}else{
 				connection.sendDiagnostics({
 					uri: uri,
-					diagnostics: [{
-						message: "test this 2",
-						range:{start:{line:0,character:0},end:{line:0,character:0}}
-					}]
+					diagnostics: diagnostics
 				});
 			}
 		});
