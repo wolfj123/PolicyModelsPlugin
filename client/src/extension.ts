@@ -9,10 +9,10 @@ import * as vscode from 'vscode';
 import * as Parser from 'web-tree-sitter';
 import * as scopes from './color/scopes';
 import * as colors from './color/colors';
-import LocalizationController from './Localization/LocalizationController';
 import PolicyModelLibApi from './services/PolicyModelLibApi';
 import GraphvizController from './Graphviz/GraphvizController';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, DocumentSelector } from 'vscode-languageclient';
+import createLocalizationApp from './Localization/createLocalizationApp';
 import * as FS from 'fs';
 
 
@@ -24,7 +24,7 @@ export function activate(context: ExtensionContext) {
   // The commandId parameter must match the command field in package.json
 
   buildLibServiceAppApiInstance();
-  
+
   addGraphvizCommand(context);
   addLocalizationCommand(context);
   addRunCommand(context);
@@ -124,7 +124,7 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
             await vscode.commands.executeCommand('vscode.openFolder', uri)
           }
         })
-        .catch(rej => 
+        .catch(rej =>
           vscode.window.showInformationMessage(rej)
         );
     })
@@ -178,14 +178,8 @@ function addLocalizationCommand(context: vscode.ExtensionContext){
   const {subscriptions} = context;
   let disposable = vscode.commands.registerCommand(localizationCommand, () => {
     const extensionPath = context.extensionPath;
-    const extensionRootPath = vscode.workspace.rootPath;
-    const onError = e => vscode.window.showErrorMessage(e);
-    const localization = new LocalizationController({ extensionPath },extensionRootPath,onError);
-    try{
-    localization.activateLocalization({onError});
-    }catch(e){
-      onError(e);
-    }
+    createLocalizationApp(extensionPath);
+
   });
   subscriptions.push(disposable);
 
