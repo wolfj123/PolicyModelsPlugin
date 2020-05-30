@@ -157,6 +157,9 @@ connection.onInitialized(() => {
 		
 		solver = new PMSolver(dir,(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
 			if (docVersion !== undefined){
+				if (! hasDiagnosticRelatedInformationCapability){
+					return;
+				}
 				connection.sendDiagnostics({
 					uri: uri,
 					version: docVersion,
