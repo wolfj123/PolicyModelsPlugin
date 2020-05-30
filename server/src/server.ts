@@ -159,6 +159,7 @@ connection.onInitialized(() => {
 			if (! hasDiagnosticRelatedInformationCapability){
 				return;
 			}
+			console.log(`\ndiagnostics ans- ${uri} , \n ${diagnostics}\n\n`);
 			if (docVersion !== undefined){
 				connection.sendDiagnostics({
 					uri: uri,

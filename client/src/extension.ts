@@ -23,6 +23,12 @@ export function activate(context: ExtensionContext) {
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
 
+  let w = vscode.env;
+  let x = vscode.workspace;
+  let y = vscode.window;
+  let z = vscode.debug;
+  let t = global;
+
   buildLibServiceAppApiInstance();
   
   addGraphvizCommand(context);

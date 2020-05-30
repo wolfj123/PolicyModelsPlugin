@@ -18,7 +18,8 @@ import {
 	activate, 
 	getWordPositionFromLine, 
 	getWordRangeFromLineInEditor, 
-	getWordRangeFromLineInFile} from './helper';
+	getWordRangeFromLineInFile,
+	sleep} from './helper';
 
 var testCounter: number = 0
 var testFixtureFolderPath: String = 'InferrerExample/'
@@ -173,6 +174,7 @@ async function testDefinition(
 ) {
 
 	// Executing the command `vscode.executeDefinitionProvider` to simulate triggering definition
+	await sleep(100);
 	const actualDefinitionList = (await vscode.commands.executeCommand(
 		'vscode.executeDefinitionProvider',
 		docUri,
