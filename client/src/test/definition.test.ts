@@ -174,6 +174,7 @@ async function testDefinition(
 ) {
 
 	// Executing the command `vscode.executeDefinitionProvider` to simulate triggering definition
+	console.log("tes tes tse tes tes st ansans")
 	const actualDefinitionList = (await vscode.commands.executeCommand(
 		'vscode.executeDefinitionProvider',
 		docUri,
