@@ -44,7 +44,7 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
-				"PolicyModelsServer.Logging":{
+				"PolicyModelsServer.Logging": {
 					"scope": "resource",
 					"type": "boolean",
 					"default": "false"
@@ -129,7 +129,7 @@
 		"npm-run-all": "^4.1.5",
 		"style-loader": "^1.2.1",
 		"tree-sitter-cli": "^0.16.7",
-		"tree-sitter-decisiongraph": "^0.1.4",
+		"tree-sitter-decisiongraph": "^1.0.0",
 		"tree-sitter-policyspace": "^0.1.1",
 		"tree-sitter-valueinference": "^0.1.1",
 		"ts-loader": "^6.2.2",

@@ -79,6 +79,8 @@ export function colorDecisionGraph(root: Parser.Tree, visibleRanges: {start: num
 		else {
 			switch (cursor.nodeType) {
 				case 'free_text':
+				case 'free_text_no_end_bracket':
+				case 'free_text_no_colon':
 					let node = cursor.currentNode()
 					let nextNode = node.nextSibling;
 					if(nextNode != null && nextNode.type == ':') {
