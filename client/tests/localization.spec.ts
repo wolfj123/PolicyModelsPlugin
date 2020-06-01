@@ -6,12 +6,14 @@ import PolicyModelLibApi from '../src/services/PolicyModelLibApi';
 import 'mocha';
 
 const rootPath = '.';
+const localizationRootFolder = '/languages';
+const localizationPath = rootPath + localizationRootFolder;
 const fileContent = fileName => fileName + 'file content';
 let localizationController;
 
 before(() => {
   PolicyModelLibApi.buildInstance(rootPath, e => e);
-  localizationController = new LocalizationController({}, rootPath, e => {
+  localizationController = new LocalizationController({}, localizationPath, e => {
     throw Error(e);
   });
 });

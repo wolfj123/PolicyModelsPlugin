@@ -151,8 +151,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(() => {
 	connection.onRequest("Run_Model", param => runModel(param));
-	connection.onRequest("setPluginDir", async (dir:string) => {
-		initLogger(dir);
+	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean) => {
+		initLogger(dir,shouldLog);
 		solver = new PMSolver(dir);
 		// await solver.initParser(dir);
 		console.log("finish init from client");

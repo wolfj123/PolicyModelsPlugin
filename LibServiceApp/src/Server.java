@@ -1,10 +1,4 @@
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
-
-import javax.swing.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
@@ -13,11 +7,6 @@ import java.util.concurrent.Executors;
 public class Server {
 
     public static void main(String[] args) {
-        if (args.length != 0 && args[0].equals("new")){
-            handleNewModelData();
-            System.exit(0);
-        }
-
         try {
             int portNum = activeServer();
             System.out.print("ready -port:"+portNum);
@@ -42,73 +31,6 @@ public class Server {
         return server.getAddress().getPort();
     }
 
-
-    private static boolean waitingForUser;
-    private static NewModelInputData modelData;
-
-    private static void handleNewModelData(){
-        waitingForUser = true;
-        modelData = null;
-        new Thread(() -> {
-            openInputWindow();
-        }).start();
-
-        while (waitingForUser){
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        String errorResponse = "res---Cancel---";
-
-        if (modelData == null){
-            System.out.println(errorResponse);
-            return;
-        }else{
-            ObjectMapper mapper = new ObjectMapper();
-            String ans = "";
-            try {
-                ans = mapper.writeValueAsString(modelData);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                System.out.println(errorResponse);
-                return;
-            }
-            if (ans == null || ans.equals("")){
-                System.out.println(errorResponse);
-                return;
-            }
-            System.out.println("res---new---"+ans);
-        }
-    }
-
-    private static void openInputWindow() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            ex.printStackTrace();
-        }
-
-        JFrame frame = new JFrame("NewModelInputForm");
-        NewModelInputForm inputForm = new NewModelInputForm();
-        frame.setContentPane(inputForm.getMainPanel());
-        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                modelData = inputForm.getAns();
-                waitingForUser = false;
-                super.windowClosing(e);
-                frame.dispose();
-            }
-        });
-        frame.pack();
-        frame.setVisible(true);
-        inputForm.init();
-    }
 
 
 }

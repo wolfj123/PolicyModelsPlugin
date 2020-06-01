@@ -7,11 +7,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="resources" level="project" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/resources/GuiApp.jar!/" />
+          <root url="jar://$MODULE_DIR$/../resources/jackson-annotations-2.11.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -20,7 +19,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/resources/jackson-databind-2.11.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/../resources/jackson-core-2.11.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -29,25 +28,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/resources/jackson-core-2.11.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/resources/jackson-annotations-2.11.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/resources/PolicyModels-1.9.9.uber.jar!/" />
+          <root url="jar://$MODULE_DIR$/../resources/jackson-databind-2.11.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
