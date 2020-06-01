@@ -32,7 +32,7 @@ export default class FileService {
     return fs.existsSync(path);
   }
   
-  isExist(path) {
+  static isExist(path) {
     try {
       return fs.existsSync(path)
     } catch (e) {
@@ -40,7 +40,7 @@ export default class FileService {
     }
   }
 
-  createDirectory(path) {
+  static createDirectory(path) {
     try {
 			fs.mkdirSync(path);
     } catch (e) {
@@ -48,7 +48,7 @@ export default class FileService {
     }
   }
 
-  deleteFileInPath(path){
+  static deleteFileInPath(path){
     try {
 			fs.unlinkSync(path);
     } catch (e) {
