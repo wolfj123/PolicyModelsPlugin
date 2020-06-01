@@ -114,6 +114,7 @@ jonathan/lsp_samples/cli/lib/desktop.ini
 !utils/*
 plugin/cli/java
 *.png
+!cli/LibServiceApp.jar
 !cli/PolicyModels-1.9.9.uber.jar
 !LibServiceApp/resources/PolicyModels-1.9.9.uber.jar
 !LibServiceApp/resources/jackson-annotations-2.11.0.jar
