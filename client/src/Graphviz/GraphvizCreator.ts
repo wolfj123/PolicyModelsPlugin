@@ -5,7 +5,6 @@ import {GRAPHVIZ_CONF_PATH} from './GraphvizController';
 import FileService from '../services/FileService';
 
 
-const _fileService = new FileService();;
 const graphvizOutputFolder = '/visualization';
 const defaultFileName = 'ps'
 const defaulFileFormat = '.svg'
@@ -42,8 +41,8 @@ export default class GraphvizCreator{
 	}
 
 	_createOutputFolder(outputFolderPath: string){
-		if(!_fileService.isExist(outputFolderPath)){
-			_fileService.createDirectory(outputFolderPath);
+		if(!FileService.isExist(outputFolderPath)){
+			FileService.createDirectory(outputFolderPath);
 		}
 	}
 	
@@ -54,10 +53,10 @@ export default class GraphvizCreator{
 	}
 
 	_resolveDot(outputGraphvizPath: string, graphvizUIController: GraphvizUIController){
-		if(_fileService.isExist(outputGraphvizPath)){
-			_fileService.writeToFile(GRAPHVIZ_CONF_PATH, graphvizUIController.dotPath)
-		} else if(_fileService.isExist(GRAPHVIZ_CONF_PATH) && _fileService.readFromFile(GRAPHVIZ_CONF_PATH)){
-			_fileService.deleteFileInPath(GRAPHVIZ_CONF_PATH);
+		if(FileService.isExist(outputGraphvizPath)){
+			FileService.writeToFile(GRAPHVIZ_CONF_PATH, graphvizUIController.dotPath)
+		} else if(FileService.isExist(GRAPHVIZ_CONF_PATH) && FileService.readFromFile(GRAPHVIZ_CONF_PATH)){
+			FileService.deleteFileInPath(GRAPHVIZ_CONF_PATH);
 		}
 	}
 

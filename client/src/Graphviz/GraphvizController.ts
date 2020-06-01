@@ -11,26 +11,15 @@ export class GraphvizController{
 	_ui: GraphvizUIController;
 
 	constructor(type: string){
-		var fileService = new FileService()
 		var dot = "";
 		try{
-			dot = fileService.readFromFile(GRAPHVIZ_CONF_PATH)
+			dot = FileService.readFromFile(GRAPHVIZ_CONF_PATH)
 		} catch (e){}
 		this._chooseGraphvizUIController(type, dot);
 	}
-	
-	visualizePolicySpace(){
-		this._policyModelLibApi.visualizePolicySpace(this._outputFolderPath + policySpacePostfix, graphvizDot)
-		.catch(rej => {
-			console.log("can't create visualization for Policy Space\n" + rej);
-		})
-	}
 
-	visualizeDecisionGraph(){
-		this._policyModelLibApi.visualizeDecisionGraph(this._outputFolderPath + decisionGraphPostix, graphvizDot)
-		.catch(rej => {
-			console.log("can't create visualization fot Decision Graph\n" + rej);
-		})
+	activate(){
+		this._ui.activate();
 	}
 
 	_chooseGraphvizUIController(type: string, dot: string){
