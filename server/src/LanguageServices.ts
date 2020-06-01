@@ -663,7 +663,6 @@ export abstract class FileManager {
 		return result
 	}
 
-
 	/**
 	 * creates an {@link PolicyModelEntity} from a given {@link Location}
 	 *
@@ -1082,7 +1081,21 @@ export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManage
 	}
 }
 
+
+/**
+ * This class is a collection of basic analysis methods of arrays of {@link PolicyModelEntity} arrays, 
+ * nicknamed "caches" throughout our code.
+ * All the methods are static and store no information and cause no side-effects.
+ * They are to be called by other classes to be composed into more complex queries
+ */
 export class CacheQueries {
+	
+	/**
+	 * Returns all the locations of definitions a Decision Graph node
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param name the name of the node
+	 * @returns a {@link Location} array
+	 */
 	static getAllDefinitionsDGNode(cache : PolicyModelEntity[], name: string): Location[] {
 		const type = PolicyModelEntityType.DGNode
 		const category = PolicyModelEntityCategory.Declaration
@@ -1091,6 +1104,13 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
+	/**
+	 * Returns all the locations of references of a Decision Graph node
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param name the name of the node
+	 * @param sourceOfEntity the file in which the node was declared
+	 * @returns a {@link Location} array
+	 */
 	static getAllReferencesDGNode(cache : PolicyModelEntity[], name: string, sourceOfEntity : FilePath): Location[] {
 		const type = PolicyModelEntityType.DGNode
 		const category1 = PolicyModelEntityCategory.Reference
@@ -1100,7 +1120,13 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
-	static getAllDefinitionsSlot(cache : PolicyModelEntity[],name: string): Location[] {
+	/**
+	 * Returns all the locations of definitions a slot
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param name the name of the slot
+	 * @returns a {@link Location} array
+	 */
+	static getAllDefinitionsSlot(cache : PolicyModelEntity[], name: string): Location[] {
 		const type = PolicyModelEntityType.Slot
 		const category = PolicyModelEntityCategory.Declaration
 		return cache
@@ -1108,6 +1134,13 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
+	/**
+	 * Returns all the locations of references of a slot
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param name the name of the node
+	 * @param sourceOfEntity the file in which the slot was declared
+	 * @returns a {@link Location} array
+	 */
 	static getAllReferencesSlot(cache : PolicyModelEntity[], name: string, sourceOfEntity : FilePath): Location[] {
 		const type = PolicyModelEntityType.Slot
 		const category = PolicyModelEntityCategory.Reference
@@ -1116,6 +1149,12 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
+	/**
+	 * Returns all the locations of definitions a slot-value
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param name the name of the slot-value
+	 * @returns a {@link Location} array
+	 */
 	static getAllDefinitionsSlotValue(cache : PolicyModelEntity[],name: string): Location[] {
 		const type = PolicyModelEntityType.SlotValue
 		const category = PolicyModelEntityCategory.Declaration
@@ -1124,6 +1163,13 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 	
+	/**
+	 * Returns all the locations of references of a slot-value
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param name the name of the slot-value
+	 * @param sourceOfEntity the file in which the slot-value was declared
+	 * @returns a {@link Location} array
+	 */
 	static getAllReferencesSlotValue(cache : PolicyModelEntity[], name: string, sourceOfEntity : FilePath): Location[] {
 		const type = PolicyModelEntityType.SlotValue
 		const category1 = PolicyModelEntityCategory.Declaration
@@ -1143,6 +1189,13 @@ export class CacheQueries {
 			.map(e => e.location)
 	}
 
+	/**
+	 * Returns all auto-completion suggestions in a given **DecisionGraph** file
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @param currentFile the current file (must be decision graph file)
+	 * @param importMap an {@link ImportMap} to help detemine which Decision Graph nodes are accessible from the current file
+	 * @returns a {@link CompletionList}
+	 */
 	static getAutoCompleteDecisionGraph(cache : PolicyModelEntity[], currentFile : FilePath, importMap : ImportMap) : CompletionList | null {
 		let nodes : PolicyModelEntity[]
 		let keywords : CompletionItem[] = DecisionGraphKeywords
@@ -1166,6 +1219,11 @@ export class CacheQueries {
 		return result		
 	}
 
+	/**
+	 * Returns all auto-completion suggestions in a given **PolicySpace** file
+	 * @param cache a {@link PolicyModelEntity} array
+	 * @returns a {@link CompletionList}
+	 */
 	static getAutoCompletePolicySpace(cache : PolicyModelEntity[]) : CompletionList {		
 		let entities : PolicyModelEntity[] = cache.filter(e => 
 			(e.getType() == PolicyModelEntityType.Slot || e.getType() == PolicyModelEntityType.SlotValue) 
