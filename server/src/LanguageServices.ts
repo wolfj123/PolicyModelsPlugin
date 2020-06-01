@@ -654,8 +654,6 @@ export abstract class FileManager {
 		}
 	}
 
-	//{[id: string]: {module: string, color: colors.ColorFunction, parser?: Parser}}
-
 	getAllSyntaxErrors() : {location : Location, source : string, message : string /*, severity : DiagnosticSeverity*/ }[] {
 		let result = this.errorNodes.map(
 			node => {return {
@@ -665,14 +663,58 @@ export abstract class FileManager {
 		return result
 	}
 
+
+	/**
+	 * creates an {@link PolicyModelEntity} from a given {@link Location}
+	 *
+	 * @param location the syntax node to convert
+	 * @returns the {@link PolicyModelEntity} found in that location
+	 */
 	abstract createPolicyModelEntity(location : Location) : PolicyModelEntity
 
+	/**
+	 * Returns all the definitions of a Decision Graph node
+	 * @param name the name of the node
+	 * @param source the file in which the node was declared
+	 * @returns a {@link Location} array
+	 */
 	abstract getAllDefinitionsDGNode(name : string, source : FilePath) : Location[]
+	
+	/**
+	 * Returns all the definitions of a slot
+	 * @param name the name of the slot
+	 * @returns a {@link Location} array
+	 */
 	abstract getAllDefinitionsSlot(name : string) : Location[]
+	
+	/**
+	 * Returns all the definitions of a slot-value
+	 * @param name the name of the slot-value
+	 * @returns a {@link Location} array
+	 */
 	abstract getAllDefinitionsSlotValue(name : string) : Location[]
 
+	/**
+	 * Returns all the references of a Decision Graph node
+	 * @param name the name of the node
+	 * @param currentFile the current file
+	 * @param sourceOfEntity the file in which the node was declared
+	 * @returns a {@link Location} array
+	 */
 	abstract getAllReferencesDGNode(name : string, currentFile: FilePath, sourceOfEntity : FilePath) : Location[]
+
+	/**
+	 * Returns all the references of a slot
+	 * @param name the name of the slot
+	 * @returns a {@link Location} array
+	 */
 	abstract getAllReferencesSlot(name : string, sourceOfEntity : FilePath) : Location[]
+
+	/**
+	 * Returns all the references of a slot-value
+	 * @param name the name of the slot-value
+	 * @returns a {@link Location} array
+	 */
 	abstract getAllReferencesSlotValue(name : string, sourceOfEntity : FilePath) : Location[]
 
 	/**
@@ -680,6 +722,14 @@ export abstract class FileManager {
 	 */
 	abstract getFoldingRanges() : Location[]
 
+	/**
+	 * Returns all auto-completion suggestions in a given file
+	 * @param location the location in which the auto-complete was requested. 
+	 * As of now this parameter is not used and the results are the same throughout the file. 
+	 * This could be used in the future to give location specific suggestions.
+	 * @param allCaches all the {@link PolicyModelEntity} collected thus far throughout the project
+	 * @returns a {@link CompletionList}
+	 */
 	abstract getAutoComplete(location : Location, allCaches : PolicyModelEntity[]) : CompletionList
 }
 
@@ -874,11 +924,6 @@ export class LanguageServicesWithCache extends LanguageServices {
 				Array.from(this.fileManagers.values()).map(fm => {
 					caches = caches.concat(fm.getCache())
 				})
-
-				//let caches : PolicyModelEntity[] = 
-				// Utils.uniqueArray(Utils.flatten(
-				// 	Array.from(this.fileManagers.values())
-				// 		.map((fm: FileManager) => fm.getCache())))
 				result = Utils.mergeCompletionLists(result,fm.getAutoComplete(location, caches))
 				result.items = result.items.concat(DecisionGraphKeywords)
 				break;	
