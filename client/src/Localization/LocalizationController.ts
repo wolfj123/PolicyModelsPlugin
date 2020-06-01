@@ -1,5 +1,5 @@
 import { LanguageData, File } from '../view/Types/model';
-import FileService from './FileService';
+import FileService from '../services/FileService';
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
 var PATH = require('path');
