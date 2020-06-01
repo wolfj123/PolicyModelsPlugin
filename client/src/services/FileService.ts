@@ -28,10 +28,10 @@ export default class FileService {
     }
   }
 
-  isFolderExist(path) {
+  static isFolderExist(path: string): boolean {
     return fs.existsSync(path);
   }
-
+  
   isExist(path) {
     try {
       return fs.existsSync(path)
