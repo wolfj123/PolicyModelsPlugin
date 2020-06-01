@@ -37,5 +37,4 @@ export default class GraphvizController{
 			fs.mkdirSync(outputFolderPath);
 		}
 	}
-
 }
