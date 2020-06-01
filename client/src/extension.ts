@@ -15,8 +15,6 @@ import createLocalizationApp from './Localization/createLocalizationApp';
 import {GraphvizController, POLICY_SPACE_TYPE, DECISION_GRAPH_TYPE} from './Graphviz/GraphvizController';
 import * as FS from 'fs';
 
-import FileService from './services/FileService';
-
 
 
 let client: LanguageClient;
