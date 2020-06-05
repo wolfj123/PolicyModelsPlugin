@@ -12,6 +12,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 
 #### Table of contents  <!-- omit in toc -->
 
+- [Installation](#installation)
 - [Features](#features)
 	- [Syntax Highlighting](#syntax-highlighting)
 	- [Go To References](#go-to-references)
@@ -22,13 +23,14 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Create New Model](#create-new-model)
 	- [Running Model](#running-model)
 - [Supported Settings](#supported-settings)
-- [Latest Build](#latest-build)
 - [Development Guide](#development-guide)
 - [Related](#related)
 
+
+## Installation
+[TODO: wait for packaging and release]
+
 ## Features
-
-
 ### Syntax Highlighting
 ![syntax highlighting](./docs/images/syntax_highlighting.png)
 
@@ -43,10 +45,10 @@ press **ctrl + space** to recieve a completion list:
 ![go to definition](./docs/images/autocomplete.png)
 
 ### Localization
-
+[TODO: add images & description]
 
 ### Graphviz Visualization
-
+[TODO: add images & description]
 
 ### Create New Model
 Press the **New Model** button and fill out the necessary information.
@@ -58,8 +60,7 @@ Press the **Run Model** button.
 [TODO: add images]
 
 ## Supported Settings
-
-## Latest Build
+[TODO: add images]
 
 ## Development Guide
 
