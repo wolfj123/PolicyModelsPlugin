@@ -17,8 +17,6 @@ install:
 
 script:  
     |  
-    ehcho ">>> test stuff"
-    npm install
     echo ">>> Compile vscode-test"
     yarn && yarn compile
     echo ">>> Compiled vscode-test"

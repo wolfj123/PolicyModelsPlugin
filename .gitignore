@@ -76,10 +76,6 @@ hs_err_pid*
 # *.ipr
 
 
-package-lock.json
-**/package-lock.json
-**/yarn.lock
-
 # CMake
 cmake-build-*/
 
