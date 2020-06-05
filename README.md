@@ -1,6 +1,11 @@
 # Policy Models Support for Visual Studio Code <!-- omit in toc -->
 
-More about Policy Models can be found [here.](https://datatagginglibrary.readthedocs.io/en/latest/index.html#)
+## Overview <!-- omit in toc -->
+
+This plugin adds support for **Policy Model** languages in **Visual Studio Code** (more about Policy Models can be found [here](https://datatagginglibrary.readthedocs.io/en/latest/index.html#)).
+This project is composed from an **LSP Client** and **LSP Server**.
+Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (the client uses it for syntax highlighting and the server for the rest of the language features).
+
 
 
 [![Build Status](https://travis-ci.org/wolfj123/PolicyModelsPlugin.svg?branch=master)](https://travis-ci.org/wolfj123/PolicyModelsPlugin)
@@ -17,7 +22,6 @@ More about Policy Models can be found [here.](https://datatagginglibrary.readthe
 	- [Create New Model](#create-new-model)
 	- [Running Model](#running-model)
 - [Supported Settings](#supported-settings)
-- [Changelog](#changelog)
 - [Latest Build](#latest-build)
 - [Development Guide](#development-guide)
 - [Related](#related)
@@ -45,14 +49,15 @@ press **ctrl + space** to recieve a completion list:
 
 
 ### Create New Model
+Press the **New Model** button and fill out the necessary information.
 
+[TODO: add images]
 
 ### Running Model
-
+Press the **Run Model** button.
+[TODO: add images]
 
 ## Supported Settings
-
-## Changelog
 
 ## Latest Build
 
