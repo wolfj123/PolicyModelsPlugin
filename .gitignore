@@ -75,6 +75,10 @@ hs_err_pid*
 # *.iml
 # *.ipr
 
+
+package-lock.json
+**/package-lock.json
+
 # CMake
 cmake-build-*/
 
