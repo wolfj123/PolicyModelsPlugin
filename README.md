@@ -62,7 +62,23 @@ Press the **Run Model** button.
 [TODO: add images]
 
 ### Localization
-[TODO: add images & description]
+
+Pressing the Localization will open our Localization GUI.
+If a Localization folder does not already exist, you will promped to first create one.
+
+![localization button](./docs/images/localization_button.png)
+
+The Localization GUI allows for simple editing of the **answers.txt** and **space.md** files:
+
+![localization answers gui](./docs/images/localization_gui.gif)
+
+![localization space gui](./docs/images/localization_space_file.png)
+
+
+We also provide a Markdown preview of the markdown files of the localization:
+
+![localization space gui](./docs/images/localization_markdown_preview.png)
+
 
 ### Graphviz Visualization
 [TODO: add images & description]
