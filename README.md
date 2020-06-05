@@ -18,10 +18,14 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Go To References](#go-to-references)
 	- [Go To Definition](#go-to-definition)
 	- [Auto-Complete](#auto-complete)
-	- [Localization](#localization)
-	- [Graphviz Visualization](#graphviz-visualization)
 	- [Create New Model](#create-new-model)
 	- [Running Model](#running-model)
+	- [Localization](#localization)
+	- [Graphviz Visualization](#graphviz-visualization)
+- [Supported Settings](#supported-settings)
+- [Development Guide](#development-guide)
+- [Related](#related)
+
 - [Supported Settings](#supported-settings)
 - [Development Guide](#development-guide)
 - [Related](#related)
@@ -35,20 +39,18 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 ![syntax highlighting](./docs/images/syntax_highlighting.png)
 
 ### Go To References
+We support references of Decision Graph nodes (that have an ID), Policy Space slots and Policy Space slot-values.
+ 
 ![go to references](./docs/images/references.gif)
 
 ### Go To Definition
+We support references of Decision Graph nodes (that have an ID), Policy Space slots and Policy Space slot-values.
+ 
 ![go to definition](./docs/images/definition.gif)
 
 ### Auto-Complete
-press **ctrl + space** to recieve a completion list:
-![go to definition](./docs/images/autocomplete.png)
-
-### Localization
-[TODO: add images & description]
-
-### Graphviz Visualization
-[TODO: add images & description]
+Press **ctrl + space** (default VSCode shortcut) to recieve a completion list. The completion list includes keywords dependant on the file type, Decision Graph nodes (from imported graph files), slots and slot-values.
+![autocomplete](./docs/images/autocomplete.png)
 
 ### Create New Model
 Press the **New Model** button and fill out the necessary information.
@@ -58,6 +60,12 @@ Press the **New Model** button and fill out the necessary information.
 ### Running Model
 Press the **Run Model** button.
 [TODO: add images]
+
+### Localization
+[TODO: add images & description]
+
+### Graphviz Visualization
+[TODO: add images & description]
 
 ## Supported Settings
 [TODO: add images]
