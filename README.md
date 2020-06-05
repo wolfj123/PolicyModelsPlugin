@@ -44,7 +44,7 @@ We support references of Decision Graph nodes (that have an ID), Policy Space sl
 ![go to references](./docs/images/references.gif)
 
 ### Go To Definition
-We support references of Decision Graph nodes (that have an ID), Policy Space slots and Policy Space slot-values.
+We support definitions of Decision Graph nodes (that have an ID), Policy Space slots and Policy Space slot-values.
  
 ![go to definition](./docs/images/definition.gif)
 
