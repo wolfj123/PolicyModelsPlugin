@@ -26,10 +26,6 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 - [Development Guide](#development-guide)
 - [Related](#related)
 
-- [Supported Settings](#supported-settings)
-- [Development Guide](#development-guide)
-- [Related](#related)
-
 
 ## Installation
 [TODO: wait for packaging and release]
