@@ -9,15 +9,15 @@ import * as fs from 'fs';
 
 
 import { languagesIds } from './Utils';
-import { PMTextDocument, createFromTextDocumentItem, createNewTextDocument, changeInfo } from './Documents';
+import { PMTextDocument, createNewTextDocumentFromItem, createNewTextDocument, ChangeInfo } from './Documents';
 import { getLogger, logSources } from './Logger';
 
 export interface DocumentManagerResult {
-	type: documentManagerResultTypes,
+	type: DocumentManagerResultTypes,
 	result?: any;
 }
 
-export enum documentManagerResultTypes {
+export enum DocumentManagerResultTypes {
 	noChange,
 	newFile,
 	removeFile,
@@ -29,7 +29,6 @@ export interface TextDocumentManagerInt{
 	 * indicates if the clinet has a folder or only open files
 	 */
 	folderMode: boolean;
-
 	/**
 	 * sets a file to open, updates data structure to contanin file with text and version received in parameters,
 	 * if it is needed it create a file in the Manager it, in case of difference between the file we already have and the parameters
@@ -43,7 +42,6 @@ export interface TextDocumentManagerInt{
 	 *  * removeFile - in case of difference between file and data in manager, result is removed URI
 	 */
 	openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult []>;
-
 	/**
 	 * sets a file to close this can be done only for files already opened in client(using openedDocumentInClient),
 	 * use for onDidCloseTextDocument
@@ -54,7 +52,6 @@ export interface TextDocumentManagerInt{
 	 *  * removeFile - in case of no folder mode the file is removed from manager, result is remove URI
 	 */
 	closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult>;
-
 	/**
 	 * updates the text of a file already opened in client(using openedDocumentInClient)
 	 * use for onDidChangeTextDocument
@@ -67,7 +64,6 @@ export interface TextDocumentManagerInt{
 	 *  * updateFile - file was successfully updataetd, result is array of changeInfo
 	 */ 
 	changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>;
-
 	/**
 	 * delets a file from the documnet manager
 	 * use for onDidChangeWatchedFiles
@@ -78,7 +74,6 @@ export interface TextDocumentManagerInt{
 	 *  * removeFile - removed the file, result is remove URI
 	 */
 	deletedDocument(deletedFile:DocumentUri): Promise<DocumentManagerResult>;
-
 	/**
 	 * this creates a new empty file in the manager, if the file already exists nothing will happen 
 	 * use for onDidChangeWatchedFiles
@@ -89,7 +84,6 @@ export interface TextDocumentManagerInt{
 	 *  * newFile - created and added new file to manager, result is the PMTextDocument created
 	 */
 	clientCreatedNewFile(newFileUri:DocumentUri): Promise<DocumentManagerResult>;
-
 	/**
 	 * this reads all the files in folder and sub folders, and create PMTextDocument object for all relevant 
 	 * Policy Model files, this function is synchronic and must be called before any other TextDocumentManagerInt function
@@ -97,13 +91,11 @@ export interface TextDocumentManagerInt{
 	 * @param pathUri null for no folder, string of the folder URI
 	 */
 	openedFolder(pathUri: string | null): void;
-
 	/**
 	 * returns a copy of PMTextDocument of the document with the requeste URI
 	 * @param uri 
 	 */
 	getDocument(uri: string): PMTextDocument;
-
 	/**
 	 * @returns array of all documents managed by this class
 	 */
@@ -151,12 +143,12 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 			//this can happen when:
 			//1) I have an error in the code or understanding
 			//2) we are in _noOpenFolderMode 
-			//3) the user change a name of a file while it was open in the client
+			//3) the user changed the name of a file while it was open in the client
 
 			let newDocument:PMTextDocument = this.createAndAddNewFile(undefined,opendDocParam);
 
 			let ans: DocumentManagerResult []= [{
-				type: documentManagerResultTypes.newFile,
+				type: DocumentManagerResultTypes.newFile,
 				result: newDocument
 			}];
 
@@ -167,17 +159,17 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 			this.deletedDocument(opendDocParam.uri);
 			let newDocument: PMTextDocument =  this.createAndAddNewFile(undefined,opendDocParam);
 			let removeAns: DocumentManagerResult = {
-				type: documentManagerResultTypes.removeFile,
+				type: DocumentManagerResultTypes.removeFile,
 				result: opendDocParam.uri
 			};
 			let addAns: DocumentManagerResult = {
-				type: documentManagerResultTypes.newFile,
+				type: DocumentManagerResultTypes.newFile,
 				result: newDocument
 			};
 			return Promise.resolve([removeAns,addAns]);
 		}else {
 			openedTextDocument.version = opendDocParam.version;
-			return Promise.resolve([{type:documentManagerResultTypes.noChange}]);
+			return Promise.resolve([{type:DocumentManagerResultTypes.noChange}]);
 		}
 	}
 
@@ -192,19 +184,19 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		let closedDocmentIdx: number = this._allDocuments.findIndex(currDoc => currDoc.uri === closedDcoumentParams.uri);
 		if (closedDocmentIdx === -1 ){
 			getLogger(logSources.documents).error(`didn't find a documnet to close in closedDocumentInClient`, closedDcoumentParams);
-			return Promise.resolve({type:documentManagerResultTypes.noChange});
+			return Promise.resolve({type:DocumentManagerResultTypes.noChange});
 		}
 
 		if (this._noOpenFolderMode){
 			this._allDocuments.splice(closedDocmentIdx,1);
 			let ans: DocumentManagerResult = {
-				type: documentManagerResultTypes.removeFile,
+				type: DocumentManagerResultTypes.removeFile,
 				result: closedDcoumentParams.uri
 			}
 			return Promise.resolve(ans);
 		}else{
 			this._allDocuments[closedDocmentIdx].version = -1;
-			return Promise.resolve({type:documentManagerResultTypes.noChange});
+			return Promise.resolve({type:DocumentManagerResultTypes.noChange});
 		}
 	}
 
@@ -218,12 +210,12 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		let documentToUpdate: PMTextDocument = this._allDocuments.find(curr=> curr.uri === params.textDocument.uri);
 		if (documentToUpdate === undefined){
 			getLogger(logSources.documents).error(`didn't find text document to change in changeTextDocument`, params);
-			return Promise.resolve({type: documentManagerResultTypes.noChange});
+			return Promise.resolve({type: DocumentManagerResultTypes.noChange});
 		}
 
-		let changesRanges: changeInfo []= documentToUpdate.update(params.contentChanges,params.textDocument.version);
+		let changesRanges: ChangeInfo []= documentToUpdate.update(params.contentChanges,params.textDocument.version);
 		let ans:DocumentManagerResult = {
-			type: documentManagerResultTypes.updateFile,
+			type: DocumentManagerResultTypes.updateFile,
 			result: changesRanges
 		}
 		return Promise.resolve(ans);
@@ -239,12 +231,12 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		let deletedIdx: number = this._allDocuments.findIndex(currDoc => currDoc.uri === deletedFile);
 		if (deletedIdx === -1){
 			getLogger(logSources.documents).error(`didn't find text document to delete in deletedDocument`, deletedFile);
-			return Promise.resolve({type: documentManagerResultTypes.noChange});
+			return Promise.resolve({type: DocumentManagerResultTypes.noChange});
 		}
 
 		this._allDocuments.splice(deletedIdx,1);
 		let ans: DocumentManagerResult = {
-			type: documentManagerResultTypes.removeFile,
+			type: DocumentManagerResultTypes.removeFile,
 			result: deletedFile
 		}
 
@@ -261,11 +253,11 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 		// if the user changes the name of a file when it is opened in the client than openedDocumentInClient
 		// happens before this function and there we already handling it
 		if (this._allDocuments.find(currDoc => currDoc.uri === newFileUri) !== undefined){
-			return Promise.resolve({type: documentManagerResultTypes.noChange});
+			return Promise.resolve({type: DocumentManagerResultTypes.noChange});
 		}
 		let newDocumet = this.createAndAddNewFile(newFileUri);
 		let ans: DocumentManagerResult = {
-			type: documentManagerResultTypes.newFile,
+			type: DocumentManagerResultTypes.newFile,
 			result: newDocumet
 		}
 
@@ -275,9 +267,9 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 	private createAndAddNewFile(newFileUri:string = undefined  ,textDocument?: TextDocumentItem ): PMTextDocument {
 		let newDoc:PMTextDocument = undefined;
 		if (newFileUri !== undefined){
-			newDoc = createNewTextDocument(newFileUri,this.getLangugeIdFromUri(newFileUri));
+			newDoc = createNewTextDocument(newFileUri, this.getLangugeIdFromUri(newFileUri));
 		}else if (textDocument !== undefined){
-			newDoc = createFromTextDocumentItem(textDocument);
+			newDoc = createNewTextDocumentFromItem(textDocument);
 		}
 		if (newDoc === undefined){
 			return;
@@ -316,14 +308,14 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 			}else{
 				//check extension
 				let langId = this.getLangugeIdFromUri(currFilePath);
-				if (langId !== null){
+				if (langId !== null && langId !== undefined){
 					filesToParse.push({name: currFilePath, languageId: langId});
 				}
 			}
 		});
 	}
 
-	/**
+		/**
 	 * @param uri file URI
 	 * @returns language ID of a file based on its suffix, null if not a language suffix
 	 */
@@ -357,7 +349,6 @@ export class TextDocumentManager implements TextDocumentManagerInt {
 
 		return result;
 	}
-
 
 }
 

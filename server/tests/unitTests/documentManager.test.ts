@@ -1,10 +1,9 @@
-import * as mocha from 'mocha';
-import {TextDocumentManager, DocumentManagerResult, documentManagerResultTypes} from '../../src/DocumentManager'
+import {TextDocumentManager, DocumentManagerResult, DocumentManagerResultTypes} from '../../src/DocumentManager'
 import { expect, assert } from 'chai';
 import { URI } from 'vscode-uri';
 import { TextDocumentItem, DidChangeTextDocumentParams, Range, Position } from 'vscode-languageserver';
 import * as fs from 'fs';
-import { PMTextDocument, changeInfo } from '../../src/Documents';
+import { PMTextDocument, ChangeInfo } from '../../src/Documents';
 import { initLogger } from '../../src/Logger';
 
 
@@ -69,12 +68,12 @@ describe('Document Manger unit tets', ()=>{
 	});
 
 	function genericTextUpdateTest (documentManager: TextDocumentManager) {
-		const promiseCreator = (fileIdx: number,DidChangeTextDocumentParams: DidChangeTextDocumentParams, expectedNewText:string ,expectedChangeRange: changeInfo): Promise<any> => {
+		const promiseCreator = (fileIdx: number,DidChangeTextDocumentParams: DidChangeTextDocumentParams, expectedNewText:string ,expectedChangeRange: ChangeInfo): Promise<any> => {
 			return new Promise(async (resolve,reject)=>{
 				let docManagerAns = documentManager.changeTextDocument(DidChangeTextDocumentParams);
 				try {
 					await docManagerAns.then (ans =>{
-						expect(ans.type).equals(documentManagerResultTypes.updateFile,"expected type of update on file: " + fileIdx)
+						expect(ans.type).equals(DocumentManagerResultTypes.updateFile,"expected type of update on file: " + fileIdx)
 						expect(ans.result.length).equals(1,"expected to have only 1 change range on file: " + fileIdx);
 						expect(ans.result[0]).deep.equals(expectedChangeRange,"change range is incorrect on file: "+fileIdx)
 					})
@@ -117,7 +116,7 @@ describe('Document Manger unit tets', ()=>{
 			]
 		}
 
-		let expectedChangeResult1: changeInfo = {
+		let expectedChangeResult1: ChangeInfo = {
 			oldRange: text1AllDocRange,
 			newRange:{start:{line: 0 , character: 0},end:{line: 0 , character: 0}}
 		}
@@ -150,7 +149,7 @@ describe('Document Manger unit tets', ()=>{
 		let changeLine = text2EndPosition.line + 1;
 
 
-		let expectedChangeResult2: changeInfo = {
+		let expectedChangeResult2: ChangeInfo = {
 			oldRange: {
 				start: text2EndPosition,
 				end: text2EndPosition
@@ -237,7 +236,7 @@ describe('Document Manger unit tets', ()=>{
 		let expectedChangeRange1: Range = {start:{line:changeLine,character:8}, end: {line:changeLine,character:10}}
 		let expectedChangeRange2: Range = {start:{line:changeLine,character:0},end: {line:changeLine,character:2}}
 
-		let expectedChangeResult: changeInfo [] = [
+		let expectedChangeResult: ChangeInfo [] = [
 			{
 				oldRange:ChangeRange1,
 				newRange: expectedChangeRange1
@@ -254,7 +253,7 @@ describe('Document Manger unit tets', ()=>{
 			
 			try {
 				await docManagerAns.then (ans =>{
-					expect(ans.type).equals(documentManagerResultTypes.updateFile,"expected type of update on  2 changes")
+					expect(ans.type).equals(DocumentManagerResultTypes.updateFile,"expected type of update on  2 changes")
 					expect(ans.result.length).equals(2,"expected to have 2 change range on  2 changes");
 					expect(ans.result).deep.equals(expectedChangeResult, "changes are incorrect for 2 files changes");
 				})
@@ -299,7 +298,7 @@ describe('Document Manger unit tets', ()=>{
 						expect(allDocs[expecteAmountOfOpenDocuments-1].version === 1);
 						await docManagerAns.then(ans=> {
 							expect(ans.length).equals(1,"expected to recieve only 1 result from document manager");
-							expect(ans[0].type).equals(documentManagerResultTypes.newFile, "expected the result type of document manager to be new file")
+							expect(ans[0].type).equals(DocumentManagerResultTypes.newFile, "expected the result type of document manager to be new file")
 							//TODO add check for result of text doc
 						});
 						resolve ();
@@ -347,8 +346,8 @@ describe('Document Manger unit tets', ()=>{
 					expect(allDocs[allDocs.length-1].version === 1);
 					await docManagerAns.then(ans=> {
 						expect(ans.length).equals(2,"expected to recieve 2 changes from documnet manager");
-						expect(ans[0].type).equals(documentManagerResultTypes.removeFile, "first result should be remove")
-						expect(ans[1].type).equals(documentManagerResultTypes.newFile, "second result should be new file")
+						expect(ans[0].type).equals(DocumentManagerResultTypes.removeFile, "first result should be remove")
+						expect(ans[1].type).equals(DocumentManagerResultTypes.newFile, "second result should be new file")
 						//TODO add check for result in ans
 					});
 					resolve ();
@@ -374,7 +373,7 @@ describe('Document Manger unit tets', ()=>{
 					try {
 						expect(allDocs.length).equals(expectedAmountOfDocuments, "after removing a file length should be shorte by 1");
 						await docManagerAns.then(ans=> {
-							expect(ans.type).equals(documentManagerResultTypes.removeFile, "expected to have remove type");
+							expect(ans.type).equals(DocumentManagerResultTypes.removeFile, "expected to have remove type");
 							expect(ans.result).equals(fileIdentifier.uri,"expected to return the uri of the removed file")
 						});
 						resolve();
@@ -453,7 +452,7 @@ describe('Document Manger unit tets', ()=>{
 						let docManagerAns = documentManager.openedDocumentInClient(openParams);
 						await docManagerAns.then(ans=>{
 							expect(ans.length).equals(1,`expected to recieve only 1 result from document manager when opening ${getFileFullPath(folder,file)}`);
-							expect(ans[0].type).equals(documentManagerResultTypes.noChange, `opening file read from folder should return no change for file ${getFileFullPath(folder,file)}`);
+							expect(ans[0].type).equals(DocumentManagerResultTypes.noChange, `opening file read from folder should return no change for file ${getFileFullPath(folder,file)}`);
 						});
 						let doc: PMTextDocument = documentManager.allDocumnets.find(curr=> curr.uri.includes(folderUri) && curr.uri.includes(file));
 						expect(doc).not.equals(undefined,`${folderUri} , ${file}`)
@@ -480,8 +479,8 @@ describe('Document Manger unit tets', ()=>{
 					let docManagerAns = documentManager.openedDocumentInClient(openParams);
 					await docManagerAns.then(ans=>{
 						expect(ans.length).equals(2,`expected to recieve  2 result from document manager for diff text when opening ${getFileFullPath(folder,file)}`);
-						expect(ans[0].type).equals(documentManagerResultTypes.removeFile, `opening diff text should return remove  for file ${getFileFullPath(folder,file)}`);
-						expect(ans[1].type).equals(documentManagerResultTypes.newFile, `opening diff text should return new file  for file ${getFileFullPath(folder,file)}`);
+						expect(ans[0].type).equals(DocumentManagerResultTypes.removeFile, `opening diff text should return remove  for file ${getFileFullPath(folder,file)}`);
+						expect(ans[1].type).equals(DocumentManagerResultTypes.newFile, `opening diff text should return new file  for file ${getFileFullPath(folder,file)}`);
 					});
 
 					let doc: PMTextDocument = documentManager.allDocumnets.find(curr=> curr.uri.includes(folderUri) && curr.uri.includes(file));
@@ -510,7 +509,7 @@ describe('Document Manger unit tets', ()=>{
 						let closeParams= {uri: getFileURI(folder,file)}
 						let docManagerAns = documentManager.closedDocumentInClient(closeParams);
 						await docManagerAns.then(ans =>{
-							expect(ans.type).equals(documentManagerResultTypes.noChange,`when closing should have no change for file: ${getFileFullPath(folder,file)}`);
+							expect(ans.type).equals(DocumentManagerResultTypes.noChange,`when closing should have no change for file: ${getFileFullPath(folder,file)}`);
 						})
 						let doc: PMTextDocument = documentManager.allDocumnets.find(curr=> curr.uri.includes(folderUri) && curr.uri.includes(file));
 						expect(doc).not.equals(undefined,`${folder} , ${file}`)
@@ -536,7 +535,7 @@ describe('Document Manger unit tets', ()=>{
 				let uri:string =  getFileURI(allPMFiles[0].folder,allPMFiles[0].files[0]);
 				try{
 					await documentManager.clientCreatedNewFile(uri).then(ans =>{
-						expect(ans.type).equals(documentManagerResultTypes.noChange," in no real creation not expecte to create file");
+						expect(ans.type).equals(DocumentManagerResultTypes.noChange," in no real creation not expecte to create file");
 					});
 					expect(documentManager.allDocumnets.length).equals(oldAmount,"changed amount of files in no creation");
 					resolve();
@@ -550,7 +549,7 @@ describe('Document Manger unit tets', ()=>{
 				let uri:string =  getFileURI(allPMFiles[0].folder,allPMFiles[1].files[1]);
 				try{
 					await documentManager.deletedDocument(uri).then(ans =>{
-						expect(ans.type).equals(documentManagerResultTypes.noChange," in no deletion expected not to delete the file");
+						expect(ans.type).equals(DocumentManagerResultTypes.noChange," in no deletion expected not to delete the file");
 					});
 					expect(documentManager.allDocumnets.length).equals(oldAmount,"changed amount of files in no deletion ");
 					resolve();
@@ -573,7 +572,7 @@ describe('Document Manger unit tets', ()=>{
 				let oldAmount = documentManager.allDocumnets.length;
 				try{
 					await documentManager.clientCreatedNewFile(fakeFileUri).then(ans =>{
-						expect(ans.type).equals(documentManagerResultTypes.newFile," in creation expected to create a file");
+						expect(ans.type).equals(DocumentManagerResultTypes.newFile," in creation expected to create a file");
 						expect(ans.result.uri).equals(fakeFileUri,"created files uri don't match")
 					});
 					expect(documentManager.allDocumnets.length).equals(oldAmount + 1,"didn't increase amount of files in creation");
@@ -591,7 +590,7 @@ describe('Document Manger unit tets', ()=>{
 				let oldAmount = documentManager.allDocumnets.length;
 				try{
 					await documentManager.deletedDocument (fakeFileUri).then( ans =>{
-						expect(ans.type).equals(documentManagerResultTypes.removeFile," in remove didn't removed file");
+						expect(ans.type).equals(DocumentManagerResultTypes.removeFile," in remove didn't removed file");
 						expect(ans.result).equals(fakeFileUri,"removed files uri don't match")
 					});
 					expect(documentManager.allDocumnets.length).equals(oldAmount - 1,"didn't decrease amoutn of files in deletion");
