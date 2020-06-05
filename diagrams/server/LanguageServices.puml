@@ -106,9 +106,9 @@ package LanguageServices #DDDDDD {
     }
 
     class LanguageServicesWithCache extends LanguageServices {
-    +getFileManager(doc: PMTextDocument, extension: string): FileManager
-    +getCompletion(location: Location): CompletionList
-    +{static} init(docs: PMTextDocument[], pluginDir: string): Promise<LanguageServicesWithCache>
+        +getFileManager(doc: PMTextDocument, extension: string): FileManager
+        +getCompletion(location: Location): CompletionList
+        +{static} init(docs: PMTextDocument[], pluginDir: string): Promise<LanguageServicesWithCache>
     }
     class DecisionGraphFileManagerWithCache extends DecisionGraphFileManagerNaive {
         +cache: PolicyModelEntity[]
