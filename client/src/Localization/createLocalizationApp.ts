@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
 import LocalizationController from './LocalizationController';
-import FileService from './FileService';
+import FileService from '../services/FileService';
 import { InputBoxOptions } from 'vscode';
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
