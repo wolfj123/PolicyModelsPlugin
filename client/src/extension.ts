@@ -134,14 +134,9 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
   myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
   myStatusBarItem.command = myCommandId;
   subscriptions.push(myStatusBarItem);
-
-  // register some listener that make sure the status bar
-  // item always up-to-date
-  // subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
-  // subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
-
+  
   // update status bar item once at start
-  myStatusBarItem.text = '$(play) new Model';
+  myStatusBarItem.text = '$(new-file) New Model';
   myStatusBarItem.show();
 }
 
