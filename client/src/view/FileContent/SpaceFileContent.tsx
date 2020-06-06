@@ -73,7 +73,7 @@ const SpaceFileContent: React.FunctionComponent<Props> = props => {
   const createSlotComponent = (slotData, i) => {
     const { slot, name, shortNote, longNote } = slotData;
     return (
-      <div key={name+i} className="slot">
+      <div key={slot+ i} className="slot">
         <h1>{slot}</h1>
         <form>
           <label>
