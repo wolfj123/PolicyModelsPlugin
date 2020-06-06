@@ -36,9 +36,27 @@ public  class PolicyModelService {
         return isSucceed.toString();
     }
 
-    public static void updateLocalization() throws  Exception {
-        UpdateLocalizationCommand updateCmd = new UpdateLocalizationCommand();
-        updateCmd.execute(cli,new LinkedList<>());
+    public static String updateLocalization() throws  Exception {
+        CliRunnerUpdateLocalizationOverride overrideCli = new CliRunnerUpdateLocalizationOverride();
+        if(loadPolicyIntoNewCli(overrideCli)){
+            UpdateLocalizationCommand updateCmd = new UpdateLocalizationCommand();
+            updateCmd.execute(overrideCli,new LinkedList<>());
+            String answersToRemove = overrideCli.answersToRemove;
+            if(answersToRemove != null){
+                return answersToRemove;
+            }
+        }
+        return "false";
+    }
+
+    private static Boolean loadPolicyIntoNewCli(CliRunner overrideCli) throws Exception {
+        String path = cli.getModel().getDirectory().toString();
+        LoadPolicyModelCommand loadCmd = new LoadPolicyModelCommand();
+        List<String> args = new LinkedList<>();
+        args.add(path);
+        args.add(path);
+        loadCmd.execute(overrideCli, args);
+        return  overrideCli.getModel() != null;
     }
 
     public static Pair<Integer,String> createNewModel (CliRunnerNewModelOverride newCli) throws  Exception{
