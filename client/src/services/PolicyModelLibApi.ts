@@ -58,7 +58,7 @@ export default class PolicyModelLibApi {
     const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar")
 
     this.child = require('child_process').spawn(
-      //  `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
+      // `java`,[`-agentlib:jdwp=transport=dt_socket,address=*:8080,server=y,suspend=n`,`-jar`, JavaServerJar] // for debugging the server,
       'java', ['-jar', `${JavaServerJar}`, null]
     );
 
@@ -162,7 +162,6 @@ export default class PolicyModelLibApi {
     const ans:Promise<string> = new Promise((res,rej)=>{
       childProcess.stdout.on('data',async  function(data) {
         const newModelAns: string = "res---new---"
-        const cancelModelAns: string = "res---cancel---"
         let newModelDataAns:string = (data.toString());
         if (newModelDataAns.startsWith(newModelAns)){
           let modelInfo:string = newModelDataAns.substring(newModelAns.length).trim();
@@ -206,7 +205,6 @@ export default class PolicyModelLibApi {
         }
       })
       .catch(rej=>{
-        // console.log(`new model rejected from server\n\n ${rej}\n\n`);
         return reject(`Failed to create a new model \nadditional info: ${rej.response !== undefined ? rej.response.data : rej.message}`);
       });
     });
