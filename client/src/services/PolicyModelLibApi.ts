@@ -109,8 +109,8 @@ export default class PolicyModelLibApi {
     return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
   }
 
-  async _updateLocalization(): Promise<boolean> {
-    return await axiosInstance.get(`/loc/update`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  async _updateLocalization(): Promise<string[]> {
+    return await axiosInstance.get(`/loc/update`).then(res => res.data).catch(this._handleConnectionRejection);
   }
 
   async _requestsWrapper(loadModel: boolean,requestCallback): Promise<any> {
@@ -227,7 +227,7 @@ export default class PolicyModelLibApi {
     return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot));
   }
 
-  async updateLocalization(): Promise<boolean>{
+  async updateLocalization(): Promise<string[]>{
     return await this._requestsWrapper(true,() => this._updateLocalization());
   }
 
