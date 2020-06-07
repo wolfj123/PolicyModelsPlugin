@@ -11,7 +11,8 @@ export interface ICommand {
 
 export enum CommandAction {
   Save,
-  Response
+  Response,
+  NewLanguage
 }
 
 export interface File {

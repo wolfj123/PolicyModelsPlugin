@@ -22,7 +22,7 @@ import {
 	VersionedTextDocumentIdentifier
 } from 'vscode-languageserver';
 
-import { TextDocumentManager, documentManagerResultTypes, TextDocumentManagerInt, DocumentManagerResult } from './DocumentManager';
+import { TextDocumentManager, DocumentManagerResultTypes, TextDocumentManagerInt, DocumentManagerResult } from './DocumentManager';
 import { LanguageServicesFacade } from './LanguageServices';
 import { logSources, getLogger } from './Logger';
 import * as Path from 'path';
@@ -149,12 +149,10 @@ export class PMSolver implements SolverInt{
 		this._sovlerReady = false;
 	}
 
-
 	private getFSFolderFromUri(uri: DocumentUri): string{
 		let fileFSPath: string = URI.parse(uri).fsPath;
 		return Path.dirname(fileFSPath);
 	}
-
 
 	//#region private functions
 	/**
@@ -357,43 +355,19 @@ export class PMSolver implements SolverInt{
 		for (let i =0; i < openDocumentsResults.length; i++){
 			let currChange: DocumentManagerResult = openDocumentsResults[i];
 			switch(currChange.type){
-				case documentManagerResultTypes.noChange:
+				case DocumentManagerResultTypes.noChange:
 					break;
-				case documentManagerResultTypes.newFile:
+				case DocumentManagerResultTypes.newFile:
 					await this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
-					// this._languageFacade.addDocs([currChange.result]);
 					break;
-				case documentManagerResultTypes.removeFile:
+				case DocumentManagerResultTypes.removeFile:
 					this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
-					// this._languageFacade.removeDoc(currChange.result)
 					break;
 				default:
 					getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
 					break;
 			}
 		}
-
-		
-		
-		// .then(async changeResults => {
-		// 	changeResults.forEach(async currChange => {
-		// 		switch(currChange.type){
-		// 			case documentManagerResultTypes.noChange:
-		// 				break;
-		// 			case documentManagerResultTypes.newFile:
-		// 				await this.facdeCallWrapperForDocumentEvents([currChange.result],"addDocs",opendDocParam.uri)
-		// 				// this._languageFacade.addDocs([currChange.result]);
-		// 				break;
-		// 			case documentManagerResultTypes.removeFile:
-		// 				this.facdeCallWrapperForDocumentEvents(currChange.result,"removeDoc",opendDocParam.uri)
-		// 				// this._languageFacade.removeDoc(currChange.result)
-		// 				break;
-		// 			default:
-		// 				getLogger(logSources.server).error('onDidOpenTextDocument wrong change type',currChange);
-		// 				break;
-		// 		}
-		// 	});
-		// })
 		
 	}
 
@@ -408,7 +382,7 @@ export class PMSolver implements SolverInt{
 		await docManager.closedDocumentInClient(closedDcoumentParams)
 		.then(async change=>{
 			switch(change.type){
-				case documentManagerResultTypes.removeFile:
+				case DocumentManagerResultTypes.removeFile:
 					await this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",closedDcoumentParams.uri);
 					// this._languageFacade.removeDoc(change.result);
 					break;
@@ -431,12 +405,11 @@ export class PMSolver implements SolverInt{
 		await docManager.changeTextDocument(params)
 		.then(change =>{
 			switch(change.type){
-				case documentManagerResultTypes.updateFile:
+				case DocumentManagerResultTypes.updateFile:
 					let docUri: DocumentUri = params.textDocument.uri;
 					this.facdeCallWrapperForDocumentEvents(docManager.getDocument(docUri),"updateDoc",docUri);
-					//this._languageFacade.updateDoc(this._documentManager.getDocument(params.textDocument.uri));
 					break;
-				case documentManagerResultTypes.noChange:
+				case DocumentManagerResultTypes.noChange:
 					break;
 				default:
 					getLogger(logSources.server).error('onDidChangeTextDocument wrong change type',change);
@@ -457,7 +430,7 @@ export class PMSolver implements SolverInt{
 		await docManager.deletedDocument(deletedFileUri)
 		.then(change =>{
 			switch(change.type){
-				case documentManagerResultTypes.removeFile:
+				case DocumentManagerResultTypes.removeFile:
 					this.facdeCallWrapperForDocumentEvents(change.result,"removeDoc",deletedFileUri)
 					// this._languageFacade.removeDoc(change.result);
 				default:
@@ -479,9 +452,8 @@ export class PMSolver implements SolverInt{
 		await docManager.clientCreatedNewFile(newFileUri)
 		.then(change => {
 			switch(change.type){
-				case documentManagerResultTypes.newFile:
+				case DocumentManagerResultTypes.newFile:
 					this.facdeCallWrapperForDocumentEvents([change.result],"addDocs",newFileUri);
-					// this._languageFacade.addDocs([change.result]);
 				default:
 					getLogger(logSources.server).error('onCreatedNewFile wrong change type',change);
 					break;

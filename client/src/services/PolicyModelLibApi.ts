@@ -92,11 +92,12 @@ export default class PolicyModelLibApi {
       return res.data === SUCCESS;
     }).catch(this._handleConnectionRejection);
   }
+
   _printToScreen(message: string): void {
     this._printToScreenCallback(message);
   }
 
-  _handleConnectionRejection(err: any): void {
+  _handleConnectionRejection = (err: any): void => {
     this._printToScreen(err.message);
   }
 
@@ -106,6 +107,10 @@ export default class PolicyModelLibApi {
 
   async _createNewLocalization(name: string): Promise<boolean> {
     return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+  }
+
+  async _updateLocalization(): Promise<boolean> {
+    return await axiosInstance.get(`/loc/update`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
   }
 
   async _requestsWrapper(loadModel: boolean,requestCallback): Promise<any> {
@@ -129,7 +134,7 @@ export default class PolicyModelLibApi {
       }
     });
 
-    return await ans;
+    return await ans.catch(this._handleConnectionRejection);
   }
   async _visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
     return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}&dotPath=${graphvizDot}`)
@@ -220,6 +225,10 @@ export default class PolicyModelLibApi {
 
   async visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
     return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot));
+  }
+
+  async updateLocalization(): Promise<boolean>{
+    return await this._requestsWrapper(true,() => this._updateLocalization());
   }
 
 }
