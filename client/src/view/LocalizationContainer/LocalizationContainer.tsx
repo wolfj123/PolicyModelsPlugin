@@ -4,15 +4,16 @@ import CompareToPanel from '../CompareToPanel/CompareToPanel';
 import SideBarMenu from '../SideBarMenu/SideBarMenu';
 import { LanguageData,ItemMenuData } from '../Types/model';
 import './LocalizationContainer.css';
-
+import Header from '../Header/Header';
 
 interface Props {
   languageFilesData: LanguageData[];
   onSave(path: string, content: string): void;
+  onCreateNewLanguage(): void;
 }
 
 
-const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesData, onSave }) => {
+const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesData, onSave,onCreateNewLanguage }) => {
   const [selectedLanguageId, setSelectedLanguageId] = React.useState(languageFilesData[0].id);
   const [selectedFileId, setSelectedFileId] = React.useState(languageFilesData[0].files[0].id);
   const [previewFileId, setPreviewFileId] = React.useState(languageFilesData[0].files[0].id);
@@ -74,9 +75,12 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
   const languagesNames = languageFilesData.map((languageData) => languageData.language);
   return (
     <div className={'App'}>
+      <Header onCreateNewLanguage={onCreateNewLanguage}/>
       <div className={'container'}>
       <div className="panel" style={{flex: '0 0 130px',height: '100%'}}>
+        <div style={{position: 'fixed'}}>
         <SideBarMenu filesMenuData={filesMenuData} languagesMenuData={languagesMenuData} />
+        </div>
       </div>
       <div className="panel" style={{flex: '1 1 0',maxWidth: 'calc((100vw - 240px) / 2)'}}>
         <FileContent key={selectedFile.id} fileData={selectedFile} onFileChange={handleFileChange} />

@@ -17,19 +17,21 @@ package LanguageUtils #DDDDDD {
         SlotValue
         ValueInference
         InferencePair
+        ImportGraph
     }
     enum PolicyModelEntityCategory {
-        FoldRange
         Declaration
         Reference
+        Special
+        FoldRange
     }
     class PolicyModelEntity {
         +type: PolicyModelEntityType
+        +category: PolicyModelEntityCategory
         +name: string
-        +source?: string
+        +source: string
         +syntaxNode: SyntaxNode
         +location: Location
-        +category: PolicyModelEntityCategory
         +getType(): PolicyModelEntityType
         +getName(): string
         +getSource(): string
