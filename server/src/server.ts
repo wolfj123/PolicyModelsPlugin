@@ -314,25 +314,20 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 				break;
 		}
 	});
-	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
 
 connection.onDidChangeTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidChangeTextDocument`,event);
-	console.log("onDidChangeTextDocument")
 	solver.onDidChangeTextDocument(event);
 });
 
 connection.onDidCloseTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidCloseTextDocument`,event);
-	console.log(`onDidCloseTextDocument`);
 	solver.onDidCloseTextDocument(event.textDocument);
-
 });
 
 connection.onDidOpenTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidOpenTextDocument`,event);
-	console.log(`onDidOpenTextDocument`);
 	solver.onDidOpenTextDocument(event.textDocument);
 });
 

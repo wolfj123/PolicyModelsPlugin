@@ -155,7 +155,9 @@ export class PMSolver implements SolverInt{
 	public creatediagnosticsCallback() : (uri: DocumentUri, errors: SyntaxError []) => void {
 		let pmsolverRef : PMSolver = this;
 		const callback = (uri: DocumentUri, errors: SyntaxError []) => {
-			
+			if (pmsolverRef._publishDiagnosticsCallback === undefined){
+				return;
+			}
 			let diagnostics: Diagnostic [] = []
 			if (errors !== null && errors !== undefined){
 				errors.forEach(currError =>{
@@ -166,6 +168,7 @@ export class PMSolver implements SolverInt{
 					});
 				});
 			}
+			
 			
 			pmsolverRef._publishDiagnosticsCallback(uri,diagnostics);
 		}
@@ -312,7 +315,6 @@ export class PMSolver implements SolverInt{
 	}
 
 	onDefinition(params: DeclarationParams): LocationLink[] {
-		console.log("on definition ansans")
 		return this.facadeCallWrapperForUserEvents(params, params.textDocument.uri,"onDefinition");
 	}
 
