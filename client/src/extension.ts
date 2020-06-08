@@ -82,8 +82,8 @@ export function activate(context: ExtensionContext) {
   client.start();
 
   client.onReady().then(_ => {
-    let shouldLog:boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Logging") !== "false";
-    let useDiagnostics: boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Diagnostics") !== "false";
+    let shouldLog:boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Logging");
+    let useDiagnostics: boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Diagnostics");
     client.sendRequest("setPluginDir",[context.extensionPath,shouldLog, useDiagnostics]);
 
     client.onRequest("notifyUser",(msg)=>{
