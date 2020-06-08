@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
 import LocalizationController from './LocalizationController';
-import FileService from './FileService';
+import FileService from '../services/FileService';
 import { InputBoxOptions } from 'vscode';
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
@@ -17,11 +17,15 @@ const createLocalizationApp = (extensionPath: string): void => {
 }
 
 function activeLocalization() {
+
 	const languagesFolderExist = FileService.isFolderExist(_localizationPath);
 	if (languagesFolderExist) {
 		const localization = new LocalizationController({ extensionPath: _extensionPath }, _localizationPath, _onError);
 		try {
-			localization.activateLocalization();
+			PolicyModelLibApi.getInstance().updateLocalization().then(() => {
+				localization.activateLocalization();
+			});
+
 		} catch (e) {
 			_onError(e);
 		}
@@ -41,7 +45,6 @@ async function handleNewLocalization(): Promise<void> {
 
 async function tryCreateLocalizationFiles() {
 	let selection;
-	const openLocalizationAppButton = 'Open';
 	const tryAgainButton = 'Try Again';
 
 	let options: InputBoxOptions = {
@@ -61,10 +64,7 @@ async function tryCreateLocalizationFiles() {
 		const api: PolicyModelLibApi = PolicyModelLibApi.getInstance();
 		const created = await api.createNewLocalization(name);
 		if (created) {
-			selection = await vscode.window.showInformationMessage(`Localization successfully created.`, openLocalizationAppButton)
-			if (selection === openLocalizationAppButton) {
 				activeLocalization();
-			}
 
 		} else {
 			selection = await vscode.window.showInformationMessage(`Some problem occurred. `, tryAgainButton)

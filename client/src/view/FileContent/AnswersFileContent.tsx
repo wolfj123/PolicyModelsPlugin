@@ -38,7 +38,7 @@ const AnswersFileContent: React.FunctionComponent<Props> = (props) => {
   return (
     <>
       {answersData
-        ? Object.entries(answersData).map(([originalAnswer, value]) => <SingleAnswer key={value + originalAnswer} text={originalAnswer} value={value} onChange={onChangeInput} />)
+        ? Object.entries(answersData).map(([originalAnswer, value]) => <SingleAnswer key={originalAnswer} text={originalAnswer} value={value} onChange={onChangeInput} />)
         : 'Cannot parse this file.'}
     </>
   );

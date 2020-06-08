@@ -1,5 +1,5 @@
 import { LanguageData, File } from '../view/Types/model';
-import FileService from './FileService';
+import FileService from '../services/FileService';
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
 var PATH = require('path');
@@ -17,14 +17,24 @@ export default class LocalizationController {
     this._extensionProps = extensionProps;
     this._localizationPath = localizationPath;
     this._onError = onError;
-    const instance: PolicyModelLibApi = PolicyModelLibApi.getInstance();
   }
 
   activateLocalization() {
     const languagesFilesData = this.getLanguagesFilesData();
     const ViewLoader = require('../view/ViewLoader').default; //lazy loading require for testing this component without 'vscode' dependency
-    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile, this._onError);
+    const view = new ViewLoader(languagesFilesData, this._extensionProps, {onSaveFile: this.onSaveFile, createNewLanguage: this.createNewLanguage}, this._onError);
 
+  }
+
+  createNewLanguage = async (name) =>{
+    const api: PolicyModelLibApi = PolicyModelLibApi.getInstance();
+    const created =  await api.createNewLocalization(name);
+    if(created){
+      const newLanguagesFilesData = this.getLanguagesFilesData();
+      return newLanguagesFilesData;
+    }else{
+      this._onError("Cannot add languages")
+    }
   }
 
   filterSystemFiles(direntFiles) {

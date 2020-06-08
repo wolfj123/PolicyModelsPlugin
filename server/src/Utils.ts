@@ -17,7 +17,7 @@ import {
 } from 'vscode-languageserver';
 import * as Parser from 'web-tree-sitter'
 import * as _ from 'underscore'
-import { changeInfo } from './Documents';
+import { ChangeInfo } from './Documents';
 import { URI } from 'vscode-uri';
 import { FilePath } from './LanguageUtils';
 import * as path from 'path';
@@ -28,32 +28,8 @@ export enum languagesIds {
 	valueinference = 2
 }
 
-export const getLanguageIdFromfile = (file:string):languagesIds => {	
-	let ext: string = file === "definitions.ts" ? file : path.extname(file);
-	switch (ext){
-		case "ps":
-		case "pspace":
-		case "definitions.ts":
-			return languagesIds.policyspace;
-		case "dg":
-			return languagesIds.decisiongraph;
-		case "vi":
-			return languagesIds.valueinference
-		default:
-			return undefined;
-	}
-}
-
 
 var os = require('os');
-
-const psExt:string = "ps";
-const pspaceExt:string = "pspace";
-const dgExt:string = "dg";
-const viExt:string = "vi";
-
-const allFileExtensions: string [] = [psExt, pspaceExt, dgExt, viExt];
-
 
 export const osTypes={
 	MAC: 'darwin',
@@ -139,7 +115,7 @@ export function mergeCompletionLists(cl1 : CompletionList, cl2 : CompletionList)
 	}
 }
 
-export function changeInfo2Edit(change : changeInfo) {
+export function changeInfo2Edit(change : ChangeInfo) {
 	const result =
 	{
 		startIndex: change.oldRange.start.character,

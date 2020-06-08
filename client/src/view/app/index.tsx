@@ -34,6 +34,14 @@ const App: FunctionComponent<AppProps> = ({ initialLanguageFilesData }) => {
     vscode.postMessage(command);
   };
 
+  const onCreateNewLanguage = async () =>{
+    const command: ICommand = {
+      action: CommandAction.NewLanguage,
+      content: null,
+    };
+    vscode.postMessage(command);
+  }
+
   React.useEffect(() => {
     window.addEventListener('message', event => {
       const response = event.data;
@@ -41,10 +49,11 @@ const App: FunctionComponent<AppProps> = ({ initialLanguageFilesData }) => {
         setStore(response.content);
       }
     });
+
   }, []);
 
   const { languageFilesData } = store;
-  return <LocalizationContainer languageFilesData={languageFilesData} onSave={onSave} />;
+  return <LocalizationContainer languageFilesData={languageFilesData} onSave={onSave} onCreateNewLanguage={onCreateNewLanguage} />;
 };
 
 ReactDOM.render(<App initialLanguageFilesData={languageFilesData} />, document.getElementById('root'));

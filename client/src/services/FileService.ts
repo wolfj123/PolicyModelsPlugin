@@ -31,4 +31,29 @@ export default class FileService {
   static isFolderExist(path: string): boolean {
     return fs.existsSync(path);
   }
+  
+  static isExist(path) {
+    try {
+      return fs.existsSync(path)
+    } catch (e) {
+      throw new Error(`Cannot check if file ${path} exist, error: ${e}`);
+    }
+  }
+
+  static createDirectory(path) {
+    try {
+			fs.mkdirSync(path);
+    } catch (e) {
+      throw new Error(`Cannot create directory: ${path}`);
+    }
+  }
+
+  static deleteFileInPath(path){
+    try {
+			fs.unlinkSync(path);
+    } catch (e) {
+      throw new Error(`Cannot create directory: ${path}`);
+    }
+  }
+
 }
