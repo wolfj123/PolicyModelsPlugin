@@ -50,6 +50,8 @@ import {
 } from './LanguageUtils'
 
 
+export declare type SyntaxError = {location : Location, source: string, text : string, message : string};
+
 /**
  * This class exposes the Language Services in the form of LSP-esque queries,
  * by wrapping a {@link LanguageServices} instance and translating said queries.
@@ -69,13 +71,27 @@ export class LanguageServicesFacade {
 	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
 	 * @returns A promise of a new instance of {@link LanguageServicesFacade}.
 	 */
-	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServicesFacade> {
+	static async init(docs : PMTextDocument[], pluginDir: string, callback? : (uri: DocumentUri, errors: SyntaxError []) => void ) : Promise<LanguageServicesFacade> {
 		let instance : LanguageServicesFacade = new LanguageServicesFacade
 		instance.addToUriPathMap(docs)
 		let convertedDocs : PMTextDocument[] = docs.map(doc => instance.convertUri2PathPMTextDocument(doc))
-		let services : LanguageServices = await LanguageServicesWithCache.init(convertedDocs, pluginDir)
+		const errorCallback : (path : FilePath, errors: SyntaxError[]) => void = instance.createErrorCallback(callback, instance.uriPathMap)
+		let services : LanguageServices = await LanguageServicesWithCache.init(convertedDocs, pluginDir, errorCallback)
 		instance.services = services
 		return instance
+	}
+
+	createErrorCallback(callback : (uri: DocumentUri, errors: SyntaxError []) => void, uriPathMap : Map<DocumentUri, FilePath>) : (path : FilePath, errors: SyntaxError[]) => void {
+		let uriPathMapRef = uriPathMap
+		let callbackRef = callback
+		const errorCallback = (path : FilePath, errors: SyntaxError[]) => {
+			if(isNullOrUndefined(callbackRef)) {return}
+			let uris : DocumentUri[] = Utils.getMapKeysByValue(uriPathMapRef, path)
+			if(isNullOrUndefined(uris) || uris.length == 0) {return}
+			let uri  : DocumentUri = uris[0]
+			callbackRef(uri, errors)
+		}
+		return errorCallback
 	}
 
 	/**
@@ -215,6 +231,17 @@ export class LanguageServicesFacade {
 		return null
 	}
 
+	getErrors(uri : DocumentUri) : SyntaxError[] | null {
+		let path : FilePath = this.uriPathMap.get(uri)
+		if(isNullOrUndefined(path)) {return null}
+		let errors : SyntaxError[] = this.services.getSyntaxErrors(path)
+		errors = errors.map(err => {
+			let loc = this.convertUri2PathLocation(err.location, false)
+			return {location : err.location, source: err.source, text: err.text, message: err.message}
+		})
+		return errors
+	}
+
 	/**
 	 * Answers a LSP **onFoldingRanges** query
 	 * @deprecated WE NO LONGER SUPPORT THIS
@@ -318,6 +345,8 @@ export class LanguageServices {
 	*/
 	parsers : Map<PolicyModelsLanguage, Parser>
 
+	errorCallback : (path : FilePath, errors: SyntaxError[]) => void
+
 	/**
 	 * Creates asynchronously a new instance of {@link LanguageServices}.
 	 * The creation must be asynchronous due to the asynchronous initilization of {@link Parser}
@@ -327,10 +356,11 @@ export class LanguageServices {
 	 * @param pluginDir The directory of the plugin - used to find the parsers WASM files.
 	 * @returns A promise of a new instance of {@link LanguageServices}.
 	 */
-	static async init(docs : PMTextDocument[], pluginDir: string) : Promise<LanguageServices> {
+	static async init(docs : PMTextDocument[], pluginDir: string, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void) : Promise<LanguageServices> {
 		let instance : LanguageServices = new LanguageServices();
 		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
+		instance.errorCallback = errorCallback
 		instance.fileManagers = new Map()
 		instance.populateMaps(docs)
 		return instance
@@ -413,7 +443,7 @@ export class LanguageServices {
 		for (let doc of docs) {
 			const filepath : FilePath = doc.uri
 			const extension = Utils.getFileExtension(filepath)
-			let fileManager : FileManager = this.getFileManager(doc, extension)
+			let fileManager : FileManager = this.getFileManager(doc, extension, this.errorCallback)
 			this.fileManagers.set(filepath, fileManager)
 		}
 	}
@@ -425,10 +455,10 @@ export class LanguageServices {
 	 * @param extension The file extension of the document
 	 * @returns A new {@link FileManager} represeting the document
 	 */
-	protected getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+	protected getFileManager(doc : PMTextDocument, extension : string, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void) : FileManager {
 		return FileManagerFactory.create(doc, 
 			this.getParserByExtension(extension), 
-			getLanguageByExtension(extension))
+			getLanguageByExtension(extension), errorCallback)
 	}
 
 	/**
@@ -534,6 +564,12 @@ export class LanguageServices {
 	getCompletion(location : Location) : CompletionList | null {
 		return null
 	}
+
+	getSyntaxErrors(path : FilePath) : SyntaxError[] {
+		let fm : FileManager = this.fileManagers.get(path);
+		if(isNullOrUndefined(fm)) {return []}
+		return fm.getAllSyntaxErrors()
+	}
 }
 
 
@@ -552,14 +588,21 @@ export abstract class FileManager {
 	path : FilePath
 
 	/**
-	 * All syntax nodes that contain an error in the parse tree
+	 * All errors found in the syntax tree
 	 */
-	errorNodes : Parser.SyntaxNode[]
+	errors : SyntaxError[]
 
-	constructor(tree : Parser.Tree, path : FilePath){
+	errorCallback : (path : FilePath, errors: SyntaxError[]) => void
+
+	constructor(tree : Parser.Tree, path : FilePath, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void){
 		this.tree = tree
 		this.path = path
-		this.errorNodes = getAllErrorNodes(tree)
+		this.errorCallback = errorCallback
+		this.errors = getAllErrorNodes(tree).map(err => {return this.errorNodeToErrorDescription(err)})
+		if(!isNullOrUndefined(this.errorCallback)){
+			this.errorCallback(this.path, this.errors)
+		}
+		
 	}
 
 	/**
@@ -569,7 +612,10 @@ export abstract class FileManager {
 	 */
 	updateTree(newTree : Parser.Tree) {
 		this.tree = newTree
-		this.errorNodes = getAllErrorNodes(newTree)
+		this.errors = getAllErrorNodes(newTree).map(err => {return this.errorNodeToErrorDescription(err)})
+		if(!isNullOrUndefined(this.errorCallback)){
+			this.errorCallback(this.path, this.errors)
+		}
 	}
 
 	/**
@@ -654,13 +700,17 @@ export abstract class FileManager {
 		}
 	}
 
-	getAllSyntaxErrors() : {location : Location, source : string, message : string /*, severity : DiagnosticSeverity*/ }[] {
-		let result = this.errorNodes.map(
-			node => {return {
-				location: getLocationOfSyntaxNode(node, this.path), source: node.text, message: "Syntax Error"
-			}}
-		)
-		return result
+	private errorNodeToErrorDescription(node : Parser.SyntaxNode) : SyntaxError {
+		let syntaxErr = {
+			location: getLocationOfSyntaxNode(node, this.path), 
+			source: "tree-sitter parser", 
+			text: node.text, 
+			message: "Syntax Error"}
+		return syntaxErr
+	}
+
+	getAllSyntaxErrors() : SyntaxError[] {
+		return this.errors
 	}
 
 	/**
@@ -746,19 +796,19 @@ export class FileManagerFactory {
 	 * @param cacheVersion A flag that decides which {@link FileManager} sub-class to instatiate
 	 * @returns A new instance of a {@link FileManager}
 	 */
-	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, cacheVersion : boolean = false) : FileManager | null {
+	static create(doc : PMTextDocument, parser : Parser, language : PolicyModelsLanguage, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void, cacheVersion : boolean = false) : FileManager | null {
 		const filepath : FilePath = doc.uri
 		const extension = Utils.getFileExtension(filepath)
 		let tree : Parser.Tree = parser.parse(doc.getText()) 
 		switch(language) {
 			case PolicyModelsLanguage.DecisionGraph:
-				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath) : new DecisionGraphFileManagerNaive(tree, filepath)
+				return (cacheVersion) ? new DecisionGraphFileManagerWithCache(tree, filepath, errorCallback) : new DecisionGraphFileManagerNaive(tree, filepath, errorCallback)
 
 			case PolicyModelsLanguage.PolicySpace:
-				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath) : new PolicySpaceFileManagerNaive(tree, filepath)	
+				return (cacheVersion) ? new PolicySpaceFileManagerWithCache(tree, filepath, errorCallback) : new PolicySpaceFileManagerNaive(tree, filepath, errorCallback)	
 						
 			case PolicyModelsLanguage.ValueInference:
-				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath) : new ValueInferenceFileManagerNaive(tree, filepath)
+				return (cacheVersion) ? new ValueInferenceFileManagerWithCache(tree, filepath, errorCallback) : new ValueInferenceFileManagerNaive(tree, filepath, errorCallback)
 				
 			default:
 				return null
@@ -889,19 +939,20 @@ export class ValueInferenceFileManagerNaive extends FileManager {
 //****Cache variant****/
 
 export class LanguageServicesWithCache extends LanguageServices {
-	static async init(docs : PMTextDocument[], pluginDir: string /*uris : DocumentUri[]*/) : Promise<LanguageServicesWithCache> {
+	static async init(docs : PMTextDocument[], pluginDir: string, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void) : Promise<LanguageServicesWithCache> {
 		let instance : LanguageServicesWithCache = new LanguageServicesWithCache();
 		let parsersPath: string = path.join(pluginDir,"parsers");
 		await instance.initParsers(parsersPath)
+		instance.errorCallback = errorCallback
 		instance.fileManagers = new Map()
 		instance.populateMaps(docs)
 		return instance
 	}
 
-	getFileManager(doc : PMTextDocument, extension : string) : FileManager {
+	getFileManager(doc : PMTextDocument, extension : string, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void) : FileManager {
 		return FileManagerFactory.create(doc, 
 			this.getParserByExtension(extension), 
-			getLanguageByExtension(extension), true)
+			getLanguageByExtension(extension), errorCallback, true)
 	}
 
 	getCompletion(location : Location) : CompletionList | null {
@@ -949,8 +1000,8 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManagerN
 	importMap : ImportMap
 
 
-	constructor(tree : Parser.Tree, path : FilePath){
-		super(tree, path)
+	constructor(tree : Parser.Tree, path : FilePath, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void) {
+		super(tree, path, errorCallback)
 		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: ImportMap}
 			= DecisionGraphServices.getAllEntitiesInDoc(tree, path)
 		this.cache = cacheAndImportMap.entities
@@ -958,7 +1009,7 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManagerN
 	}
 
 	updateTree(newTree : Parser.Tree) {
-		this.tree = newTree
+		super.updateTree(newTree)
 		let cacheAndImportMap : {entities: PolicyModelEntity[], importMap: ImportMap}
 		= DecisionGraphServices.getAllEntitiesInDoc(newTree, this.path)
 		this.cache = cacheAndImportMap.entities
@@ -1007,13 +1058,13 @@ export class DecisionGraphFileManagerWithCache extends DecisionGraphFileManagerN
 export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManagerNaive {
 	cache : PolicyModelEntity[]
 
-	constructor(tree : Parser.Tree, currentFile: FilePath){
-		super(tree, currentFile)
-		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, currentFile)
+	constructor(tree : Parser.Tree, path : FilePath, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void){
+		super(tree, path, errorCallback)
+		this.cache = PolicySpaceServices.getAllEntitiesInDoc(tree, path)
 	}
 
 	updateTree(newTree : Parser.Tree) {
-		this.tree = newTree
+		super.updateTree(newTree)
 		this.cache = PolicySpaceServices.getAllEntitiesInDoc(newTree, this.path)
 	}
 
@@ -1049,13 +1100,13 @@ export class PolicySpaceFileManagerWithCache extends PolicySpaceFileManagerNaive
 export class ValueInferenceFileManagerWithCache extends ValueInferenceFileManagerNaive {
 	cache : PolicyModelEntity[]
 
-	constructor(tree : Parser.Tree, path : FilePath){
-		super(tree, path)
+	constructor(tree : Parser.Tree, path : FilePath, errorCallback? : (path : FilePath, errors: SyntaxError[]) => void ) {
+		super(tree, path, errorCallback)
 		this.cache = ValueInferenceServices.getAllEntitiesInDoc(tree, path)
 	}
 
 	updateTree(newTree : Parser.Tree) {
-		this.tree = newTree
+		super.updateTree(newTree)
 		this.cache = ValueInferenceServices.getAllEntitiesInDoc(newTree, this.path)
 	}
 

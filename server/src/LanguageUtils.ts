@@ -66,7 +66,7 @@ export const parsersInfo =
 ]
 
 /**
- * Returns the sum of two numbers.
+ * Returns the sum of two numbers. 
  *
  * @param extension - the file type extension
  * @returns The PolicyModelsLanguage corresponding to the provided file extension
@@ -351,16 +351,20 @@ function* nextNode(root : Parser.Tree, visibleRanges: {start: number, end: numbe
  * @returns an array of {@link Parser.SyntaxNode} 
  */
 export function getAllErrorNodes(tree : Parser.Tree) : Parser.SyntaxNode[] {
+	const errorNodeTypes : string[] = ["ERROR", "MISSING", "UNEXPECTED"]
 	let result : Parser.SyntaxNode[] = []
 	for (let node of nextNode(tree)) {
-		if(node.hasError()){
+		if(errorNodeTypes.indexOf(node.type) >= 0){
 			result.push(node)
 		}
+		// if(node.hasError()){
+		// 	result.push(node)
+		// }
 	}
 	return result
 	
 	// let root : Parser.SyntaxNode = tree.walk().currentNode()
-	// let errors : Parser.SyntaxNode[] = root.descendantsOfType(["ERROR", "MISSING"])
+	// let errors : Parser.SyntaxNode[] = root.descendantsOfType(["ERROR", "MISSING"]) //maybe also UNEXPECTED ?
 	// return errors
 }
 

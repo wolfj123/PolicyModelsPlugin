@@ -10,7 +10,6 @@ testRunner.configure({
     useColors: true,
     timeout: 100000,
     retries: 0,
-    
 });
 
 module.exports = testRunner;
