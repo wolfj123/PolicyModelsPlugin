@@ -111,15 +111,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 
 connection.onInitialized(() => {
-	connection.onRequest("Run_Model", param => runModel(param));
-	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean) => {
-		initLogger(dir,shouldLog);
-		solver = new PMSolver(dir);
-		// await solver.initParser(dir);
-		console.log("finish init from client");
-		return null;
-	})
-
 	if (clientSupportswatchedFiles){
 		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
 			watchers: [
@@ -139,11 +130,23 @@ connection.onInitialized(() => {
 		}
 		connection.client.register(DidChangeWatchedFilesNotification.type,watchedFilesOptions);
 	}else{
-		
-		//TODO notify LSP won't work
 		console.log("client doesn't support watched files - is this a problem??");
-		
+		connection.sendRequest("notifyUser", "This IDE doesn't support all necesarry features for a working Policymodel language support. The Policymodel language will not work. Maybe updating IDE version will solve the problem");
+		setTimeout(()=>{
+			connection.dispose();
+		},0);
+		return;
 	}
+
+
+	connection.onRequest("Run_Model", param => runModel(param));
+	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean, useDiagnostics: boolean) => {
+		initLogger(dir,shouldLog);
+		solver = new PMSolver(dir, useDiagnostics);
+		// await solver.initParser(dir);
+		console.log("finish init from client");
+		return null;
+	})
 
 	let textDocumnetNotificationOptions: TextDocumentChangeRegistrationOptions = {
 		syncKind: TextDocumentSyncKind.Incremental,

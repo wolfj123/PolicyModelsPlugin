@@ -138,7 +138,7 @@ export class PMSolver implements SolverInt{
 	private _facdeForFilesFS: {[id: string]: LanguageServicesFacade};  // id is fodler FS path
 	private _sovlerReady: boolean;
 
-	constructor(pluginDir: string){
+	constructor(pluginDir: string, useDiagnostics: boolean){
 		this._documentManagerForFolder = new TextDocumentManager();
 		this._documentManagerSingleFiles = new TextDocumentManager(); 
 		this._documentManagerSingleFiles.openedFolder(null);

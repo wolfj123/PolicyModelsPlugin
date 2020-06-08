@@ -47,7 +47,14 @@
 				"PolicyModelsServer.Logging": {
 					"scope": "resource",
 					"type": "boolean",
-					"default": "false"
+					"default": "false",
+					"description": "Enable logging of the LSP server"
+				},
+				"PolicyModelsServer.Diagnostics": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": "false",
+					"description": "Enable Diagnostics in client"
 				}
 			}
 		},

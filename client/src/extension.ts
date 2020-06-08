@@ -83,14 +83,13 @@ export function activate(context: ExtensionContext) {
 
   client.onReady().then(_ => {
     let shouldLog:boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Logging") !== "false";
-    client.sendRequest("setPluginDir",[context.extensionPath,shouldLog]);
+    let useDiagnostics: boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Diagnostics") !== "false";
+    client.sendRequest("setPluginDir",[context.extensionPath,shouldLog, useDiagnostics]);
 
-    client.onRequest("getPluginDir",(a)=>{
-      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
-      console.log(`${JSON.stringify(a)}`);
-      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
-
-      return context.extensionPath;
+    client.onRequest("notifyUser",(msg)=>{
+      console.log(`${JSON.stringify(msg)}`);
+      vscode.window.showInformationMessage(msg);
+      return null;
     });
   });
 }
