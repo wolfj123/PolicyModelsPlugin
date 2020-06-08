@@ -71,7 +71,7 @@ export default class LocalizationController {
         if (this.isSupportedFile(filePath)) {
           try {
             const content = FileService.readFromFile(filePath);
-            currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath), additionalInfo: null }];
+            currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath), additionalInfo: {} }];
             currData[0] = this.addAdditionalInfoToFile(currData[0]);
           } catch (err) {
             this._onError(err);
@@ -96,7 +96,7 @@ export default class LocalizationController {
   }
 
   getUpdateResponse(){
-    return this._updateResponse;
+    return this._updateResponse || {answersToRemove: []};
   }
 
   onSaveFile = (path, newData) => {
