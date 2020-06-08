@@ -34,6 +34,7 @@ import {
 	FileEvent,
 	FileChangeType,
 	DocumentUri,
+	Diagnostic
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
