@@ -32,9 +32,9 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Language Server Protocol](#language-server-protocol)
 	- [VSCode Language Extensions](#vscode-language-extensions)
 	- [Tree-Sitter](#tree-sitter)
-			- [Decision Graph Parser](#decision-graph-parser)
-			- [Policy Space Parser](#policy-space-parser)
-			- [Value Inference Parser](#value-inference-parser)
+		- [Decision Graph Parser](#decision-graph-parser)
+		- [Policy Space Parser](#policy-space-parser)
+		- [Value Inference Parser](#value-inference-parser)
 	- [Syntax Highlighting in VSCode using Tree-Sitter](#syntax-highlighting-in-vscode-using-tree-sitter)
 
 
@@ -162,13 +162,13 @@ Learn more about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/).
 
 For this project we have created 3 new Tree-Sitter parsers, one for each language in Policy Models. These parsers are standalone [npm](#https://www.npmjs.com/) packages and can be used in other projects freely.
 
-##### Decision Graph Parser
+#### Decision Graph Parser
 This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-decisiongraph).
 
-##### Policy Space Parser
+#### Policy Space Parser
 This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-policyspace).
 
-##### Value Inference Parser
+#### Value Inference Parser
 This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-valueinference).
 
 
