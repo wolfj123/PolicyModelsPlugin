@@ -48,6 +48,7 @@ describe('Building files structure', () => {
           path: './languages/language1/answers.txt',
           extension: '.txt',
           content: fileContent('answer.txt'),
+          additionalInfo: {answersToRemove: []}
         },
         {
           id: './languages/language1/space.md',
@@ -55,6 +56,7 @@ describe('Building files structure', () => {
           path: './languages/language1/space.md',
           extension: '.md',
           content: fileContent('space.md'),
+          additionalInfo: {}
         },
       ],
       id: "./languages/language1"
@@ -105,6 +107,7 @@ describe('Building files structure', () => {
           path: './languages/language1/answers.txt',
           extension: '.txt',
           content: fileContent('answer.txt'),
+          additionalInfo: {answersToRemove: []}
         },
         {
           id: './languages/language1/nodes/folder1/file1.md',
@@ -112,6 +115,7 @@ describe('Building files structure', () => {
           path: './languages/language1/nodes/folder1/file1.md',
           extension: '.md',
           content: fileContent('file1.md'),
+          additionalInfo: {}
         },
         {
           id: './languages/language1/nodes/folder2/file2.md',
@@ -119,6 +123,7 @@ describe('Building files structure', () => {
           path: './languages/language1/nodes/folder2/file2.md',
           extension: '.md',
           content: fileContent('file2.md'),
+          additionalInfo: {}
         },
         {
           id: './languages/language1/space.md',
@@ -126,6 +131,7 @@ describe('Building files structure', () => {
           path: './languages/language1/space.md',
           extension: '.md',
           content: fileContent('space.md'),
+          additionalInfo: {}
         },
       ],
       id:"./languages/language1"
@@ -139,6 +145,7 @@ describe('Building files structure', () => {
           path: './languages/language2/answers.txt',
           extension: '.txt',
           content: fileContent('answer.txt'),
+          additionalInfo: {answersToRemove: []}
         },
         {
           id: './languages/language2/nodes/folder1/file1.md',
@@ -146,6 +153,7 @@ describe('Building files structure', () => {
           path: './languages/language2/nodes/folder1/file1.md',
           extension: '.md',
           content: fileContent('file1.md'),
+          additionalInfo: {}
         },
         {
           id: './languages/language2/nodes/folder2/file2.md',
@@ -153,6 +161,7 @@ describe('Building files structure', () => {
           path: './languages/language2/nodes/folder2/file2.md',
           extension: '.md',
           content: fileContent('file2.md'),
+          additionalInfo: {}
         },
         {
           id: './languages/language2/space.md',
@@ -160,6 +169,7 @@ describe('Building files structure', () => {
           path: './languages/language2/space.md',
           extension: '.md',
           content: fileContent('space.md'),
+          additionalInfo: {}
         },
       ],
       id: "./languages/language2"
@@ -194,6 +204,7 @@ describe('Building files structure', () => {
           path: './languages/language1/answers.txt',
           extension: '.txt',
           content: fileContent('answer.txt'),
+          additionalInfo: {answersToRemove: []}
         },
         {
           id: './languages/language1/space.md',
@@ -201,6 +212,7 @@ describe('Building files structure', () => {
           path: './languages/language1/space.md',
           extension: '.md',
           content: fileContent('space.md'),
+          additionalInfo: {}
         },
       ],
       id: './languages/language1'
@@ -240,6 +252,7 @@ describe('Editing localization files', () => {
           path: './languages/language1/answers.txt',
           extension: '.txt',
           content: fileContent('answer.txt'),
+          additionalInfo: {answersToRemove: []}
         },
         {
           id: './languages/language1/space.md',
@@ -247,6 +260,7 @@ describe('Editing localization files', () => {
           path: './languages/language1/space.md',
           extension: '.md',
           content: newContent,
+          additionalInfo: {}
         },
       ],
       id: './languages/language1'

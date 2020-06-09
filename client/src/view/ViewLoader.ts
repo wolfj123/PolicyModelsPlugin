@@ -8,7 +8,8 @@ export default class ViewLoader {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
 
-  constructor(languageFilesData, extensionProps, onSave,onError) {
+  constructor(languageFilesData, extensionProps, handlers,onError) {
+    const {onSaveFile,createNewLanguage} = handlers;
     const { extensionPath } = extensionProps;
     this._extensionPath = extensionPath;
     this._panel = vscode.window.createWebviewPanel('Localization', 'Localization', vscode.ViewColumn.One, {
@@ -24,12 +25,18 @@ export default class ViewLoader {
         switch (command.action) {
           case CommandAction.Save:
             try{
-            const newLanguageFilesData = onSave(command.additionalInfo.path, command.content);
+            const newLanguageFilesData = onSaveFile(command.additionalInfo.path, command.content);
             this.updateLanguageFilesData(newLanguageFilesData);
             }catch(err){
               onError(err);
             }
-            return;
+            break;
+            case CommandAction.NewLanguage:
+             vscode.window.showInputBox({prompt: "Enter localization name"}).then(languageName => {
+              createNewLanguage(languageName).then(newLanguageFilesData => this.updateLanguageFilesData(newLanguageFilesData));
+             } );
+
+              break;
         }
       },
       undefined,

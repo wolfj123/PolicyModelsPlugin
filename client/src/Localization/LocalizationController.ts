@@ -1,4 +1,5 @@
-import { LanguageData, File } from '../view/Types/model';
+import { LanguageData, File, UpdateResponse } from '../view/Types/model';
+
 import FileService from '../services/FileService';
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
@@ -12,19 +13,31 @@ export default class LocalizationController {
   _localizationPath: string;
   _extensionProps: any;
   _onError: any;
+  _updateResponse: UpdateResponse
 
   constructor(extensionProps, localizationPath, onError) {
     this._extensionProps = extensionProps;
     this._localizationPath = localizationPath;
     this._onError = onError;
-    const instance: PolicyModelLibApi = PolicyModelLibApi.getInstance();
   }
 
-  activateLocalization() {
+  activateLocalization(updateResponse?: UpdateResponse) {
+    this._updateResponse = updateResponse;
     const languagesFilesData = this.getLanguagesFilesData();
     const ViewLoader = require('../view/ViewLoader').default; //lazy loading require for testing this component without 'vscode' dependency
-    const view = new ViewLoader(languagesFilesData, this._extensionProps, this.onSaveFile, this._onError);
+    const view = new ViewLoader(languagesFilesData, this._extensionProps, { onSaveFile: this.onSaveFile, createNewLanguage: this.createNewLanguage }, this._onError);
 
+  }
+
+  createNewLanguage = async (name) => {
+    const api: PolicyModelLibApi = PolicyModelLibApi.getInstance();
+    const created = await api.createNewLocalization(name);
+    if (created) {
+      const newLanguagesFilesData = this.getLanguagesFilesData();
+      return newLanguagesFilesData;
+    } else {
+      this._onError("Cannot add languages")
+    }
   }
 
   filterSystemFiles(direntFiles) {
@@ -58,7 +71,8 @@ export default class LocalizationController {
         if (this.isSupportedFile(filePath)) {
           try {
             const content = FileService.readFromFile(filePath);
-            currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath) }];
+            currData = [{ id: filePath, name, content, path: filePath, extension: PATH.extname(filePath), additionalInfo: {} }];
+            currData[0] = this.addAdditionalInfoToFile(currData[0]);
           } catch (err) {
             this._onError(err);
           }
@@ -72,6 +86,18 @@ export default class LocalizationController {
     }, []);
     return filesData || [];
   };
+
+  addAdditionalInfoToFile(file: File): File {
+    const { answersToRemove } = this.getUpdateResponse();
+    if (file.name === 'answers.txt') {
+      file.additionalInfo = {answersToRemove};
+    }
+    return file;
+  }
+
+  getUpdateResponse(){
+    return this._updateResponse || {answersToRemove: []};
+  }
 
   onSaveFile = (path, newData) => {
     FileService.writeToFile(path, newData);

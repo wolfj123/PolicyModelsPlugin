@@ -1,0 +1,21 @@
+.container1 {
+	margin: 0 auto;
+	border: 1px #696969 solid;
+	border-radius: 6px;
+	padding: 4px 20px;
+	align-items: center;
+	display: flex;
+}
+
+.option{
+	flex-direction: row;
+	align-items: center;
+	display: flex;
+	margin: 0 20px;
+
+
+}
+
+.addIcon{
+	cursor: pointer;
+}

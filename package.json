@@ -47,7 +47,14 @@
 				"PolicyModelsServer.Logging": {
 					"scope": "resource",
 					"type": "boolean",
-					"default": "false"
+					"default": false,
+					"description": "Enable logging of the LSP server"
+				},
+				"PolicyModelsServer.Diagnostics": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "Enable Diagnostics in client"
 				}
 			}
 		},
@@ -123,28 +130,28 @@
 		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh"
 	},
 	"devDependencies": {
-		"@types/mocha": "^5.2.7",
-		"@types/node": "^12.12.41",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "^14.0.11",
 		"css-loader": "^3.5.3",
 		"npm-run-all": "^4.1.5",
 		"style-loader": "^1.2.1",
-		"tree-sitter-cli": "^0.16.7",
+		"tree-sitter-cli": "^0.16.8",
 		"tree-sitter-decisiongraph": "^1.0.0",
 		"tree-sitter-policyspace": "^0.1.1",
 		"tree-sitter-valueinference": "^0.1.1",
-		"ts-loader": "^6.2.2",
-		"tslint": "^5.20.1",
-		"typescript": "^3.9.3",
+		"ts-loader": "^7.0.5",
+		"tslint": "^6.1.2",
+		"typescript": "^3.9.5",
 		"webpack": "^4.43.0",
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
 		"deep-equal-in-any-order": "^1.0.27",
-		"mocha": "^7.1.2",
+		"mocha": "^7.2.0",
 		"tree-sitter": "^0.16.1",
-		"ts-node": "^8.10.1",
+		"ts-node": "^8.10.2",
 		"underscore": "^1.10.2",
-		"web-tree-sitter": "^0.16.2",
+		"web-tree-sitter": "0.16.2",
 		"winston": "^3.2.1"
 	}
 }

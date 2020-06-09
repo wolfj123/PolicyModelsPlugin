@@ -5,8 +5,6 @@
 
 import {
 	createConnection,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	CompletionItem,
@@ -35,6 +33,8 @@ import {
 	DidChangeWatchedFilesParams,
 	FileEvent,
 	FileChangeType,
+	DocumentUri,
+	Diagnostic
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -49,9 +49,6 @@ import {getOsType, osTypes} from './Utils';
 let connection = createConnection(ProposedFeatures.all);
 let folderFS: string = undefined;
 
-// Make the text document manager listen on the connection
-// for open, change and close text document events
-//documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
@@ -70,13 +67,8 @@ let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
 
-	// console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
-	// connection.console.log(`on initialize parmas:\n ${JSON.stringify(params)}`);
-
 	let capabilities = params.capabilities;
 
-	// Does the client support the `workspace/configuration` request?
-	// If not, we will fall back using global settings
 	hasConfigurationCapability = !!(
 		capabilities.workspace && !!capabilities.workspace.configuration
 	);
@@ -94,35 +86,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 	return {
 		capabilities: {
-			/*
-				not supported:
-				workspaceFolders,
-				hoverProvider,
-				signatureHelpProvider,
-				typeDefinitionProvider,
-				declarationProvider,
-				codeLensProvider,
-				experimental,
-				codeActionProvide - this are some refactor options including: extract, inline, rewrite, organize imports,
-				executeCommandProvider - this are commends connected to workspace folders we don't care about this, maybe will be need for localiztion,
-				workspaceSymbolProvider - symbol serach feautre we don't support this,
-				implementationProvider, - go to implementation - we support go to definiton as the sam I think
-				colorProvider, - sets colors for user for now will be set to VS code defaults
-				documentLinkProvider - a link to another file / URL
-				documentFormattingProvider - allows some basic formatting to the file like Lint
-				documentRangeFormattingProvider - same as documentFormattingProvider but in a specifc range
-				documentOnTypeFormattingProvider - same as documentFormattingProvider during typing
-				selectionRangeProvider - when the user asks to select a scope aroung the current cursor / mouse position
-				textDocumentSync:
-				{
-			 		openClose:true,
-			 		change:TextDocumentSyncKind.Full
-				},
-
-				to check:
-				documentHighlightProvider, - to check with others
-				documentSymbolProvider, - WTF
-			*/
 
 			workspace:{
 				workspaceFolders:{
@@ -150,14 +113,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 
 connection.onInitialized(() => {
-	connection.onRequest("Run_Model", param => runModel(param));
-	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean) => {
-		initLogger(dir,shouldLog);
-		solver = new PMSolver(dir);
-		// await solver.initParser(dir);
-		console.log("finish init from client");
-		return null;
-	})
 
 	if (clientSupportswatchedFiles){
 		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
@@ -177,10 +132,46 @@ connection.onInitialized(() => {
 			]
 		}
 		connection.client.register(DidChangeWatchedFilesNotification.type,watchedFilesOptions);
-	}else{
-		//TODO amsel what wolud happen if we don't support (we will need to check the filesystem all the time to see if file was created or delted)
+	}else {
 		console.log("client doesn't support watched files - is this a problem??");
+		connection.sendRequest("notifyUser", "This IDE doesn't support all necesarry features for a working LSP Policymodel language support. The Policymodel language will not work correctly. Maybe updating IDE version will solve the problem");
+		return;
 	}
+
+	connection.onRequest("Run_Model", param => runModel(param));
+	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean, useDiagnostics: boolean) => {
+		initLogger(dir,shouldLog);
+		let diagnosticsCallback = (useDiagnostics === false) ? undefined : 
+		(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
+			if (! hasDiagnosticRelatedInformationCapability){
+				return;
+			}
+			if (docVersion !== undefined){
+				connection.sendDiagnostics({
+					uri: uri,
+					version: docVersion,
+					diagnostics: diagnostics
+				})
+			}else{
+				connection.sendDiagnostics({
+					uri: uri,
+					diagnostics: diagnostics
+				});
+			}
+		};
+
+		solver = new PMSolver(dir,diagnosticsCallback);
+
+
+		// await solver.initParser(dir);
+		console.log("finish init from client");
+		return null;
+	})
+
+	
+
+
+	connection.onRequest("Run_Model", param => runModel(param));
 
 	let textDocumnetNotificationOptions: TextDocumentChangeRegistrationOptions = {
 		syncKind: TextDocumentSyncKind.Incremental,
@@ -213,17 +204,8 @@ connection.onInitialized(() => {
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
 	}
 
-	//TODO amsel delete
+	
 	if (hasWorkspaceFolderCapability) {
-		//pretty sure this is not needed - because we the server closes when we change folders
-		// leaving it here for now just to be sure
-		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			connection.console.log('Workspace folder change event received.');
-			console.log(`getWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-
-			//connection.console.log(`onDidChangeWorkspaceFolders params: \n${JSON.stringify(_event)}`);
-		});
-
 		// this function must be declared here or else an error will occur
 		// we need this in order to get the folder that is currently open.
 		connection.workspace.getWorkspaceFolders().then(async _event => {
@@ -240,7 +222,6 @@ connection.onInitialized(() => {
 		});
 
 	}
-	console.log('finish on intilized')
 });
 
 
@@ -282,7 +263,7 @@ connection.onReferences(
 });
 
 connection.onPrepareRename (
-	//this reutnrs the range of the word if can be renamed and null if it can't
+	//this reutnrs the range of the word if it can be renamed and null if it can'
 	(params:PrepareRenameParams) =>  {
 		getLogger(logSources.serverHttp).http(`onPrepareRename`,params);
 		return solver.onPrepareRename(params);
@@ -333,123 +314,20 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 				break;
 		}
 	});
-	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
 
 connection.onDidChangeTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidChangeTextDocument`,event);
-	console.log("onDidChangeTextDocument")
 	solver.onDidChangeTextDocument(event);
 });
 
 connection.onDidCloseTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidCloseTextDocument`,event);
-	console.log(`onDidCloseTextDocument`);
 	solver.onDidCloseTextDocument(event.textDocument);
-
 });
 
 connection.onDidOpenTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidOpenTextDocument`,event);
-	console.log(`onDidOpenTextDocument`);
 	solver.onDidOpenTextDocument(event.textDocument);
 });
-
-
-
-
-//------------------------------ UNKOWNN CODE   ----------------------------------------------
-/*
-// The example settings
-interface ExampleSettings {
-	maxNumberOfProblems: number;
-}
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
-
-// Cache the settings of all open documents
-let documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
-
-connection.onDidChangeConfiguration(change => {
-	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
-	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.PolicyModelsServer || defaultSettings)
-		);
-	}
-
-	// Revalidate all open text documents
-	documents.all().forEach(element => {
-		validateTextDocument(element.textDocument);
-	});//    forEach(validateTextDocument);
-});
-
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'PolicyModelsServer'
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
-}
-
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-	// In this simple example we get the settings for every validate run.
-	let settings = await getDocumentSettings(textDocument.uri);
-
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	let text = textDocument.getText();
-	let pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
-	let problems = 0;
-	let diagnostics: Diagnostic[] = [];
-	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		let diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
-		diagnostics.push(diagnostic);
-	}
-
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
-*/
 

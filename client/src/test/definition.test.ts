@@ -18,7 +18,8 @@ import {
 	activate, 
 	getWordPositionFromLine, 
 	getWordRangeFromLineInEditor, 
-	getWordRangeFromLineInFile} from './helper';
+	getWordRangeFromLineInFile,
+	sleep} from './helper';
 
 var testCounter: number = 0
 var testFixtureFolderPath: String = 'InferrerExample/'
@@ -179,7 +180,8 @@ async function testDefinition(
 		position,
 	)) as DefinitionResolve;
 
-	assert.equal(actualDefinitionList.length, expectedDefinitionList.length);
+	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,
+		`--------------------\namsel test --- expected ${JSON.stringify(expectedDefinitionList)}\n\n actual: ${JSON.stringify(actualDefinitionList)}`);
 
 	expectedDefinitionList.forEach((expectedItem, i) => {
 		const actualItem = actualDefinitionList[i];

@@ -12,8 +12,7 @@ interface Props {
 }
 
 const FileContent: React.FunctionComponent<Props> = props => {
-  const { name, content, path, id } = props.fileData;
-
+  const { name, content, path, id, additionalInfo } = props.fileData;
   const handleFileChange = content => {
     props.onFileChange(path, content);
   };
@@ -22,7 +21,7 @@ const FileContent: React.FunctionComponent<Props> = props => {
   let editorHeader;
   switch (name) {
     case 'answers.txt':
-      RendererComponent = <AnswersFileContent key={id} content={content} onFileChange={handleFileChange} />;
+      RendererComponent = <AnswersFileContent key={id} content={content} onFileChange={handleFileChange} additionalInfo={additionalInfo} />;
       editorHeader = "answer.txt editor"
       break;
     case 'space.md':

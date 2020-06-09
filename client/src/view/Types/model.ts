@@ -11,7 +11,8 @@ export interface ICommand {
 
 export enum CommandAction {
   Save,
-  Response
+  Response,
+  NewLanguage
 }
 
 export interface File {
@@ -19,7 +20,8 @@ export interface File {
 	content: string;
 	extension: string;
 	path: string;
-	id: string;
+  id: string;
+  additionalInfo?: any;
 }
 
 export interface LanguageData {
@@ -33,4 +35,8 @@ export interface ItemMenuData{
   onClick(): void;
   text:string
   id: string
+}
+
+export interface UpdateResponse {
+  answersToRemove: string []
 }

@@ -9,7 +9,7 @@ import { getLogger, logSources } from './Logger';
 import { URI } from 'vscode-uri';
 
 
-export interface changeInfo{
+export interface ChangeInfo{
 	oldRange: Range,
 	newRange: Range
 }
@@ -77,13 +77,11 @@ export interface PMTextDocument {
      * @readonly
      */
 	readonly lineCount: number;
-
 	/**
 	 * @param other 
 	 * @returns true if both files have identical infromation
 	 */
 	isEqual(other:PMTextDocument): boolean;
-
 	/**
 	 * updates file text and version according to changes
 	 * this supports both incremental and full change
@@ -91,12 +89,12 @@ export interface PMTextDocument {
 	 * @param version version to set to file after change
 	 * @returns array of the ranges of the changed text, this is array of the new text range, not the old
 	 */
-	update(changes: TextDocumentContentChangeEvent[], version: number): changeInfo[];
-
+	update(changes: TextDocumentContentChangeEvent[], version: number): ChangeInfo[];
 	/**
 	 * array of the last changes range made to the file
+	 * updates after every call to update
 	 */
-	lastChanges: changeInfo[]
+	lastChanges: ChangeInfo[]
 }
 
 class FullTextDocument implements PMTextDocument {
@@ -107,7 +105,7 @@ class FullTextDocument implements PMTextDocument {
 	private _version: number;
 	private _content: string;
 	private _lineOffsets: number[] | undefined; // only use getter for this, this value is lazy
-	private _lastChanges: changeInfo[];
+	private _lastChanges: ChangeInfo[];
 
 	public constructor(uri: DocumentUri, languageId: languagesIds, version: number, content: string) {
 		this._path = URI.parse(uri).fsPath;
@@ -119,11 +117,11 @@ class FullTextDocument implements PMTextDocument {
 		this._lastChanges = [];
 	}
 
-	public get lastChanges(): changeInfo[] {
+	public get lastChanges(): ChangeInfo[] {
 		return this._lastChanges;
 	}
 
-	public set lastChanges(changes : changeInfo[]) {
+	public set lastChanges(changes : ChangeInfo[]) {
 		this._lastChanges = changes;
 	}
 
@@ -156,8 +154,8 @@ class FullTextDocument implements PMTextDocument {
 		return this._content;
 	}
 
-	public update(changes: TextDocumentContentChangeEvent[], version: number): changeInfo[] {
-		let changesRange: changeInfo[] = []; // keeps all the changes Range
+	public update(changes: TextDocumentContentChangeEvent[], version: number): ChangeInfo[] {
+		let changesRange: ChangeInfo[] = []; // keeps all the changes Range
 		for (let change of changes) {
 			if (FullTextDocument.isIncremental(change)) {
 				// makes sure start is before end
@@ -269,6 +267,10 @@ class FullTextDocument implements PMTextDocument {
 		return this.getLineOffsets().length;
 	}
 
+	/**
+	 * checks if the document update type is incremental
+	 * @param event 
+	 */
 	private static isIncremental(event: TextDocumentContentChangeEvent): event is { range: Range; rangeLength?: number; text: string; } {
 		let candidate: { range: Range; rangeLength?: number; text: string; } = event as any;
 		return candidate !== undefined && candidate !== null &&
@@ -276,6 +278,10 @@ class FullTextDocument implements PMTextDocument {
 			(candidate.rangeLength === undefined || typeof candidate.rangeLength === 'number');
 	}
 
+	/**
+	 * checks if the document update type is full document change
+	 * @param event 
+	 */
 	private static isFull(event: TextDocumentContentChangeEvent): event is { text: string; } {
 		let candidate: { range?: Range; rangeLength?: number; text: string; } = event as any;
 		return candidate !== undefined && candidate !== null &&
@@ -332,11 +338,6 @@ function getWellformedRange(range: Range): Range {
 	return range;
 }
 
-
-
-
-// export function createNewTextDocument(uri: string, languageId: languagesIds, version: number, content: string): PMTextDocument;
-// export function createNewTextDocument(uri: string, languageId: string, version: number, content: string): PMTextDocument;
 export function createNewTextDocument(uri: string, languageId: any, version: number = - 1, content: string = ""): PMTextDocument {
 	if (typeof languageId === 'string') {
 		return new FullTextDocument(uri, languagesIds[languageId],version, content);
@@ -345,7 +346,7 @@ export function createNewTextDocument(uri: string, languageId: any, version: num
 	}
 }
 
-export function createFromTextDocumentItem (textDocument: TextDocumentItem): PMTextDocument {
+export function createNewTextDocumentFromItem (textDocument: TextDocumentItem): PMTextDocument {
 	return createNewTextDocument(textDocument.uri,languagesIds[textDocument.languageId],textDocument.version,textDocument.text);
 }
 

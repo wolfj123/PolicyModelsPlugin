@@ -75,6 +75,7 @@ hs_err_pid*
 # *.iml
 # *.ipr
 
+
 # CMake
 cmake-build-*/
 
@@ -113,7 +114,6 @@ jonathan/lsp_samples/cli/lib/desktop.ini
 !plugins/cli/*
 !utils/*
 plugin/cli/java
-*.png
 !cli/LibServiceApp.jar
 !cli/PolicyModels-1.9.9.uber.jar
 !LibServiceApp/resources/PolicyModels-1.9.9.uber.jar

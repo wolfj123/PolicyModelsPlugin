@@ -82,15 +82,14 @@ export function activate(context: ExtensionContext) {
   client.start();
 
   client.onReady().then(_ => {
-    let shouldLog:boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Logging") !== "false";
-    client.sendRequest("setPluginDir",[context.extensionPath,shouldLog]);
+    let shouldLog:boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Logging");
+    let useDiagnostics: boolean = vscode.workspace.getConfiguration("PolicyModelsServer").get("Diagnostics");
+    client.sendRequest("setPluginDir",[context.extensionPath,shouldLog, useDiagnostics]);
 
-    client.onRequest("getPluginDir",(a)=>{
-      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
-      console.log(`${JSON.stringify(a)}`);
-      console.log(`getPluginDir ------------- ---------------- --------------- ------------------`)
-
-      return context.extensionPath;
+    client.onRequest("notifyUser",(msg)=>{
+      console.log(`${JSON.stringify(msg)}`);
+      vscode.window.showInformationMessage(msg);
+      return null;
     });
   });
 }
@@ -134,14 +133,9 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
   myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
   myStatusBarItem.command = myCommandId;
   subscriptions.push(myStatusBarItem);
-
-  // register some listener that make sure the status bar
-  // item always up-to-date
-  // subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
-  // subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
-
+  
   // update status bar item once at start
-  myStatusBarItem.text = '$(play) new Model';
+  myStatusBarItem.text = '$(new-file) New Model';
   myStatusBarItem.show();
 }
 
