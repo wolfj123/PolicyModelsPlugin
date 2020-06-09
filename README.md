@@ -13,6 +13,8 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 #### Table of contents  <!-- omit in toc -->
 
 - [Installation](#installation)
+	- [Pre-requisites](#pre-requisites)
+	- [Instructions](#instructions)
 - [Features](#features)
 	- [Syntax Highlighting](#syntax-highlighting)
 	- [Go To References](#go-to-references)
@@ -29,6 +31,14 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 
 ## Installation
 [TODO: wait for packaging and release]
+
+### Pre-requisites
+- **VSCode 1.41**
+- **Java JDK 11.0.4**
+- **Graphviz**
+
+
+### Instructions
 
 ## Features
 ### Syntax Highlighting
@@ -49,13 +59,23 @@ Press **ctrl + space** (default VSCode shortcut) to recieve a completion list. T
 ![autocomplete](./docs/images/autocomplete.png)
 
 ### Create New Model
-Press the **New Model** button and fill out the necessary information.
+Press the **New Model** button:
 
-[TODO: add images]
+![run model](./docs/images/new_model_button.png.png)
+
+Next fill out the necessary information:
+
+![run model](./docs/images/new_project_window.png)
+
 
 ### Running Model
-Press the **Run Model** button.
-[TODO: add images]
+Press the **Run Model** button:
+
+![run model](./docs/images/run_model_button.png)
+
+This will run the [CLI](https://datatagginglibrary.readthedocs.io/en/latest/take-for-spin.html) and load the model into it:
+
+![run model](./docs/images/cli.png)
 
 ### Localization
 
@@ -64,7 +84,7 @@ If a Localization folder does not already exist, you will promped to first creat
 
 ![localization button](./docs/images/localization_button.png)
 
-The Localization GUI allows for simple editing of the **answers.txt** and **space.md** files:
+The Localization GUI allows for simple editing of the "**answers.txt**" and "**space.md**" files:
 
 ![localization answers gui](./docs/images/localization_gui.gif)
 
