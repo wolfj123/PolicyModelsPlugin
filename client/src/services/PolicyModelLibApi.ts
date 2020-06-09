@@ -140,38 +140,37 @@ export default class PolicyModelLibApi {
     return await ans.catch(this._handleConnectionRejection);
   }
 
-  async _visualizePolicySpace(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string): Promise<string> {
+  async _visualizePolicySpace(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string, globalDotInfo:string): Promise<string> {
     return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}&dotPath=${graphvizDot}`)
     .then((res: any) => {
-      if(res.data === SUCCESS)
-        return res.data
-      else if(res.data === "java.lang.NullPointerException")
-        return badNameException
-      else if(res.data === "bad dot")
-        return badDotException
-      else
-        return "unknown";
+      return this._visualizeThenHandler(res, badNameException, badDotException, globalDotInfo);
     })
     .catch((rej: any) => {
       return "unknown";
     });
   }
 
-  async _visualizeDecisionGraph(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string): Promise<string> {
+  async _visualizeDecisionGraph(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string, globalDotInfo:string): Promise<string> {
     return await axiosInstance.get(`/visualize-dg?outputPath=${outputPath}&dotPath=${graphvizDot}`)
     .then((res: any) => {
-      if(res.data === SUCCESS)
-        return res.data
-      else if(res.data === "java.lang.NullPointerException")
-        return badNameException
-      else if(res.data === "bad dot")
-        return badDotException
-      else
-        return "unknown";
+      return this._visualizeThenHandler(res, badNameException, badDotException, globalDotInfo);
     })
     .catch((rej: any) => {
       return "unknown";
     });
+  }
+
+  _visualizeThenHandler(res: any, badNameException:string, badDotException:string, globalDotInfo:string){
+    if(res.data === SUCCESS)
+      return res.data;
+    else if(res.data === "java.lang.NullPointerException")
+      return badNameException;
+    else if(res.data === "bad dot")
+      return badDotException
+    else if(res.data.startsWith("global"))
+      return globalDotInfo + res.data;
+    else
+      return "unknown";
   }
 
   setPrintToScreenCallback(callback) {
@@ -243,12 +242,23 @@ export default class PolicyModelLibApi {
     return ans;
   }
 
-  async visualizePolicySpace(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string): Promise<string> {
-    return await this._requestsWrapper(true, () => this._visualizePolicySpace(outputPath, graphvizDot, badNameException, badDotException));
+  async visualizePolicySpace(
+    outputPath: string, 
+    graphvizDot:string, 
+    badNameException:string, 
+    badDotException:string,
+    globalDotInfo:string): Promise<string> {
+    return await this._requestsWrapper(true, () => this._visualizePolicySpace(outputPath, graphvizDot, badNameException, badDotException, globalDotInfo));
   }
 
-  async visualizeDecisionGraph(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string): Promise<string> {
-    return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot, badNameException, badDotException));
+  async visualizeDecisionGraph(
+    outputPath: string, 
+    graphvizDot:string, 
+    badNameException:string, 
+    badDotException:string,
+    globalDotInfo:string
+  ): Promise<string> {
+    return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot, badNameException, badDotException, globalDotInfo));
   }
 
   async updateLocalization(): Promise<string[]>{

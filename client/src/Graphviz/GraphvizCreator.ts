@@ -14,6 +14,7 @@ const defaulFileFormat = '.svg'
 
 const badNameException = "bad name"
 const badDotException = "bad dot"
+const globalDotInfo = "global dot"
 
 
 // graphviz Dot windows example => 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe'
@@ -72,6 +73,30 @@ class GraphvizCreator{
 	_graphvizMessageToUser(message: string){
 		vscode.window.showInformationMessage("GRAPHVIZ integration: ",message);
 	}
+
+	_afterServerRequestHandler(result: any, graphvizUIController: GraphvizUIController, outputGraphvizPath:string){
+		if (result == true){
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
+			return;
+		}
+
+		if(result === badNameException)
+			this._resolveDotBadName(graphvizUIController);
+
+		else if(result === badDotException)
+			this._resolveDotBadDot();
+
+		else if(result.startsWith(globalDotInfo)){
+			graphvizUIController.dotPath = 
+				"Your graphviz dot path is Global.\n"+
+				"Don't delete this file so you won't need to provie dot path ever again.\n"+
+				"GLOBAL PATH = " + result.substring(result.indexOf("$"))
+		this._resolveDot(outputGraphvizPath, graphvizUIController)
+
+		} else {
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
+		}
+	}
 }
 
 
@@ -82,19 +107,14 @@ export class PSGraphvizCreator extends GraphvizCreator{
 
 	async visualize(graphvizUIController: GraphvizUIController){
 		var outputGraphvizPath = this._concatFilePath(graphvizUIController);
-		var result: string = await this._policyModelLibApi.visualizePolicySpace(
+		var result: any = await this._policyModelLibApi.visualizePolicySpace(
 			outputGraphvizPath,
 			graphvizUIController.dotPath,
 			badNameException,
-			badDotException);
-		
-		if(result === badNameException)
-			this._resolveDotBadName(graphvizUIController);
-		else if(result === badDotException)
-			this._resolveDotBadDot();
-		else
-			this._resolveDot(outputGraphvizPath, graphvizUIController)
+			badDotException,
+			globalDotInfo);
 
+		this._afterServerRequestHandler(result, graphvizUIController, outputGraphvizPath);
 	}
 
 }
@@ -106,18 +126,14 @@ export class DGGraphvizCreator extends GraphvizCreator{
 
 	async visualize(graphvizUIController){
 		var outputGraphvizPath = this._concatFilePath(graphvizUIController);
-		var result: string = await this._policyModelLibApi.visualizeDecisionGraph(
+		var result: any = await this._policyModelLibApi.visualizeDecisionGraph(
 			outputGraphvizPath,
 			graphvizUIController.dotPath,
 			badNameException,
-			badDotException);
-		
-		if(result === badNameException)
-			this._resolveDotBadName(graphvizUIController);
-		else if(result === badDotException)
-			this._resolveDotBadDot();
-		else
-			this._resolveDot(outputGraphvizPath, graphvizUIController)
+			badDotException,
+			globalDotInfo);
+
+		this._afterServerRequestHandler(result, graphvizUIController, outputGraphvizPath);
 	}
 
 }

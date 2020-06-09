@@ -85,6 +85,8 @@ public  class PolicyModelService {
             visualizePolicySpaceCmd.execute(cli, args);
             if (visualizePolicySpaceCmd.dotIsNotResolved)
                 return "bad dot";
+            else if(visualizePolicySpaceCmd.dotIsGlobal)
+                return "global path: " + visualizePolicySpaceCmd.publicPathToDot;
             return "true";
         } catch (Exception ex){
             return "false";
@@ -101,6 +103,8 @@ public  class PolicyModelService {
             visualizeDecisionGraphCmd.execute(cli, args);
             if (visualizeDecisionGraphCmd.dotIsNotResolved)
                 return "bad dot";
+            else if(visualizeDecisionGraphCmd.dotIsGlobal)
+                return "global path: $" + visualizeDecisionGraphCmd.publicPathToDot;
             return "true";
         } catch (Exception ex){
             return "false";

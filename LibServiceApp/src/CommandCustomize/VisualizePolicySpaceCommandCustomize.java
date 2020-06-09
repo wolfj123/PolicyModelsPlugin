@@ -18,6 +18,8 @@ import java.util.stream.Stream;
 public class VisualizePolicySpaceCommandCustomize extends VisualizePolicySpaceCommand {
     private static Path pathToDot;
     public boolean dotIsNotResolved = false;
+    public boolean dotIsGlobal = false;
+    public static Path publicPathToDot;
 
     public VisualizePolicySpaceCommandCustomize() {
         super();
@@ -26,9 +28,11 @@ public class VisualizePolicySpaceCommandCustomize extends VisualizePolicySpaceCo
     //Overrides to avoid promote to user from the origin cli
     public void execute(CliRunner rnr, List<String> args) throws Exception {
         if (this.pathToDot == null) {
-            Optional<Path> dotPath = this.findDot();  // in case the dot path is available as global varaible
+            Optional<Path> dotPath = this.findDot();
             if (!dotPath.isPresent()) {
                 dotPath = this.parseDotPath(args.get(2));  // use passed dot path
+            } else{
+                dotIsGlobal = true; // in case the dot path is available as global variable
             }
 
             if (!dotPath.isPresent()) {
@@ -43,11 +47,14 @@ public class VisualizePolicySpaceCommandCustomize extends VisualizePolicySpaceCo
         if (!Files.exists(pathToDot, new LinkOption[0])) {
             rnr.printWarning("Dot does not exist in the supplied path `%s`", new Object[]{pathToDot});
             dotIsNotResolved = true;
+            dotIsGlobal = false;
             pathToDot = null;
         }
 
         if (pathToDot != null) {
             this.executeWithDot(pathToDot, rnr, args);
+            if(dotIsGlobal)
+                publicPathToDot = pathToDot;
         } else {
             rnr.printWarning("Command cancelled");
         }
