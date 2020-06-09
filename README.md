@@ -25,7 +25,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
-- [Development & Contribution Guide](#development--contribution-guide)
+- [Development & Contribution](#development--contribution)
 - [Related](#related)
 	- [Policy Models](#policy-models)
 	- [DataTaggingLibrary Project](#datatagginglibrary-project)
@@ -128,9 +128,9 @@ This will generate the file under a new "visualization" folder:
 ## Supported Settings
 [TODO: add images]
 
-## Development & Contribution Guide
+## Development & Contribution
 
-[TODO: link page]
+[For contributing to this project, please refer to this guide](docs/CONTRIBUTING.md).
 
 ## Related
 
