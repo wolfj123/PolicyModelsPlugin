@@ -33,6 +33,8 @@ import {
 	DidChangeWatchedFilesParams,
 	FileEvent,
 	FileChangeType,
+	DocumentUri,
+	Diagnostic
 } from 'vscode-languageserver';
 
 import * as child_process from "child_process";
@@ -111,14 +113,6 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
 
 
 connection.onInitialized(() => {
-	connection.onRequest("Run_Model", param => runModel(param));
-	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean) => {
-		initLogger(dir,shouldLog);
-		solver = new PMSolver(dir);
-		// await solver.initParser(dir);
-		console.log("finish init from client");
-		return null;
-	})
 
 	if (clientSupportswatchedFiles){
 		let watchedFilesOptions: DidChangeWatchedFilesRegistrationOptions = {
@@ -138,12 +132,46 @@ connection.onInitialized(() => {
 			]
 		}
 		connection.client.register(DidChangeWatchedFilesNotification.type,watchedFilesOptions);
-	}else{
-		
-		//TODO notify LSP won't work
+	}else {
 		console.log("client doesn't support watched files - is this a problem??");
-		
+		connection.sendRequest("notifyUser", "This IDE doesn't support all necesarry features for a working LSP Policymodel language support. The Policymodel language will not work correctly. Maybe updating IDE version will solve the problem");
+		return;
 	}
+
+	connection.onRequest("Run_Model", param => runModel(param));
+	connection.onRequest("setPluginDir", async (dir:string, shouldLog: boolean, useDiagnostics: boolean) => {
+		initLogger(dir,shouldLog);
+		let diagnosticsCallback = (useDiagnostics === false) ? undefined : 
+		(uri: DocumentUri, diagnostics: Diagnostic[], docVersion?: number)=>{
+			if (! hasDiagnosticRelatedInformationCapability){
+				return;
+			}
+			if (docVersion !== undefined){
+				connection.sendDiagnostics({
+					uri: uri,
+					version: docVersion,
+					diagnostics: diagnostics
+				})
+			}else{
+				connection.sendDiagnostics({
+					uri: uri,
+					diagnostics: diagnostics
+				});
+			}
+		};
+
+		solver = new PMSolver(dir,diagnosticsCallback);
+
+
+		// await solver.initParser(dir);
+		console.log("finish init from client");
+		return null;
+	})
+
+	
+
+
+	connection.onRequest("Run_Model", param => runModel(param));
 
 	let textDocumnetNotificationOptions: TextDocumentChangeRegistrationOptions = {
 		syncKind: TextDocumentSyncKind.Incremental,
@@ -286,25 +314,20 @@ connection.onDidChangeWatchedFiles( (_change: DidChangeWatchedFilesParams) => {
 				break;
 		}
 	});
-	console.log(`onDidChangeWatchedFiles\n${JSON.stringify(_change)}`);
 });
 
 connection.onDidChangeTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidChangeTextDocument`,event);
-	console.log("onDidChangeTextDocument")
 	solver.onDidChangeTextDocument(event);
 });
 
 connection.onDidCloseTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidCloseTextDocument`,event);
-	console.log(`onDidCloseTextDocument`);
 	solver.onDidCloseTextDocument(event.textDocument);
-
 });
 
 connection.onDidOpenTextDocument(event => {
 	getLogger(logSources.serverHttp).http(`onDidOpenTextDocument`,event);
-	console.log(`onDidOpenTextDocument`);
 	solver.onDidOpenTextDocument(event.textDocument);
 });
 

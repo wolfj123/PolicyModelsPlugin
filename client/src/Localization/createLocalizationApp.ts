@@ -22,8 +22,9 @@ function activeLocalization() {
 	if (languagesFolderExist) {
 		const localization = new LocalizationController({ extensionPath: _extensionPath }, _localizationPath, _onError);
 		try {
-			PolicyModelLibApi.getInstance().updateLocalization().then(() => {
-				localization.activateLocalization();
+			PolicyModelLibApi.getInstance().updateLocalization().then(answersToRemove => {
+				const updateResponse = { answersToRemove };
+				localization.activateLocalization(updateResponse);
 			});
 
 		} catch (e) {
@@ -64,7 +65,7 @@ async function tryCreateLocalizationFiles() {
 		const api: PolicyModelLibApi = PolicyModelLibApi.getInstance();
 		const created = await api.createNewLocalization(name);
 		if (created) {
-				activeLocalization();
+			activeLocalization();
 
 		} else {
 			selection = await vscode.window.showInformationMessage(`Some problem occurred. `, tryAgainButton)
