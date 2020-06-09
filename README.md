@@ -25,7 +25,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
-- [Development Guide](#development-guide)
+- [Development & Contribution Guide](#development--contribution-guide)
 - [Related](#related)
 
 
@@ -33,9 +33,9 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 [TODO: wait for packaging and release]
 
 ### Pre-requisites
-- **VSCode 1.41**
-- **Java JDK 11.0.4**
-- **Graphviz**
+- **VSCode 1.41** : last compatible version verified.
+- **Java JDK 11.0.4** : required for creating [new models](#create-new-model), [running existing models](#running-model) and [localization files creation](#localization).
+- **Graphviz**: required for [visualization feature](#graphviz-visualization). Can be download [here](#http://www.graphviz.org/).
 
 
 ### Instructions
@@ -97,17 +97,37 @@ We also provide a Markdown preview of the markdown files of the localization:
 
 
 ### Graphviz Visualization
-[TODO: add images & description]
+It is possible to create a graphical visualization of the model using Graphviz (must be pre-installed).
+There are 2 kinds of visualizations:
+- Decision Graph visualization
+- Policy Space visualization
+
+Each has correpsonding button in the plugin:
+
+![visualization buttons](./docs/images/visualization_buttons.png)
+
+After pressing the button, provide the path to the graphviz application, name of generated file and type (pdf, svg, ):
+
+![graphviz path](./docs/images/dot_path_example.png)
+
+This will generate the file under a new "visualization" folder:
+
+![graphviz path](./docs/images/visualization_folder.png)
+![graphviz path](./docs/images/graph_visualization.png)
+
 
 ## Supported Settings
 [TODO: add images]
 
-## Development Guide
+## Development & Contribution Guide
+
+[TODO: link page]
 
 ## Related
 
 - [Policy Models](https://datatagginglibrary.readthedocs.io/en/latest/index.html#)
-- [DataTaggingLibrary project](https://github.com/IQSS/DataTaggingLibrary)
+- [DataTaggingLibrary Project](https://github.com/IQSS/DataTaggingLibrary)
 - [LSP](https://microsoft.github.io/language-server-protocol/overviews/lsp/overview/)
 - [VSCode Language Extensions](https://code.visualstudio.com/api/language-extensions/overview)
 - [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/)
+- [Syntax Highlighting in VSCode using Tree-Sitter](https://github.com/georgewfraser/vscode-tree-sitter)
