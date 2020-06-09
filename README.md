@@ -27,12 +27,12 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 - [Supported Settings](#supported-settings)
 - [Development & Contribution Guide](#development--contribution-guide)
 - [Related](#related)
-			- [Policy Models](#policy-models)
-			- [DataTaggingLibrary Project](#datatagginglibrary-project)
-			- [Language Server Protocol](#language-server-protocol)
-			- [VSCode Language Extensions](#vscode-language-extensions)
-			- [Tree-Sitter](#tree-sitter)
-			- [Syntax Highlighting in VSCode using Tree-Sitter](#syntax-highlighting-in-vscode-using-tree-sitter)
+	- [Policy Models](#policy-models)
+	- [DataTaggingLibrary Project](#datatagginglibrary-project)
+	- [Language Server Protocol](#language-server-protocol)
+	- [VSCode Language Extensions](#vscode-language-extensions)
+	- [Tree-Sitter](#tree-sitter)
+	- [Syntax Highlighting in VSCode using Tree-Sitter](#syntax-highlighting-in-vscode-using-tree-sitter)
 
 
 ## Installation
@@ -131,24 +131,24 @@ This will generate the file under a new "visualization" folder:
 
 ## Related
 
-##### Policy Models
+### Policy Models
 This plugin is designed to streamline and simplify the process of creating Policy Model projects. Learn more about [Policy Models](https://datatagginglibrary.readthedocs.io/en/latest/index.html#).
 
-##### DataTaggingLibrary Project
+### DataTaggingLibrary Project
 Some of the features in this project are provided by an existing open-source project, the [DataTaggingLibrary Project](https://github.com/IQSS/DataTaggingLibrary),  that provides a Command Line Interface for creating and running Policy Model projects.
 
-##### Language Server Protocol
+### Language Server Protocol
 >Implementing support for features like autocomplete, goto definition, or documentation on hover for a programming language is a significant effort. Traditionally this work must be repeated for each development tool, as each provides different APIs for implementing the same features.
 The idea behind a Language Server is to provide the language-specific smarts inside a server that can communicate with development tooling over a protocol that enables inter-process communication.
 The idea behind the Language Server Protocol (LSP) is to standardize the protocol for how tools and servers communicate, so a single Language Server can be re-used in multiple development tools, and tools can support languages with minimal effort.
 
 Learn more about [LSP](https://microsoft.github.io/language-server-protocol/overviews/lsp/overview/).
 
-##### VSCode Language Extensions
+### VSCode Language Extensions
 This plugin is a VSCode Language Extension. These extensions provide additional support for more languages in the VSCode editor.
 Learn more about [VSCode Language Extensions](https://code.visualstudio.com/api/language-extensions/overview).
 
-##### Tree-Sitter
+### Tree-Sitter
 >Tree-sitter is a parser generator tool and an incremental parsing library. It can build a concrete syntax tree for a source file and efficiently update the syntax tree as the source file is edited. Tree-sitter aims to be:
 General enough to parse any programming language
 Fast enough to parse on every keystroke in a text editor
@@ -164,5 +164,5 @@ For this project we have created 3 new Tree-Sitter parsers, one for each languag
 These parsers are standalone [npm](#https://www.npmjs.com/) packages and can be used in other projects freely.
 
 
-##### Syntax Highlighting in VSCode using Tree-Sitter
-[Syntax Highlighting in VSCode using Tree-Sitter](https://github.com/georgewfraser/vscode-tree-sitter)
+### Syntax Highlighting in VSCode using Tree-Sitter
+At the time of this writing, LSP does not fully support Syntax Highlighting. Therefore we implemented this on the Client's side. We chose to use the Tree-Sitter parsers for the syntax highlighting, instead of the native Text-Mate support in VSCode, to allow easier maintainability. This was based on the wonderful work in this [project](https://github.com/georgewfraser/vscode-tree-sitter).
