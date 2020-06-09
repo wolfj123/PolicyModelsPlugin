@@ -6,43 +6,40 @@ import FileService from '../services/FileService';
 
 
 const graphvizOutputFolder = '/visualization';
+const PSOutputFolder = '/PolicySpace';
+const DGOutputFolder = '/DecisionGraph';
+
 const defaultFileName = 'ps'
 const defaulFileFormat = '.svg'
-// const graphvizDot = 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe'
 
-export default class GraphvizCreator{
+const badNameException = "bad name"
+const badDotException = "bad dot"
+
+
+// graphviz Dot windows example => 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe'
+
+class GraphvizCreator{
 	_outputFolderPath: string;
 	_policyModelLibApi: PolicyModelLibApi;
 
-	constructor() {
+	constructor(innerOutputFolder: string) {
 		let outputFolderPath = vscode.workspace.rootPath + graphvizOutputFolder;
 		this._outputFolderPath = outputFolderPath.replace(/\\/g, '/');
 		this._policyModelLibApi = PolicyModelLibApi.getInstance();
 
-		this._createOutputFolder(this._outputFolderPath)
+		this._createOutputFolder(this._outputFolderPath, innerOutputFolder)
 	}
+
 	
-	async visualizePolicySpace(graphvizUIController: GraphvizUIController){
-		var outputGraphvizPath = this._concatFilePath(graphvizUIController);
-		await this._policyModelLibApi.visualizePolicySpace(
-			outputGraphvizPath,
-			graphvizUIController.dotPath);
+	async visualize(graphvizUIController: GraphvizUIController){} //this method is overwitten with classes below
 
-		this._resolveDot(outputGraphvizPath, graphvizUIController);
-	}
-
-	async visualizeDecisionGraph(graphvizUIController){
-		var outputGraphvizPath = this._concatFilePath(graphvizUIController);
-		await this._policyModelLibApi.visualizeDecisionGraph(
-			outputGraphvizPath,
-			graphvizUIController.dotPath);
-		
-		this._resolveDot(outputGraphvizPath, graphvizUIController);
-	}
-
-	_createOutputFolder(outputFolderPath: string){
+	_createOutputFolder(outputFolderPath: string, innerOutputFolder: string){
 		if(!FileService.isExist(outputFolderPath)){
 			FileService.createDirectory(outputFolderPath);
+		}
+		this._outputFolderPath = this._outputFolderPath + innerOutputFolder;
+		if(!FileService.isExist(this._outputFolderPath)){
+			FileService.createDirectory(outputFolderPath + innerOutputFolder);
 		}
 	}
 	
@@ -57,7 +54,70 @@ export default class GraphvizCreator{
 			FileService.writeToFile(GRAPHVIZ_CONF_PATH, graphvizUIController.dotPath)
 		} else if(FileService.isExist(GRAPHVIZ_CONF_PATH) && FileService.readFromFile(GRAPHVIZ_CONF_PATH)){
 			FileService.deleteFileInPath(GRAPHVIZ_CONF_PATH);
+			this._graphvizMessageToUser("something went wrong, dot path is requiered again")
 		}
+	}
+
+	_resolveDotBadDot(){
+		if(FileService.isExist(GRAPHVIZ_CONF_PATH) && FileService.readFromFile(GRAPHVIZ_CONF_PATH)){
+			FileService.deleteFileInPath(GRAPHVIZ_CONF_PATH);
+		}
+		this._graphvizMessageToUser("bad dot path, you need to enter dot path again")
+	}
+
+	_resolveDotBadName(graphvizUIController: GraphvizUIController){
+		this._graphvizMessageToUser("bad output file name: '" + graphvizUIController.fileName +"'")
+	}
+
+	_graphvizMessageToUser(message: string){
+		vscode.window.showInformationMessage("GRAPHVIZ integration: ",message);
+	}
+}
+
+
+export class PSGraphvizCreator extends GraphvizCreator{
+	constructor() {
+		super(PSOutputFolder);
+	}
+
+	async visualize(graphvizUIController: GraphvizUIController){
+		var outputGraphvizPath = this._concatFilePath(graphvizUIController);
+		var result: string = await this._policyModelLibApi.visualizePolicySpace(
+			outputGraphvizPath,
+			graphvizUIController.dotPath,
+			badNameException,
+			badDotException);
+		
+		if(result === badNameException)
+			this._resolveDotBadName(graphvizUIController);
+		else if(result === badDotException)
+			this._resolveDotBadDot();
+		else
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
+
+	}
+
+}
+
+export class DGGraphvizCreator extends GraphvizCreator{
+	constructor() {
+		super(DGOutputFolder);
+	}
+
+	async visualize(graphvizUIController){
+		var outputGraphvizPath = this._concatFilePath(graphvizUIController);
+		var result: string = await this._policyModelLibApi.visualizeDecisionGraph(
+			outputGraphvizPath,
+			graphvizUIController.dotPath,
+			badNameException,
+			badDotException);
+		
+		if(result === badNameException)
+			this._resolveDotBadName(graphvizUIController);
+		else if(result === badDotException)
+			this._resolveDotBadDot();
+		else
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
 	}
 
 }

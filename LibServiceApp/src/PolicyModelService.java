@@ -3,7 +3,6 @@ import CommandCustomize.VisualizePolicySpaceCommandCustomize;
 import edu.harvard.iq.policymodels.cli.CliRunner;
 import edu.harvard.iq.policymodels.cli.commands.*;
 
-import java.net.URLDecoder;
 import java.util.Collections;
 
 import java.util.LinkedList;
@@ -58,23 +57,36 @@ public  class PolicyModelService {
         return new Pair<>(512,"Unknown Error");
     }
 
-    public static void visualizePS(String outputPath, String dotPath) throws  Exception {
-//        dotPath = dotPath.replace("%20", " ");
+    public static String visualizePS(String outputPath, String dotPath) throws  Exception {
         VisualizePolicySpaceCommandCustomize visualizePolicySpaceCmd = new VisualizePolicySpaceCommandCustomize();
-        List<String> args = new LinkedList<>();
+        LinkedList<String> args = new LinkedList<>();
         args.add(outputPath);
         args.add(outputPath);
         args.add(dotPath);
-        visualizePolicySpaceCmd.execute(cli, args);
+        try {
+            visualizePolicySpaceCmd.execute(cli, args);
+            if (visualizePolicySpaceCmd.dotIsNotResolved)
+                return "bad dot";
+            return "true";
+        } catch (Exception ex){
+            return "false";
+        }
     }
 
-    public static void visualizeDG(String outputPath, String dotPath) throws  Exception {
+    public static String visualizeDG(String outputPath, String dotPath) throws  Exception {
         VisualizeDecisionGraphCommandCustomize visualizeDecisionGraphCmd = new VisualizeDecisionGraphCommandCustomize();
         List<String> args = new LinkedList<>();
         args.add(outputPath);
         args.add(outputPath);
         args.add(dotPath);
-        visualizeDecisionGraphCmd.execute(cli, args);
+        try {
+            visualizeDecisionGraphCmd.execute(cli, args);
+            if (visualizeDecisionGraphCmd.dotIsNotResolved)
+                return "bad dot";
+            return "true";
+        } catch (Exception ex){
+            return "false";
+        }
     }
 
 }
