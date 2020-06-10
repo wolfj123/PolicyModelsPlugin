@@ -106,46 +106,35 @@ export default class PolicyModelLibApi {
   }
 
   async _createNewLocalization(name: string): Promise<boolean> {
-    return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS).catch(this._handleConnectionRejection);
+    return await axiosInstance.get(`/loc/new?name=${name}`).then((res: any) => res.data === SUCCESS);
   }
 
   async _updateLocalization(): Promise<string[]> {
-    return await axiosInstance.get(`/loc/update`).then(res => res.data).catch(this._handleConnectionRejection);
+    return await axiosInstance.get(`/loc/update`).then(res => res.data);
   }
 
   async _requestsWrapper(loadModel: boolean,requestCallback): Promise<any> {
-    let myInstance = this;
     const buildSucceeded = await this._buildEnvironment(loadModel);
+    let callBackPromise;
+    if(buildSucceeded){
+       callBackPromise = requestCallback().catch(this._handleConnectionRejection);
+    }else{
+      callBackPromise = Promise.resolve(() => this._handleConnectionRejection("Error: Can not Build LibServiceApp or load model "));
+    }
 
-    const ans: Promise<any> = new Promise(async (res,rej) =>{
-      let requestAnswer = false;
-      if (buildSucceeded) {
-        requestAnswer = await requestCallback()
-        .then(resolveAns =>{
-          myInstance._terminateProcess();
-          res(resolveAns);
-        })
-        .catch(rejectAns =>{
-          myInstance._terminateProcess();
-          return rej(rejectAns);
-        });
-      }else{
-        return rej(requestAnswer);
-      }
-    });
-
-    return await ans.catch(this._handleConnectionRejection);
+    const answer =  await callBackPromise;
+    this._terminateProcess();
+    return answer;
   }
+
   async _visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
     return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}&dotPath=${graphvizDot}`)
-    .then((res: any) => res.data === SUCCESS)
-    .catch(rej => this._handleConnectionRejection);
+    .then((res: any) => res.data === SUCCESS);
   }
 
   async _visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
     return await axiosInstance.get(`/visualize-dg?outputPath=${outputPath}&dotPath=${graphvizDot}`)
-    .then((res: any) => res.data === SUCCESS)
-    .catch(rej => this._handleConnectionRejection);
+    .then((res: any) => res.data === SUCCESS);
   }
 
   setPrintToScreenCallback(callback) {
