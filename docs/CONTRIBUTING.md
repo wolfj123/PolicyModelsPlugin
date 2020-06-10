@@ -26,7 +26,7 @@ There is also a good [example-project](#https://github.com/Microsoft/vscode-exte
 Learn about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/).
 Our language [parsers](./../README.md#Decision-Graph-Parser).
 
-In this project we use the **web-tree-sitter** project (can be found [here](#https://www.npmjs.com/package/web-tree-sitter)) to generate the parsers in _.wasm_ format. The parser are located in the _Parsers_ directory under root. Both the client and server use this directory. Therefore if anyone wishes to use only one of them, it is necessary to also include the parsers in the new project.
+In this project we use the **web-tree-sitter** project (can be found at https://www.npmjs.com/package/web-tree-sitter) to generate the parsers in _.wasm_ format. The parser are located in the _Parsers_ directory under root. Both the client and server use this directory. Therefore if anyone wishes to use only one of them, it is necessary to also include the parsers in the new project.
 
 ## Expanding the LSP Client
 
