@@ -75,12 +75,25 @@ class GraphvizCreator{
 	}
 
 	_afterServerRequestHandler(result: any, graphvizUIController: GraphvizUIController, outputGraphvizPath:string){
-		if (result == true){
+		if(result == undefined){
+			this._graphvizMessageToUser("Something went worng, check for errors when loading model.")
+			return;
+		}
+
+		else if (result == true){
 			this._resolveDot(outputGraphvizPath, graphvizUIController)
 			return;
 		}
 
-		if(result === badNameException)
+		if(!(result instanceof String)){
+			let msg = "Something went worng! unexpected server response, check logs for more information"
+			this._graphvizMessageToUser(msg)
+			console.log(msg);
+			console.log("server response: " + result);
+			return;
+		}
+
+		else if(result === badNameException)
 			this._resolveDotBadName(graphvizUIController);
 
 		else if(result === badDotException)
@@ -91,7 +104,8 @@ class GraphvizCreator{
 				"Your graphviz dot path is Global.\n"+
 				"Don't delete this file so you won't need to provie dot path ever again.\n"+
 				"GLOBAL PATH = " + result.substring(result.indexOf("$"))
-		this._resolveDot(outputGraphvizPath, graphvizUIController)
+
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
 
 		} else {
 			this._resolveDot(outputGraphvizPath, graphvizUIController)
