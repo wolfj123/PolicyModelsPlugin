@@ -24,14 +24,16 @@ There is also a good [example-project](#https://github.com/Microsoft/vscode-exte
 
 ### Tree-Sitter 
 Learn about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/).
-The Tree-Sitter parsers we use:
-- [Decision Graph Parser][1].
-- [Policy Space Parser][2].
-- [Value Inference Parser][3].
 
-[1]:(#https://www.npmjs.com/package/tree-sitter-decisiongraph)
-[2]:(#https://www.npmjs.com/package/tree-sitter-policyspace)
-[3]:(#https://www.npmjs.com/package/tree-sitter-valueinference)
+##### Decision Graph Parser  <!-- omit in toc -->
+- This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-decisiongraph).
+
+##### Policy Space Parser <!-- omit in toc -->
+- This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-policyspace).
+
+##### Value Inference Parser <!-- omit in toc -->
+- This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-valueinference).
+
 
 In this project we use the [web-tree-sitter](#https://www.npmjs.com/package/web-tree-sitter) project to generate the parsers in _.wasm_ format. The parser are located in the _Parsers_ directory under root. Both the client and server use this directory. Therefore if anyone wishes to use only one of them, it is necessary to also include the parsers in the new project.
 
