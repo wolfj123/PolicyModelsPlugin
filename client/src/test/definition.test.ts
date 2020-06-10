@@ -18,12 +18,10 @@ import {
 	activate, 
 	getWordPositionFromLine, 
 	getWordRangeFromLineInEditor, 
-	getWordRangeFromLineInFile,
-	sleep} from './helper';
+	getWordRangeFromLineInFile,} from './helper';
 
-var testCounter: number = 0
-var testFixtureFolderPath: String = 'InferrerExample/'
-let defaultPosition: vscode.Position = new vscode.Position(0,0)
+var testCounter: number = 0;
+var testFixtureFolderPath: String = 'InferrerExample/';
 export type DefinitionResolve = vscode.Location[];
 
 

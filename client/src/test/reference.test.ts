@@ -8,7 +8,6 @@ export interface Location {
 }
 */
 
-import * as path from 'path';
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { 
@@ -194,5 +193,5 @@ export const builtReferenceExpectedResultObject = (
 		locationDG.forEach(l => result.push(l))
 	if (locationVI !== undefined)
 		locationVI.forEach(l => result.push(l))
-	return result
+	return result;
 }

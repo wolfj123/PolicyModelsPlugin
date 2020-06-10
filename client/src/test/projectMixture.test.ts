@@ -14,7 +14,6 @@ The mixture project is InferrerExampleClone.
 
 
 import * as vscode from 'vscode';
-import * as assert from 'assert';
 import { 
 	getDocUri, 
 	activate, 
@@ -25,8 +24,8 @@ import { builtDefinitionExpectedResultObject, testDefinition } from './definitio
 import { createEntry, builtRenamenExpectedResultObject, testRename } from './rename.test';
 import { createLocation, builtReferenceExpectedResultObject, testReferense } from './reference.test';
 
-var testCounter: number = 0
-var cloneTestFixtureFolderPath: String = 'InferrerExampleClone/'
+var testCounter: number = 0;
+var cloneTestFixtureFolderPath: String = 'InferrerExampleClone/';
 export type DefinitionResolve = vscode.Location[];
 
 
