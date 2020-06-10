@@ -28,141 +28,141 @@ export type DefinitionResolve = vscode.Location[];
 
 
 
-// describe('Definition E2E test Policy Space', () => {
+describe('Definition E2E test Policy Space', () => {
 
-// 	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
+	const docUri = getDocUri(testFixtureFolderPath + 'policy-space.pspace');
 
-// 	it('Setup', async () => {
-// 		await activate(docUri);
-// 	})
+	it('Setup', async () => {
+		await activate(docUri);
+	})
 
-// 	it('HumanDataType Test' + testCounter.toString(), async () => {
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 0);
-// 		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 0);
-// 		let resultRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 1);
+	it('HumanDataType Test' + testCounter.toString(), async () => {
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 0);
+		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 0);
+		let resultRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 1);
 
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUri, resultRange);
-// 		await testDefinition(docUri, position, definitionResult);
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUri, resultRange);
+		await testDefinition(docUri, position, definitionResult);
 
-// 	});
-// 	testCounter++;
+	});
+	testCounter++;
 
-// 	it('Harm Test' + testCounter.toString(), async () => {
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Harm", 0);
-// 		let position : vscode.Position = getWordPositionFromLine("Harm", 0);
-// 		let resultRange: vscode.Range = getWordRangeFromLineInEditor("Harm", 2);
+	it('Harm Test' + testCounter.toString(), async () => {
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Harm", 0);
+		let position : vscode.Position = getWordPositionFromLine("Harm", 0);
+		let resultRange: vscode.Range = getWordRangeFromLineInEditor("Harm", 2);
 
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUri, resultRange);
-// 		await testDefinition(docUri, position, definitionResult);
-// 	});
-// 	testCounter++;
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUri, resultRange);
+		await testDefinition(docUri, position, definitionResult);
+	});
+	testCounter++;
 
-// 	it('Encryption Test' + testCounter.toString(), async () => {
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Encryption", 0);
-// 		let position : vscode.Position = getWordPositionFromLine("Encryption", 0);
-// 		let resultRange: vscode.Range = getWordRangeFromLineInEditor("Encryption", 3);
-
-
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUri, resultRange);
-// 		await testDefinition(docUri, position, definitionResult);
-// 	});
-// 	testCounter++;
+	it('Encryption Test' + testCounter.toString(), async () => {
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Encryption", 0);
+		let position : vscode.Position = getWordPositionFromLine("Encryption", 0);
+		let resultRange: vscode.Range = getWordRangeFromLineInEditor("Encryption", 3);
 
 
-// });
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUri, resultRange);
+		await testDefinition(docUri, position, definitionResult);
+	});
+	testCounter++;
 
 
-// describe('Definition E2E test Decision Graph', () => {
-
-// 	const docUriSource = getDocUri(testFixtureFolderPath + 'decision-graph.dg');
-// 	const docUriTarget= getDocUri(testFixtureFolderPath + 'policy-space.pspace');
-
-// 	it('HumanDataType Test' + testCounter.toString(), async () => {
-// 		await activate(docUriSource);
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 0);
-// 		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 0);
-
-// 		let resultRange: vscode.Range = await getWordRangeFromLineInFile("HumanDataType", 1, docUriTarget);
-
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
-// 		await testDefinition(docUriSource, position, definitionResult);
-
-// 	});
-// 	testCounter++;
-
-// 	it('Harm Test' + testCounter.toString(), async () => {
-// 		await activate(docUriSource);
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Harm", 23);
-// 		let position : vscode.Position = getWordPositionFromLine("Harm", 23);
-// 		let resultRange: vscode.Range = await getWordRangeFromLineInFile("Harm", 2, docUriTarget);
-
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
-// 		await testDefinition(docUriSource, position, definitionResult);
-// 	});
-// 	testCounter++;
-
-// 	it('major Test' + testCounter.toString(), async () => {
-// 		await activate(docUriSource);
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("major", 25);
-// 		let position : vscode.Position = getWordPositionFromLine("major", 25, 2);
-// 		let resultRange: vscode.Range = await getWordRangeFromLineInFile("major", 2, docUriTarget);
-
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
-// 		await testDefinition(docUriSource, position, definitionResult);
-// 	});
-// 	testCounter++;
-
-// });
+});
 
 
-// describe('Definition E2E test Value Inference', () => {
-// 	const docUriSource = getDocUri(testFixtureFolderPath + 'valueInference.vi');
-// 	const docUriTarget= getDocUri(testFixtureFolderPath + 'policy-space.pspace');
+describe('Definition E2E test Decision Graph', () => {
+
+	const docUriSource = getDocUri(testFixtureFolderPath + 'decision-graph.dg');
+	const docUriTarget= getDocUri(testFixtureFolderPath + 'policy-space.pspace');
+
+	it('HumanDataType Test' + testCounter.toString(), async () => {
+		await activate(docUriSource);
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 0);
+		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 0);
+
+		let resultRange: vscode.Range = await getWordRangeFromLineInFile("HumanDataType", 1, docUriTarget);
+
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
+		await testDefinition(docUriSource, position, definitionResult);
+
+	});
+	testCounter++;
+
+	it('Harm Test' + testCounter.toString(), async () => {
+		await activate(docUriSource);
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Harm", 23);
+		let position : vscode.Position = getWordPositionFromLine("Harm", 23);
+		let resultRange: vscode.Range = await getWordRangeFromLineInFile("Harm", 2, docUriTarget);
+
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
+		await testDefinition(docUriSource, position, definitionResult);
+	});
+	testCounter++;
+
+	it('major Test' + testCounter.toString(), async () => {
+		await activate(docUriSource);
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("major", 25);
+		let position : vscode.Position = getWordPositionFromLine("major", 25, 2);
+		let resultRange: vscode.Range = await getWordRangeFromLineInFile("major", 2, docUriTarget);
+
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
+		await testDefinition(docUriSource, position, definitionResult);
+	});
+	testCounter++;
+
+});
 
 
-// 	it('clear Test' + testCounter.toString(), async () => {
-// 		await activate(docUriSource);
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("clear", 1);
-// 		let position : vscode.Position = getWordPositionFromLine("clear", 1);
-// 		let resultRange: vscode.Range = await getWordRangeFromLineInFile("clear", 3, docUriTarget);
+describe('Definition E2E test Value Inference', () => {
+	const docUriSource = getDocUri(testFixtureFolderPath + 'valueInference.vi');
+	const docUriTarget= getDocUri(testFixtureFolderPath + 'policy-space.pspace');
 
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
-// 		await testDefinition(docUriSource, position, definitionResult);
-// 	});
-// 	testCounter++;
 
-// 	it('HumanDataType Test' + testCounter.toString(), async () => {
-// 		await activate(docUriSource);
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 2);
-// 		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 2);
-// 		let resultRange: vscode.Range = await getWordRangeFromLineInFile("HumanDataType", 1, docUriTarget);
+	it('clear Test' + testCounter.toString(), async () => {
+		await activate(docUriSource);
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("clear", 1);
+		let position : vscode.Position = getWordPositionFromLine("clear", 1);
+		let resultRange: vscode.Range = await getWordRangeFromLineInFile("clear", 3, docUriTarget);
 
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
-// 		await testDefinition(docUriSource, position, definitionResult);
-// 	});
-// 	testCounter++;
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
+		await testDefinition(docUriSource, position, definitionResult);
+	});
+	testCounter++;
 
-// 	it('Encryption Test' + testCounter.toString(), async () => {
-// 		await activate(docUriSource);
-// 		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Encryption", 0);
-// 		let position : vscode.Position = getWordPositionFromLine("Encryption", 0);
-// 		let resultRange: vscode.Range = await getWordRangeFromLineInFile("Encryption", 3, docUriTarget);
+	it('HumanDataType Test' + testCounter.toString(), async () => {
+		await activate(docUriSource);
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("HumanDataType", 2);
+		let position : vscode.Position = getWordPositionFromLine("HumanDataType", 2);
+		let resultRange: vscode.Range = await getWordRangeFromLineInFile("HumanDataType", 1, docUriTarget);
 
-// 		let definitionResult: vscode.LocationLink[] = 
-// 			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
-// 		await testDefinition(docUriSource, position, definitionResult);
-// 	});
-// 	testCounter++;
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
+		await testDefinition(docUriSource, position, definitionResult);
+	});
+	testCounter++;
 
-// });
+	it('Encryption Test' + testCounter.toString(), async () => {
+		await activate(docUriSource);
+		let testSelectionRange: vscode.Range = getWordRangeFromLineInEditor("Encryption", 0);
+		let position : vscode.Position = getWordPositionFromLine("Encryption", 0);
+		let resultRange: vscode.Range = await getWordRangeFromLineInFile("Encryption", 3, docUriTarget);
+
+		let definitionResult: vscode.LocationLink[] = 
+			builtDefinitionExpectedResultObject(testSelectionRange, docUriTarget, resultRange);
+		await testDefinition(docUriSource, position, definitionResult);
+	});
+	testCounter++;
+
+});
 
 
 
