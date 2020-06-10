@@ -8,8 +8,7 @@ public class VisualizePSHandler extends PolicyModelHttpHandler {
         String dotPath = params.get("dotPath");
         dotPath = URLDecoder.decode(dotPath, "utf-8");
         outputPath = URLDecoder.decode(outputPath, "utf-8");
-        PolicyModelService.visualizePS(outputPath, dotPath);
-        return "true";
+        return PolicyModelService.visualizePS(outputPath, dotPath);
     }
 
     @Override

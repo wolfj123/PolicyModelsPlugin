@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import GraphvizCreator from './GraphvizCreator';
+import {PSGraphvizCreator, DGGraphvizCreator} from './GraphvizCreator';
 
 
 export class GraphvizUIController{
@@ -34,6 +34,8 @@ export class GraphvizUIController{
 			case 3:
 				this._fileFormatStep();
 				break
+			case 4:
+				this._fileFormatFreestyleStep();
 		}
 	}
 
@@ -83,20 +85,62 @@ export class GraphvizUIController{
 						{label: 'pdf'}, 
 						{label: 'svg'},
 						{label: 'dot'},
+						{label: 'other'},
 					]
 		quickPick.items = vals;
 		
 		quickPick.onDidChangeSelection(selection => {
-			this.fileFormat = selection[0].label;
-			console.log(`file format step received answer ${this.fileName}`);
-			console.log(`step: ${quickPick.step}`);
-			this._step++;
+			if(selection[0].label == 'other'){
+				console.log(`file format step received answer other`);
+				console.log(`step: ${quickPick.step}`);
+				this._step++;
+				this._totalSteps++;
+				this._onFinish(quickPick);
+				this._stepPromot();
+			}
+			else {
+				this.fileFormat = selection[0].label;
+				console.log(`file format step received answer ${this.fileName}`);
+				console.log(`step: ${quickPick.step}`);
+				this._step++;
 
-			this._createFile();
-			this._onFinish(quickPick);
+				this._createFile();
+				this._onFinish(quickPick);
+			}
 		});
 
 		quickPick.show();
+	}
+
+	_fileFormatFreestyleStep(){
+		var inputBox: vscode.InputBox = vscode.window.createInputBox();
+		this._configItem(inputBox);
+		inputBox.title = "Enter the file format you want";
+		inputBox.placeholder = "example: png";
+
+
+		inputBox.onDidAccept(()=>{
+			this.fileFormat = inputBox.value;
+			console.log(`file format freestyle step received answer ${this.fileName}`);
+			console.log(`step: ${inputBox.step}`);
+			this._step++;
+
+			this._createFile();
+			this._onFinish(inputBox);
+		});
+
+		const disposables = [];
+		disposables.push(
+		inputBox.onDidTriggerButton((button)=>{
+			this._totalSteps--;
+			console.log(`step: ${inputBox.step}`);
+			console.log(`${button}`);
+			disposables.forEach(d => d.dispose());
+			this._defineDefaultHandlers(inputBox)
+			this._stepPromot();
+		}));
+
+		inputBox.show();
 	}
 
 	_createFile(){}; //this method is overwitten with classes below
@@ -145,8 +189,8 @@ export class PSGraphvizUIController extends GraphvizUIController{
 	}
 
 	_createFile(){
-		const graphvizCreator = new GraphvizCreator();
-		graphvizCreator.visualizePolicySpace(this);
+		const graphvizCreator = new PSGraphvizCreator();
+		graphvizCreator.visualize(this);
 	}
 }
 
@@ -156,7 +200,7 @@ export class DGGraphvizUIController extends GraphvizUIController{
 	}
 
 	_createFile(){
-		const graphvizCreator = new GraphvizCreator();
-		graphvizCreator.visualizeDecisionGraph(this);
+		const graphvizCreator = new DGGraphvizCreator();
+		graphvizCreator.visualize(this);
 	}
 }

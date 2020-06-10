@@ -17,20 +17,27 @@ import java.util.stream.Stream;
 
 public class VisualizePolicySpaceCommandCustomize extends VisualizePolicySpaceCommand {
     private static Path pathToDot;
+    public boolean dotIsNotResolved = false;
+    public boolean dotIsGlobal = false;
+    public static Path publicPathToDot;
 
     public VisualizePolicySpaceCommandCustomize() {
         super();
     }
 
+    //Overrides to avoid promote to user from the origin cli
     public void execute(CliRunner rnr, List<String> args) throws Exception {
         if (this.pathToDot == null) {
             Optional<Path> dotPath = this.findDot();
             if (!dotPath.isPresent()) {
-                dotPath = this.parseDotPath(args.get(2));
+                dotPath = this.parseDotPath(args.get(2));  // use passed dot path
+            } else{
+                dotIsGlobal = true; // in case the dot path is available as global variable
             }
 
             if (!dotPath.isPresent()) {
                 rnr.printWarning("Could not find dot. You can install it from www.graphviz.org, or using your platform's package manager.");
+                dotIsNotResolved = true;
                 return;
             }
 
@@ -39,17 +46,22 @@ public class VisualizePolicySpaceCommandCustomize extends VisualizePolicySpaceCo
 
         if (!Files.exists(pathToDot, new LinkOption[0])) {
             rnr.printWarning("Dot does not exist in the supplied path `%s`", new Object[]{pathToDot});
+            dotIsNotResolved = true;
+            dotIsGlobal = false;
             pathToDot = null;
         }
 
         if (pathToDot != null) {
             this.executeWithDot(pathToDot, rnr, args);
+            if(dotIsGlobal)
+                publicPathToDot = pathToDot;
         } else {
             rnr.printWarning("Command cancelled");
         }
 
     }
 
+    //needed because this has a private access in the DotCommand from origin cli
     Optional<Path> findDot() {
         String exec = "dot";
         return Stream.of(System.getenv("PATH").split(Pattern.quote(File.pathSeparator))).map((x$0) -> {
@@ -60,10 +72,13 @@ public class VisualizePolicySpaceCommandCustomize extends VisualizePolicySpaceCo
             return p.resolve(exec);
         });
     }
+
+    //instead of promote to user -> parse path that was given
     private Optional<Path> parseDotPath(String dotStr) throws IOException {
         return Optional.ofNullable(dotStr.isEmpty() ? null : Paths.get(dotStr));
     }
 
+    //needed because this has a private access in the DotCommand from origin cli
     protected Path getOuputFilePath(CliRunner rnr, List<String> args, Path basePath, String extension) throws IOException {
         List<String> relevantArgs = (List)args.stream().filter((a) -> {
             return !a.startsWith("-");

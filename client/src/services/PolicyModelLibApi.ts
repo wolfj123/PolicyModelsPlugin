@@ -72,6 +72,9 @@ export default class PolicyModelLibApi {
             .catch(rejAns => reject(false));
 
             resolve(true);
+          } else {
+            if (!message.startsWith("Model '") && !message.endsWith("' loaded"))
+              this._printToScreen(message);
           }
         });
 
@@ -127,14 +130,37 @@ export default class PolicyModelLibApi {
     return answer;
   }
 
-  async _visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
+  async _visualizePolicySpace(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string, globalDotInfo:string): Promise<string> {
     return await axiosInstance.get(`/visualize-ps?outputPath=${outputPath}&dotPath=${graphvizDot}`)
-    .then((res: any) => res.data === SUCCESS);
+    .then((res: any) => {
+      return this._visualizeThenHandler(res, badNameException, badDotException, globalDotInfo);
+    })
+    .catch((rej: any) => {
+      return "unknown";
+    });
   }
 
-  async _visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
+  async _visualizeDecisionGraph(outputPath: string, graphvizDot:string, badNameException:string, badDotException:string, globalDotInfo:string): Promise<string> {
     return await axiosInstance.get(`/visualize-dg?outputPath=${outputPath}&dotPath=${graphvizDot}`)
-    .then((res: any) => res.data === SUCCESS);
+    .then((res: any) => {
+      return this._visualizeThenHandler(res, badNameException, badDotException, globalDotInfo);
+    })
+    .catch((rej: any) => {
+      return "unknown";
+    });
+  }
+
+  _visualizeThenHandler(res: any, badNameException:string, badDotException:string, globalDotInfo:string){
+    if(res.data === SUCCESS)
+      return res.data;
+    else if(res.data === "java.lang.NullPointerException")
+      return badNameException;
+    else if(res.data === "bad dot")
+      return badDotException
+    else if(res.data.startsWith("global"))
+      return globalDotInfo + res.data;
+    else
+      return "unknown";
   }
 
   setPrintToScreenCallback(callback) {
@@ -206,12 +232,23 @@ export default class PolicyModelLibApi {
     return ans;
   }
 
-  async visualizePolicySpace(outputPath: string, graphvizDot:string): Promise<boolean> {
-    return await this._requestsWrapper(true, () => this._visualizePolicySpace(outputPath, graphvizDot));
+  async visualizePolicySpace(
+    outputPath: string,
+    graphvizDot:string,
+    badNameException:string,
+    badDotException:string,
+    globalDotInfo:string): Promise<string> {
+    return await this._requestsWrapper(true, () => this._visualizePolicySpace(outputPath, graphvizDot, badNameException, badDotException, globalDotInfo));
   }
 
-  async visualizeDecisionGraph(outputPath: string, graphvizDot:string): Promise<boolean> {
-    return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot));
+  async visualizeDecisionGraph(
+    outputPath: string,
+    graphvizDot:string,
+    badNameException:string,
+    badDotException:string,
+    globalDotInfo:string
+  ): Promise<string> {
+    return await this._requestsWrapper(true, () => this._visualizeDecisionGraph(outputPath, graphvizDot, badNameException, badDotException, globalDotInfo));
   }
 
   async updateLocalization(): Promise<string[]>{

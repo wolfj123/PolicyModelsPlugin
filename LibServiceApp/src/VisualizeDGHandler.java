@@ -8,8 +8,7 @@ public class VisualizeDGHandler extends PolicyModelHttpHandler {
         String dotPath = params.get("dotPath");
         dotPath = URLDecoder.decode(dotPath, "utf-8");
         outputPath = URLDecoder.decode(outputPath, "utf-8");
-        PolicyModelService.visualizeDG(outputPath, dotPath);
-        return "true";
+        return PolicyModelService.visualizeDG(outputPath, dotPath);
     }
 
     @Override

@@ -56,4 +56,12 @@ export default class FileService {
     }
   }
 
+  static deleteFolderInPath(path){
+    try {
+			fs.rmdir(path);
+    } catch (e) {
+      throw new Error(`Cannot create directory: ${path}`);
+    }
+  }
+
 }
