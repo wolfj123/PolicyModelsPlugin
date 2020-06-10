@@ -97,7 +97,19 @@ export function activate(context: ExtensionContext) {
 function buildLibServiceAppApiInstance() {
   let rootPath: string = vscode.workspace.rootPath;
   rootPath  = rootPath === undefined ? "" : rootPath;
-  const onMessage = message => vscode.window.showInformationMessage("Policy Model CLI: ",message);
+  const onMessage = messagesBuffer => {
+    if(messagesBuffer.length===1){
+    vscode.window.showInformationMessage("Policy Model CLI: " + messagesBuffer[0]);
+    }else if (messagesBuffer.length >1){
+      const button = 'See response';
+	  vscode.window.showInformationMessage(`Policy Model CLI Respond.`, button).then(selection => {
+      if(selection=== button){
+        vscode.window.showInformationMessage("Policy Model CLI: " + messagesBuffer.join('\n') ,{modal: true});
+      }
+    });
+
+    }
+  }
   PolicyModelLibApi.buildInstance(rootPath,onMessage);
 }
 
@@ -133,7 +145,7 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
   myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
   myStatusBarItem.command = myCommandId;
   subscriptions.push(myStatusBarItem);
-  
+
   // update status bar item once at start
   myStatusBarItem.text = '$(new-file) New Model';
   myStatusBarItem.show();
@@ -394,7 +406,7 @@ function addGraphvizCommand(context: vscode.ExtensionContext) {
 
   subscriptions.push(
     vscode.commands.registerCommand(visualizePolicySpaceID, () => {
-      try{     
+      try{
         const graphvizController = new GraphvizController(POLICY_SPACE_TYPE);
         graphvizController.activate();
       }catch(e){
@@ -407,7 +419,7 @@ function addGraphvizCommand(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(visualizeDecisionGraphID, () => {
       try{
         const graphvizController = new GraphvizController(DECISION_GRAPH_TYPE);
-        graphvizController.activate();    
+        graphvizController.activate();
       }catch(e){
         console.log(e)
       }
