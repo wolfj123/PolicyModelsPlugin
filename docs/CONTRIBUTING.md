@@ -24,18 +24,9 @@ There is also a good [example-project](#https://github.com/Microsoft/vscode-exte
 
 ### Tree-Sitter 
 Learn about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/).
+Our language [parsers](./../README.md#Decision-Graph-Parser).
 
-##### Decision Graph Parser  <!-- omit in toc -->
-- This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-decisiongraph).
-
-##### Policy Space Parser <!-- omit in toc -->
-- This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-policyspace).
-
-##### Value Inference Parser <!-- omit in toc -->
-- This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-valueinference).
-
-
-In this project we use the [web-tree-sitter](#https://www.npmjs.com/package/web-tree-sitter) project to generate the parsers in _.wasm_ format. The parser are located in the _Parsers_ directory under root. Both the client and server use this directory. Therefore if anyone wishes to use only one of them, it is necessary to also include the parsers in the new project.
+In this project we use the **web-tree-sitter** project (can be found at https://www.npmjs.com/package/web-tree-sitter) to generate the parsers in _.wasm_ format. The parser are located in the _Parsers_ directory under root. Both the client and server use this directory. Therefore if anyone wishes to use only one of them, it is necessary to also include the parsers in the new project.
 
 ## Expanding the LSP Client
 
@@ -47,4 +38,4 @@ In this project we use the [web-tree-sitter](#https://www.npmjs.com/package/web-
 
 ## Expanding the Language Parsers
 
-If you want to modify the language parsers, please fork the git repositories of the [parsers](#Tree-Sitter).
+If you want to modify the language parsers, please fork the git repositories of the [parsers](./../README.md#Decision-Graph-Parser).
