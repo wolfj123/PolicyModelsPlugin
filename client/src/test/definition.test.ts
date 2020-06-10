@@ -178,8 +178,7 @@ export async function testDefinition(
 		position,
 	)) as DefinitionResolve;
 
-	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,
-		`--------------------\namsel test --- expected ${JSON.stringify(expectedDefinitionList)}\n\n actual: ${JSON.stringify(actualDefinitionList)}`);
+	assert.equal(actualDefinitionList.length, expectedDefinitionList.length);
 
 	expectedDefinitionList.forEach((expectedItem, i) => {
 		const actualItem = actualDefinitionList[i];
