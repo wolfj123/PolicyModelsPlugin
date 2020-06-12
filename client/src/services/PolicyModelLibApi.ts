@@ -5,6 +5,12 @@ import { ChildProcess } from 'child_process';
 
 let axiosInstance;  // axios.AxiosInstance;
 
+/**
+ * The singelton class PolicyModelLibApi provides an Api for interacting with LibServiceApp.
+ * This class uses as communication layer between all client requests to the Policy Model Cli using the LibServiceApp.
+ * The communication is based on new instance of child_process module, that runs and operate the jar.
+*/
+
 
 const createAxiosInstance = async (url: string): Promise<any> => {
   axiosInstance = axios.create({
@@ -33,16 +39,30 @@ export default class PolicyModelLibApi {
     this._messageBuffer = [];
   }
 
+/**
+ * Singelton build instance method.
+ *
+ * @param {string} rootPath  user workspace root path.
+ * @param {onMessage} printToScreenCallback callback for printing messages
+*/
   static buildInstance(rootPath?: string, printToScreenCallback?: any) {
     PolicyModelLibApi.instance = new PolicyModelLibApi(rootPath, printToScreenCallback);
   }
 
+
+  /**
+   * Singelton get instance method.
+   *
+   * @returns {PolicyModelLibApi} the PolicyModelLibApi instance.
+  */
   static getInstance(): PolicyModelLibApi {
     if (!PolicyModelLibApi.instance) {
       throw new Error("Initialized instance does not exists");
     }
     return PolicyModelLibApi.instance;
   }
+
+
 
   async _buildEnvironment(loadModel: boolean = true) {
     let isSucceed: boolean = true;
@@ -54,6 +74,15 @@ export default class PolicyModelLibApi {
     return isSucceed;
   }
 
+
+   /**
+     * Runs the LibServiceApp server.
+     * This method spawn new process and starts the LibServiceApp.jar.
+     * In addition, Its create listeners for the jar stdout and stderr sockets,
+     * that uses us to pass messages from the LibServiceApp.
+     *
+     * @returns {Promise<boolean>} true if the server successfully runs.
+    */
   async _startServer(): Promise<boolean> {
     const JavaServerJar: string = path.join(__dirname, "/../../../cli/LibServiceApp.jar")
 
@@ -91,6 +120,11 @@ export default class PolicyModelLibApi {
     return await serverIsReady();
   }
 
+   /**
+     * Loads the model to the cli.
+     *
+     * @returns {Promise<boolean>} true if succeed.
+    */
 
   async _loadModel() {
     return await axiosInstance.get(`/load?path=${this._rootPath}`).then((res: any) => {
@@ -106,8 +140,13 @@ export default class PolicyModelLibApi {
     this._printToScreen([err.message]);
   }
 
+
+   /**
+     * Terminate the process after delay.
+     * The delay is to ensure that stdout buffer is empty
+    */
+
   _terminateProcess(): Promise<void> {
-    // we are delaying the process killing for stdout data that didnt write yet.
     return new Promise((resolve, reject) => setTimeout(() => {
       this.child.kill('SIGINT');
       resolve();
@@ -121,6 +160,13 @@ export default class PolicyModelLibApi {
   async _updateLocalization(): Promise<string[]> {
     return await axiosInstance.get(`/loc/update`).then(res => res.data);
   }
+
+
+   /**
+     * A wrapper method that execute pre and post processing for each cli client operation.
+     * Ensure valid enviroment for excuting requests to the policy model cli,
+     * and a valid exiting process that includes writing messages to the client and terminate child process.
+    */
 
   async _requestsWrapper(loadModel: boolean, requestCallback): Promise<any> {
     const buildSucceeded = await this._buildEnvironment(loadModel);

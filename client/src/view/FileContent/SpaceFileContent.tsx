@@ -1,6 +1,11 @@
 import * as React from 'react';
 import { SetStateAction, Dispatch } from 'react';
 
+/**
+ * This component responsible to render the space.md and sections.md editor.
+ * @param   {string} content    file content
+ * @param   {onSaveCallback} onFileChange    onFileChange handler
+*/
 interface Props {
   content: string;
   onFileChange(content: string): void;

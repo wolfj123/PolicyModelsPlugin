@@ -1,6 +1,12 @@
 import * as React from 'react';
 import './Text.css';
 
+/**
+ * Staylable Icon wrapper component.
+ *
+ * @param  {ItemMenuData[]} languagesMenuData languages menu data file
+ * @param  {ItemMenuData[]} filesMenuData files menu data file
+*/
 interface Props {
   children: any;
   icon: any;

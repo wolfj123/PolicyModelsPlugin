@@ -1,12 +1,20 @@
 
 import * as vscode from 'vscode';
-import LocalizationController from './LocalizationController';
+import LocalizationDomain from './LocalizationDomain';
 import FileService from '../services/FileService';
 import { InputBoxOptions } from 'vscode';
 import PolicyModelLibApi from '../services/PolicyModelLibApi';
 
 const localizationRootFolder = '/languages';
 let _extensionPath, _localizationPath, _onError;
+
+/**
+ * The {@link createLocalizationApp} is the entry point of the localization app.
+ * Its responsible to validate pre-conditions, and create the localization app.
+ * In addition, Its use {@link PolicyModelLibApi} to excute 'update localization' action
+ * and pass the results to the {@link LocalizationDomain}
+*/
+
 
 const createLocalizationApp = (extensionPath: string): void => {
 	_extensionPath = extensionPath;
@@ -20,7 +28,7 @@ function activeLocalization() {
 
 	const languagesFolderExist = FileService.isFolderExist(_localizationPath);
 	if (languagesFolderExist) {
-		const localization = new LocalizationController({ extensionPath: _extensionPath }, _localizationPath, _onError);
+		const localization = new LocalizationDomain({ extensionPath: _extensionPath }, _localizationPath, _onError);
 		try {
 			PolicyModelLibApi.getInstance().updateLocalization().then(answersToRemove => {
 				const updateResponse = { answersToRemove };
