@@ -1,57 +1,59 @@
 @startuml
-interface changeInfo {
+interface ChangeInfo {
     +oldRange: Range
     +newRange: Range
 }
 interface PMTextDocument {
+    +path: string
     +uri: string
     +languageId: languagesIds
     +version: number
-    +lineCount: number
-    +lastChanges: changeInfo[]
     +getText(range?: Range): string
     +positionAt(offset: number): Position
     +offsetAt(position: Position): number
+    +lineCount: number
     +isEqual(other: PMTextDocument): boolean
-    +update(changes: TextDocumentContentChangeEvent[], version: number): changeInfo[]
+    +update(changes: TextDocumentContentChangeEvent[], version: number): ChangeInfo[]
+    +lastChanges: ChangeInfo[]
 }
 class FullTextDocument implements PMTextDocument {
+    -_path: string
     -_uri: string
     -_languageId: languagesIds
     -_version: number
     -_content: string
     -_lineOffsets: number[]
-    -_lastChanges: changeInfo[]
-    +lastChanges: changeInfo[]
+    -_lastChanges: ChangeInfo[]
+    +lastChanges: ChangeInfo[]
+    +lastChanges: ChangeInfo[]
+    +path: string
     +uri: string
     +languageId: languagesIds
-    +get version: number
-    +set version(version: number): number
+    +version: number
+    +version: number
+    +getText(range?: Range): string
+    +update(changes: TextDocumentContentChangeEvent[], version: number): ChangeInfo[]
+    -getLineOffsets(): number[]
+    +positionAt(offset: number): Position
+    +offsetAt(position: Position): number
     +lineCount: number
     +isEqual(other: PMTextDocument): boolean
-    -getLineOffsets(): number[]
     -{static} isIncremental(event: TextDocumentContentChangeEvent): boolean
     -{static} isFull(event: TextDocumentContentChangeEvent): boolean
 }
-enum CharCode {
-    LineFeed
-    CarriageReturn
-}
-enum languagesIds {
-    policyspace
-    decisiongraph
-    valueinference
-}
+
 interface DocumentManagerResult {
-    +type: documentManagerResultTypes
+    +type: DocumentManagerResultTypes
     +result?: any
 }
-enum documentManagerResultTypes {
+
+enum DocumentManagerResultTypes {
     noChange
     newFile
     removeFile
     updateFile
 }
+
 interface TextDocumentManagerInt {
     +folderMode: boolean
     +allDocumnets: PMTextDocument[]
@@ -64,14 +66,15 @@ interface TextDocumentManagerInt {
     +openedFolder(pathUri: string): void
     +getDocument(uri: string): PMTextDocument
 }
+
 class TextDocumentManager implements TextDocumentManagerInt {
     -_finishedReadingFolder: boolean
     -_noOpenFolderMode: boolean
     -_allDocuments: PMTextDocument[]
 
     +folderMode: boolean
-    +allDocumnets: PMTextDocument[]
     +getDocument(uri: string): PMTextDocument
+    +allDocumnets: PMTextDocument[]
     +openedDocumentInClient(opendDocParam: TextDocumentItem): Promise<DocumentManagerResult[]>
     +closedDocumentInClient(closedDcoumentParams: TextDocumentIdentifier): Promise<DocumentManagerResult>
     +changeTextDocument(params: DidChangeTextDocumentParams): Promise<DocumentManagerResult>
@@ -91,5 +94,8 @@ class DocumenManagerGlobal {
 
 FullTextDocument --> DocumenManagerGlobal: uses
 TextDocumentManagerInt "0..." o-- "1...1" PMTextDocument 
+DocumentManagerResult "1..1" *-- "1..1" DocumentManagerResultTypes
+TextDocumentManagerInt --> DocumentManagerResult: uses
+PMTextDocument "1..1" *-- "1..1" ChangeInfo
 
 @enduml
