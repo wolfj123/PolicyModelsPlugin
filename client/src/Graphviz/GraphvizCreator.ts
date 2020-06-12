@@ -70,11 +70,28 @@ class GraphvizCreator{
 		this._graphvizMessageToUser("bad output file name: '" + graphvizUIController.fileName +"'")
 	}
 
+	_resolve_bad_format(outputGraphvizPath: string){
+		if(FileService.isExist(outputGraphvizPath)){
+			let content = FileService.readFromFile(outputGraphvizPath)
+			if(content === ""){
+				let suffix = outputGraphvizPath.split(".").pop();
+				FileService.deleteFileInPath(outputGraphvizPath);
+				this._graphvizMessageToUser("Something went wrong, '" + suffix + 
+					"' is probably bad format.\nMore about Graphviz allowed formats you can find here https://graphviz.org/doc/info/output.html");
+				return true;
+			}
+		}
+		return false;
+	}
+
 	_graphvizMessageToUser(message: string){
 		vscode.window.showInformationMessage("GRAPHVIZ integration: " + message);
 	}
 
 	_afterServerRequestHandler(result: any, graphvizUIController: GraphvizUIController, outputGraphvizPath:string){
+		if(this._resolve_bad_format(outputGraphvizPath))
+			return;
+
 		if(result == undefined){
 			this._graphvizMessageToUser("Something went worng, check for errors when loading model.")
 			return;
