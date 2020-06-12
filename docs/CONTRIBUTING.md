@@ -32,7 +32,7 @@ In this project we use the **web-tree-sitter** project (can be found at https://
 ## Expanding the LSP Client
 
 ### Syntax Coloring
-[Syntax coloring in VSCode uses Text-Mate grammers](#https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide). However, for easier maintainability we wanted to use our Tree-Sitter parsers for the syntax coloring, instead of having to maintain 2 different grammers.
+Syntax coloring in VSCode uses Text-Mate grammers (as described [here](#https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide)). **However**, for easier maintainability we wanted to use our Tree-Sitter parsers for the syntax coloring, instead of having to maintain 2 different grammers.
 Our syntax coloring is heavily inspired by the works in this [project](https://github.com/georgewfraser/vscode-tree-sitter).
 Our coloring functions are located [here](./client/color/../../../client/src/color/colors.ts). There is a coloring function for each language which maps different syntax nodes to different color themes.
 
