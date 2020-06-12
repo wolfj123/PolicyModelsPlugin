@@ -12,9 +12,9 @@ const supportedExtensions = ['.md', '.txt'];
 
 /**
  * The LocalizationDomain class is the main domain of the localization app.
- * Its used as the model and the controller in the localization app design.
- * responsible to handle all the events that called by the client.
- * responsible for all localization files operation thru {@link FileService}.
+ * It uses as the model and the controller in the localization app design.
+ * Responsible for handling all the events that called by the client.
+ * Also responsible for all localization files operation thru {@link FileService}.
  *
 */
 
@@ -32,7 +32,7 @@ export default class LocalizationDomain {
 
 
 /**
- * starts the localization app, using new instance of {@link ViewLoader}.
+ * Starts the localization app, using new instance of {@link ViewLoader}.
  *
  * @param  {UpdateResponse} updateResponse update action response to present in the client.
 */
@@ -46,7 +46,7 @@ export default class LocalizationDomain {
   }
 
   /**
-   * using {@link PolicyModelLibApi} to create new language.
+   * Using {@link PolicyModelLibApi} to create new language.
    *
    * @param  {string} name new localization name.
   */
@@ -131,9 +131,9 @@ export default class LocalizationDomain {
 
 
   /**
-   * create Language Data objects from the current localization files.
-   * this function calls {@link FileService} to get all the relevant data from the files,
-   * loop over them and create adapted object data for the client
+   * Create Language Data objects from the current localization files.
+   * This function calls {@link FileService} to get all the relevant data from the files,
+   * loop over them and creates adapted object data for the client
    *
    * @returns  {LanguageData[]} LanguageData.
   */

@@ -4,7 +4,7 @@ interface Props {
 }
 
 /**
- * This component is cresponsible to render the answer.txt preview panel .
+ * This component is responsible to render the answer.txt preview panel.
  * @param   {string} content    file content.
 */
 

@@ -8,7 +8,7 @@ import Header from '../Header/Header';
 
 /**
  * This component exposes the Localization client front side to any web enviroment.
- * This is the root container that gets {@link LanguageData}, requierd handlers
+ * This is the root container that gets {@link LanguageData}, relevant handlers
  * and renders the app.
  *
  * @param   {LanguageData[]} languageFilesData  localization files data
@@ -46,7 +46,7 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
   }
 
    /**
-   * Callback for update the preview file language.
+   * Callback for updating the preview file language.
    * @setPreviewLanguage
    * @param {string} language - selected language.
    */

@@ -7,7 +7,7 @@ import Page from '../Page/Page';
 const ReactMarkdown = require('react-markdown');
 
 /**
- * This component is container for all the preview components .
+ * This component is uses as a container for all the preview components.
  * @param   {File} previewFile    file to present as preview.
  * @param   {string[]} languages    languages list
  * @param   {setPreviewLanguage} onSelectLanguage    callback for selecting different language
