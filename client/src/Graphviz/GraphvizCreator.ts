@@ -14,7 +14,7 @@ const defaulFileFormat = '.svg'
 
 const badNameException = "bad name"
 const badDotException = "bad dot"
-const globalDotInfo = "global dot"
+const globalDotInfo = "global "
 
 
 // graphviz Dot windows example => 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe'
@@ -85,7 +85,7 @@ class GraphvizCreator{
 			return;
 		}
 
-		if(!(result instanceof String)){
+		if(!(typeof result === 'string')){
 			let msg = "Something went worng! unexpected server response, check logs for more information"
 			this._graphvizMessageToUser(msg)
 			console.log(msg);
@@ -102,8 +102,8 @@ class GraphvizCreator{
 		else if(result.startsWith(globalDotInfo)){
 			graphvizUIController.dotPath = 
 				"Your graphviz dot path is Global.\n"+
-				"Don't delete this file so you won't need to provie dot path ever again.\n"+
-				"GLOBAL PATH = " + result.substring(result.indexOf("$"))
+				"Don't delete this file so you won't need to provide dot path ever again.\n"+
+				"GLOBAL PATH = " + result.substring(result.indexOf(globalDotInfo))
 
 			this._resolveDot(outputGraphvizPath, graphvizUIController)
 
