@@ -13,9 +13,8 @@ import {
 	getWordPositionFromLine,
 	getWordRangeFromLineInEditor} from './helper';
 
-var testCounter: number = 0
-var testFixtureFolderPath: String = 'InferrerExample/'
-let defaultPosition: vscode.Position = new vscode.Position(0,0)
+var testCounter: number = 0;
+var testFixtureFolderPath: String = 'InferrerExample/';
 export type RenameResolve = vscode.WorkspaceEdit;
 
 describe('Rename E2E tests', () => {
@@ -58,14 +57,14 @@ describe('Rename E2E tests', () => {
 
 		let position : vscode.Position = getWordPositionFromLine(wordToRename, 1);
 
-		await testDefinition(docUriPS, position, renameWorkSpace, newWordRename);
+		await testRename(docUriPS, position, renameWorkSpace, newWordRename);
 	});
 	testCounter++;
 });
 
 
 
-async function testDefinition(
+export async function testRename(
 	docUri: vscode.Uri,
 	position : vscode.Position,
 	expectedRenameWorkspce,
@@ -100,17 +99,17 @@ async function testDefinition(
 					break;
 				}
 			}
-			if (!found) assert.fail()
+			if (!found) assert.fail();
 		});
 
 	});
 
 }
 
-const createEntry = (uri: vscode.Uri, ranges: vscode.Range[], newText) => {
-	return {uri: uri, ranges: ranges, newText: newText}
+export const createEntry = (uri: vscode.Uri, ranges: vscode.Range[], newText) => {
+	return {uri: uri, ranges: ranges, newText: newText};
 }
 
-const builtRenamenExpectedResultObject = (entries) => {
-	return {size: entries.length, entries: entries}
+export const builtRenamenExpectedResultObject = (entries) => {
+	return {size: entries.length, entries: entries};
 }

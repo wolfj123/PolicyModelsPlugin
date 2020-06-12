@@ -8,7 +8,6 @@ export interface Location {
 }
 */
 
-import * as path from 'path';
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { 
@@ -145,7 +144,7 @@ describe('Referense E2E test Value Inference', () => {
 });
 
 
-async function testReferense(
+export async function testReferense(
 	docUri: vscode.Uri,
 	position : vscode.Position,
 	expectedReferenseList: vscode.Location[]
@@ -178,11 +177,11 @@ export async function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const createLocation = (uri: vscode.Uri, range: vscode.Range) : vscode.Location=> {
+export const createLocation = (uri: vscode.Uri, range: vscode.Range) : vscode.Location=> {
 	return new vscode.Location(uri, range)
 }
 
-const builtReferenceExpectedResultObject = (
+export const builtReferenceExpectedResultObject = (
 	locationPS: vscode.Location[], 
 	locationDG: vscode.Location[], 
 	locationVI: vscode.Location[]) : vscode.Location[]=> {
@@ -194,5 +193,5 @@ const builtReferenceExpectedResultObject = (
 		locationDG.forEach(l => result.push(l))
 	if (locationVI !== undefined)
 		locationVI.forEach(l => result.push(l))
-	return result
+	return result;
 }
