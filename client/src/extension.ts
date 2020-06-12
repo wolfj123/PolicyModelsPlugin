@@ -97,7 +97,15 @@ export function activate(context: ExtensionContext) {
 function buildLibServiceAppApiInstance() {
   let rootPath: string = vscode.workspace.rootPath;
   rootPath  = rootPath === undefined ? "" : rootPath;
-  const onMessage = messagesBuffer => {
+
+
+ /**
+   * Callback for printing messages from the {@link PolicyModelLibApi}.
+   * @onMessage onSaveCallback
+   * @param {string[]} messagesBuffer - array of messages to print.
+   */
+
+  const onMessage = (messagesBuffer: string[]) => {
     if(messagesBuffer.length===1){
     vscode.window.showInformationMessage("Policy Model CLI: " + messagesBuffer[0]);
     }else if (messagesBuffer.length >1){
