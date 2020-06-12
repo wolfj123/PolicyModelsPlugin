@@ -1,4 +1,6 @@
 # Policy Models Support for Visual Studio Code <!-- omit in toc -->
+[![Build Status](https://travis-ci.org/wolfj123/PolicyModelsPlugin.svg?branch=master)](https://travis-ci.org/wolfj123/PolicyModelsPlugin)
+
 
 ## Overview <!-- omit in toc -->
 
@@ -6,9 +8,6 @@ This plugin adds support for **Policy Model** languages in **Visual Studio Code*
 This project is composed from an **LSP Client** and **LSP Server**.
 Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (the client uses it for syntax highlighting and the server for the rest of the language features).
 
-
-
-[![Build Status](https://travis-ci.org/wolfj123/PolicyModelsPlugin.svg?branch=master)](https://travis-ci.org/wolfj123/PolicyModelsPlugin)
 
 #### Table of contents  <!-- omit in toc -->
 
@@ -25,6 +24,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
+- [Understanding Errors](#understanding-errors)
 - [Development & Contribution](#development--contribution)
 - [Related](#related)
 	- [Policy Models](#policy-models)
@@ -139,6 +139,10 @@ This will generate the file under a new "visualization" folder:
 ## Supported Settings
 [TODO: add images]
 
+## Understanding Errors
+
+[For information regarding possible errors encountered in this plugin, please refer to this guide](docs/ERRORS.md).
+
 ## Development & Contribution
 
 [For contributing to this project, please refer to this guide](docs/CONTRIBUTING.md).
@@ -174,15 +178,13 @@ Learn more about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/).
 For this project we have created 3 new Tree-Sitter parsers, one for each language in Policy Models. These parsers are standalone [npm](#https://www.npmjs.com/) packages and can be used in other projects freely.
 
 #### Decision Graph Parser
-This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-decisiongraph).
+This parser can be found at https://www.npmjs.com/package/tree-sitter-decisiongraph.
 
 #### Policy Space Parser
-This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-policyspace).
+This parser can be found at https://www.npmjs.com/package/tree-sitter-policyspace.
 
 #### Value Inference Parser
-This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-valueinference).
-
-
+This parser can be found at https://www.npmjs.com/package/tree-sitter-valueinference.
 
 
 ### Syntax Highlighting in VSCode using Tree-Sitter

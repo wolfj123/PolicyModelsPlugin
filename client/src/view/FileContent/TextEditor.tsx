@@ -1,5 +1,12 @@
 import * as React from 'react';
 import './TextEditor.css';
+
+/**
+ * This component responsible to render the free markdown editor.
+ * @param   {string} content    file content
+ * @param   {onSaveCallback} onFileChange    onFileChange handler
+*/
+
 interface Props {
 	content: string;
 	onFileChange(content: string): void;
