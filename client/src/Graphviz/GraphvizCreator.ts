@@ -16,8 +16,12 @@ const badNameException = "bad name"
 const badDotException = "bad dot"
 const globalDotInfo = "global "
 
+/**
+ * GraphvizCreator handle the request to LibServiceApp server for graphviz creation.
+ * Before -> pass all necessary data in aggregated way to api.
+ * After -> handle all possible outcomes from the request result.
+ */
 
-// graphviz Dot windows example => 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe'
 
 class GraphvizCreator{
 	_outputFolderPath: string;
