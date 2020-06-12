@@ -141,7 +141,7 @@ This will generate the file under a new "visualization" folder:
 
 ## Understanding Errors
 
-Information regarding possible errors encountered in this plugin can be found [here](docs/ERRORS.md).
+[For information regarding possible errors encountered in this plugin, please refer to this guide](docs/ERRORS.md).
 
 ## Development & Contribution
 
@@ -178,15 +178,13 @@ Learn more about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/).
 For this project we have created 3 new Tree-Sitter parsers, one for each language in Policy Models. These parsers are standalone [npm](#https://www.npmjs.com/) packages and can be used in other projects freely.
 
 #### Decision Graph Parser
-This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-decisiongraph).
+This parser can be found at https://www.npmjs.com/package/tree-sitter-decisiongraph.
 
 #### Policy Space Parser
-This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-policyspace).
+This parser can be found at https://www.npmjs.com/package/tree-sitter-policyspace.
 
 #### Value Inference Parser
-This parser can be found [here](#https://www.npmjs.com/package/tree-sitter-valueinference).
-
-
+This parser can be found at https://www.npmjs.com/package/tree-sitter-valueinference.
 
 
 ### Syntax Highlighting in VSCode using Tree-Sitter
