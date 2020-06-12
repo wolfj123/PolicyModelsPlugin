@@ -93,18 +93,18 @@ If a Localization folder does not already exist, you will promped to first creat
 
 ![localization button](./docs/images/localization_button.png)
 
-The Localization GUI allows for simple editing the localization files.
-You will get an structured editor for "**answers.txt**" and "**space.md**" files:
+The Localization GUI allows for simple localization files editing.
+You will get a structured editor for "**answers.txt**" and "**space.md**" files:
 
 ![localization answers gui](./docs/images/localization_gui.gif)
 
 ![localization space gui](./docs/images/localization_space_file.png)
 
-And a free markdown editor for the rest:
+And a free markdown editor for the rest of the .md files
 
 ![localization space gui](./docs/images/localization_free_md_editing.gif)
 
-We also provide a Markdown preview, in any available langauge, of the markdown files of the localization:
+We also provide a Markdown preview for the markdown files, in any available language
 
 ![localization space gui](./docs/images/localization_markdown_preview.gif)
 
