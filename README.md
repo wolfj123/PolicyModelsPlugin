@@ -24,6 +24,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
+- [Understanding Errors](#understanding-errors)
 - [Development & Contribution](#development--contribution)
 - [Related](#related)
 	- [Policy Models](#policy-models)
@@ -137,6 +138,10 @@ This will generate the file under a new "visualization" folder:
 
 ## Supported Settings
 [TODO: add images]
+
+## Understanding Errors
+
+Information regarding possible errors encountered in this plugin can be found [here](docs/ERRORS.md).
 
 ## Development & Contribution
 
