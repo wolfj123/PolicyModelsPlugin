@@ -18,12 +18,10 @@ import {
 	activate, 
 	getWordPositionFromLine, 
 	getWordRangeFromLineInEditor, 
-	getWordRangeFromLineInFile,
-	sleep} from './helper';
+	getWordRangeFromLineInFile,} from './helper';
 
-var testCounter: number = 0
-var testFixtureFolderPath: String = 'InferrerExample/'
-let defaultPosition: vscode.Position = new vscode.Position(0,0)
+var testCounter: number = 0;
+var testFixtureFolderPath: String = 'InferrerExample/';
 export type DefinitionResolve = vscode.Location[];
 
 
@@ -167,7 +165,7 @@ describe('Definition E2E test Value Inference', () => {
 
 
 
-async function testDefinition(
+export async function testDefinition(
 	docUri: vscode.Uri,
 	position : vscode.Position,
 	expectedDefinitionList: vscode.LocationLink[]
@@ -180,8 +178,7 @@ async function testDefinition(
 		position,
 	)) as DefinitionResolve;
 
-	assert.equal(actualDefinitionList.length, expectedDefinitionList.length,
-		`--------------------\namsel test --- expected ${JSON.stringify(expectedDefinitionList)}\n\n actual: ${JSON.stringify(actualDefinitionList)}`);
+	assert.equal(actualDefinitionList.length, expectedDefinitionList.length);
 
 	expectedDefinitionList.forEach((expectedItem, i) => {
 		const actualItem = actualDefinitionList[i];
@@ -193,7 +190,7 @@ async function testDefinition(
 }
 
 
-const builtDefinitionExpectedResultObject = 
+export const builtDefinitionExpectedResultObject = 
 (testSelectionRange: vscode.Range, docUri: vscode.Uri, resultRange: vscode.Range) => {
 	return [
 		{originSelectionRange: testSelectionRange, targetUri: docUri, targetRange: resultRange, targetSelectionRange: resultRange}

@@ -130,7 +130,7 @@ export function addNewModelCommand({ subscriptions }: vscode.ExtensionContext) {
     })
   );
 
-  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
+  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 102);
   myStatusBarItem.command = myCommandId;
   subscriptions.push(myStatusBarItem);
   
@@ -150,7 +150,7 @@ export function addRunCommand({ subscriptions }: vscode.ExtensionContext) {
   );
 
   // create a new status bar item that we can now manage
-  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100001);
+  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 101);
   myStatusBarItem.command = myCommandId;
   subscriptions.push(myStatusBarItem);
 
@@ -179,7 +179,7 @@ function addLocalizationCommand(context: vscode.ExtensionContext){
   subscriptions.push(disposable);
 
   let statusBarItem: vscode.StatusBarItem;
-  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -100000);
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 103);
   statusBarItem.command = localizationCommand;
   statusBarItem.text = '$(preserve-case) Localization ';
   statusBarItem.show();
@@ -414,13 +414,13 @@ function addGraphvizCommand(context: vscode.ExtensionContext) {
     })
   );
 
-  let statusBarItemPS: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99999);
+  let statusBarItemPS: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 104);
   statusBarItemPS.text = '$(graph) Visualize PS';
   statusBarItemPS.command = visualizePolicySpaceID;
   statusBarItemPS.show();
   subscriptions.push(statusBarItemPS);
 
-  let statusBarItemDG: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -99998);
+  let statusBarItemDG: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 105);
   statusBarItemDG.text = '$(graph) Visualize DG';
   statusBarItemDG.command = visualizeDecisionGraphID;
   statusBarItemDG.show();

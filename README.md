@@ -55,12 +55,12 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 
 ### Go To References
 We support references of Decision Graph nodes (that have an ID), Policy Space slots and Policy Space slot-values.
- 
+
 ![go to references](./docs/images/references.gif)
 
 ### Go To Definition
 We support definitions of Decision Graph nodes (that have an ID), Policy Space slots and Policy Space slot-values.
- 
+
 ![go to definition](./docs/images/definition.gif)
 
 ### Auto-Complete
@@ -93,16 +93,26 @@ If a Localization folder does not already exist, you will promped to first creat
 
 ![localization button](./docs/images/localization_button.png)
 
-The Localization GUI allows for simple editing of the "**answers.txt**" and "**space.md**" files:
+The Localization GUI allows for simple localization files editing.
+You will get a structured editor for "**answers.txt**" and "**space.md**" files:
 
 ![localization answers gui](./docs/images/localization_gui.gif)
 
 ![localization space gui](./docs/images/localization_space_file.png)
 
+And a free markdown editor for the rest of the .md files
 
-We also provide a Markdown preview of the markdown files of the localization:
+![localization space gui](./docs/images/localization_free_md_editing.gif)
 
-![localization space gui](./docs/images/localization_markdown_preview.png)
+We also provide a Markdown preview for the markdown files, in any available language
+
+![localization space gui](./docs/images/localization_markdown_preview.gif)
+
+To create new language localization press the + button
+
+![localization space gui](./docs/images/localization_create_new.png)
+
+
 
 
 ### Graphviz Visualization
