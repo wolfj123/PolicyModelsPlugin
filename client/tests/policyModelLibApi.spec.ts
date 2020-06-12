@@ -56,8 +56,8 @@ describe('API Environment Tests', () => {
 		
 		let okAns;
 		await api._createNewModel("").
-		catch( (rej: string) => {
-			okAns =  rej.startsWith("Failed to create a new model");
+		catch( (rej: {message: string}) => {
+			okAns =  rej.message.startsWith("Failed to create a new model");
 		});
 
 		expect(okAns).equal(true);
