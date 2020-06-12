@@ -85,7 +85,7 @@ class GraphvizCreator{
 			return;
 		}
 
-		if(!(result instanceof String)){
+		if(!(typeof result === 'string')){
 			let msg = "Something went worng! unexpected server response, check logs for more information"
 			this._graphvizMessageToUser(msg)
 			console.log(msg);
