@@ -90,6 +90,7 @@ This will run the [CLI](https://datatagginglibrary.readthedocs.io/en/latest/take
 
 Pressing the Localization will open our Localization GUI.
 If a Localization folder does not already exist, you will promped to first create one.
+To Learn more about how these files are managed, see [here](#https://datatagginglibrary.readthedocs.io/en/latest/localizations.html).
 
 ![localization button](./docs/images/localization_button.png)
 
