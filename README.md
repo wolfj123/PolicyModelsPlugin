@@ -1,4 +1,6 @@
 # Policy Models Support for Visual Studio Code <!-- omit in toc -->
+[![Build Status](https://travis-ci.org/wolfj123/PolicyModelsPlugin.svg?branch=master)](https://travis-ci.org/wolfj123/PolicyModelsPlugin)
+
 
 ## Overview <!-- omit in toc -->
 
@@ -6,9 +8,6 @@ This plugin adds support for **Policy Model** languages in **Visual Studio Code*
 This project is composed from an **LSP Client** and **LSP Server**.
 Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (the client uses it for syntax highlighting and the server for the rest of the language features).
 
-
-
-[![Build Status](https://travis-ci.org/wolfj123/PolicyModelsPlugin.svg?branch=master)](https://travis-ci.org/wolfj123/PolicyModelsPlugin)
 
 #### Table of contents  <!-- omit in toc -->
 
