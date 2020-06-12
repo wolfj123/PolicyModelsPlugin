@@ -5,6 +5,14 @@ interface Props {
   onCreateNewLanguage(): void;
 }
 
+/**
+ * Top header component.
+ * Includes the create new localization operation and
+ * symbols map for the editor
+ *
+ * @param  {onCreateNewLanguageCallBack} onCreateNewLanguage onCreateNewLanguage callback
+*/
+
 const Header: React.FunctionComponent<Props> = (props) => {
   const { onCreateNewLanguage } = props;
   return (

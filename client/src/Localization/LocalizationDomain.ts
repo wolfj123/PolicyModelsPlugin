@@ -9,7 +9,16 @@ const systemFilesNameToFilter = ['.DS_Store'];
 const supportedExtensions = ['.md', '.txt'];
 
 
-export default class LocalizationController {
+
+/**
+ * The LocalizationDomain class is the main domain of the localization app.
+ * Its used as the model and the controller in the localization app design.
+ * responsible to handle all the events that called by the client.
+ * responsible for all localization files operation thru {@link FileService}.
+ *
+*/
+
+export default class LocalizationDomain {
   _localizationPath: string;
   _extensionProps: any;
   _onError: any;
@@ -21,6 +30,13 @@ export default class LocalizationController {
     this._onError = onError;
   }
 
+
+/**
+ * starts the localization app, using new instance of {@link ViewLoader}.
+ *
+ * @param  {UpdateResponse} updateResponse update action response to present in the client.
+*/
+
   activateLocalization(updateResponse?: UpdateResponse) {
     this._updateResponse = updateResponse;
     const languagesFilesData = this.getLanguagesFilesData();
@@ -28,6 +44,12 @@ export default class LocalizationController {
     const view = new ViewLoader(languagesFilesData, this._extensionProps, { onSaveFile: this.onSaveFile, createNewLanguage: this.createNewLanguage }, this._onError);
 
   }
+
+  /**
+   * using {@link PolicyModelLibApi} to create new language.
+   *
+   * @param  {string} name new localization name.
+  */
 
   createNewLanguage = async (name) => {
     const api: PolicyModelLibApi = PolicyModelLibApi.getInstance();
@@ -47,6 +69,8 @@ export default class LocalizationController {
   isSupportedFile(path) {
     return supportedExtensions.includes(PATH.extname(path));
   }
+
+
 
   createLanguageFilesData(languageDir): LanguageData {
     const languagePath = this._localizationPath + '/' + languageDir.name;
@@ -104,6 +128,15 @@ export default class LocalizationController {
     const newLanguagesFilesData = this.getLanguagesFilesData();
     return newLanguagesFilesData;
   };
+
+
+  /**
+   * create Language Data objects from the current localization files.
+   * this function calls {@link FileService} to get all the relevant data from the files,
+   * loop over them and create adapted object data for the client
+   *
+   * @returns  {LanguageData[]} LanguageData.
+  */
 
   getLanguagesFilesData(): LanguageData[] {
     let languages_dirent;

@@ -3,6 +3,11 @@ interface Props {
 	content: string;
 }
 
+/**
+ * This component is cresponsible to render the answer.txt preview panel .
+ * @param   {string} content    file content.
+*/
+
 const AnswersPreview: React.FunctionComponent<Props> = (props) => {
   const { content } = props;
 

@@ -3,6 +3,16 @@ import * as path from 'path';
 
 import { ICommand, CommandAction } from './Types/model';
 
+
+/**
+ * The ViewLoader class is the engine of the localization GUI.
+ * responsible to connect the  WebviewPanel with the react application.
+ * In addition this class is the first communication layer between the {@link LocalizationDomain}
+ * and the Gui. It gets request from the client and pass them to the controller.
+ *
+*/
+
+
 export default class ViewLoader {
   private readonly _panel: vscode.WebviewPanel | undefined;
   private readonly _extensionPath: string;
@@ -44,9 +54,24 @@ export default class ViewLoader {
     );
   }
 
+    /**
+   * pass updated languageFilesData from the back end system to the front.
+   *
+   * @param languageFilesData languages files data to render
+  */
+
+
   private updateLanguageFilesData(newLanguageFilesData) {
     this._panel.webview.postMessage({ action: CommandAction.Response, content: { languageFilesData: newLanguageFilesData } });
   }
+
+
+  /**
+   * create the initial html file. this file call the app script from the 'reactAppUri'.
+   *
+   * @param languageFilesData languages files data to render
+	 * @returns {string} initial html
+  */
 
   private getWebviewContent(languageFilesData): string {
     // Local path to main script run in the webview

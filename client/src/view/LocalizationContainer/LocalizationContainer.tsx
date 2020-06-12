@@ -6,6 +6,16 @@ import { LanguageData,ItemMenuData } from '../Types/model';
 import './LocalizationContainer.css';
 import Header from '../Header/Header';
 
+/**
+ * This component exposes the Localization client front side to any web enviroment.
+ * This is the root container that gets {@link LanguageData}, requierd handlers
+ * and renders the app.
+ *
+ * @param   {LanguageData[]} languageFilesData  localization files data
+ * @param   {onSaveCallback} onSave    onSave handler
+ * @param  {onCreateNewLanguageCallBack} onCreateNewLanguage onCreateNewLanguage callback
+*/
+
 interface Props {
   languageFilesData: LanguageData[];
   onSave(path: string, content: string): void;
@@ -35,16 +45,18 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
     return file;
   }
 
+   /**
+   * Callback for update the preview file language.
+   * @setPreviewLanguage
+   * @param {string} language - selected language.
+   */
+
   const setPreviewFileFromSelectedLanguage = language => {
     const currentFileName = selectedFile.name;
     const newPreviewFile = getFileByNameAndLanguageName(currentFileName,language);
     setPreviewFileId(newPreviewFile.id);
     setPreviewLanguageName(language);
   }
-
-  const handleFileChange = (path, content) => {
-    onSave(path, content);
-  };
 
   const languagesMenuData: ItemMenuData[] = languageFilesData.map((data) => {
     return {
@@ -83,7 +95,7 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
         </div>
       </div>
       <div className="panel" style={{flex: '1 1 0',maxWidth: 'calc((100vw - 240px) / 2)'}}>
-        <FileContent key={selectedFile.id} fileData={selectedFile} onFileChange={handleFileChange} />
+        <FileContent key={selectedFile.id} fileData={selectedFile} onFileChange={onSave} />
       </div>
       <div className="panel" style={{flex: '1 1 0', maxWidth: 'calc((100vw - 240px) / 2)'}}>
         <CompareToPanel
@@ -91,7 +103,7 @@ const LocalizationContainer: React.FunctionComponent<Props> = ({ languageFilesDa
           languages={languagesNames}
           previewFile={previewFile}
           previewLanguageName={previewLanguageName}
-          onSelectLanguage={language => setPreviewFileFromSelectedLanguage(language)}
+          onSelectLanguage={setPreviewFileFromSelectedLanguage}
         />
       </div>
       </div>

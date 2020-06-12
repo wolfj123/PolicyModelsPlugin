@@ -4,6 +4,13 @@ import IconWrapper from '../Text/IconWrapper';
 import { ItemMenuData } from '../Types/model';
 import './SideBarMenu.css';
 
+/**
+ * Side bar component.
+ *
+ * @param  {ItemMenuData[]} languagesMenuData languages menu data file
+ * @param  {ItemMenuData[]} filesMenuData files menu data file
+*/
+
 const PANELS_TYPES = {
   LANGUAGES: 'LANGUAGES',
   FILES: 'FILES',
