@@ -236,7 +236,7 @@ export default class PolicyModelLibApi {
           }
         })
         .catch(rej => {
-          return reject(`Failed to create a new model \nadditional info: ${rej.response !== undefined ? rej.response.data : rej.message}`);
+          return reject({message: `Failed to create a new model \nadditional info: ${rej.response !== undefined ? rej.response.data : rej.message}`});
         });
     });
 
