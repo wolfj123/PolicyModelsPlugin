@@ -1,5 +1,15 @@
 import * as React from 'react';
 import './SingleAnswer.css';
+
+
+/**
+ * This component responsible to render the answer.txt editor.
+ * @param   {File} fileData    file object data.
+ * @param   {string} content    file content
+ * @param   {onSaveCallback} onFileChange    onFileChange handler
+ * @param   {any} additionalInfo
+*/
+
 interface Props {
   content: string;
   onFileChange(content: string): void;

@@ -31,7 +31,7 @@ class GraphvizCreator{
 		this._createOutputFolder(this._outputFolderPath, innerOutputFolder)
 	}
 
-	
+
 	async visualize(graphvizUIController: GraphvizUIController){} //this method is overwitten with classes below
 
 	_createOutputFolder(outputFolderPath: string, innerOutputFolder: string){
@@ -43,7 +43,7 @@ class GraphvizCreator{
 			FileService.createDirectory(outputFolderPath + innerOutputFolder);
 		}
 	}
-	
+
 	_concatFilePath(graphvizUIController: GraphvizUIController){
 		let fileName =  graphvizUIController.fileName?  graphvizUIController.fileName : defaultFileName;
 		let postfix = graphvizUIController.fileFormat? graphvizUIController.fileFormat : defaulFileFormat;
@@ -71,7 +71,7 @@ class GraphvizCreator{
 	}
 
 	_graphvizMessageToUser(message: string){
-		vscode.window.showInformationMessage("GRAPHVIZ integration: ",message);
+		vscode.window.showInformationMessage("GRAPHVIZ integration: " + message);
 	}
 
 	_afterServerRequestHandler(result: any, graphvizUIController: GraphvizUIController, outputGraphvizPath:string){
@@ -100,7 +100,7 @@ class GraphvizCreator{
 			this._resolveDotBadDot();
 
 		else if(result.startsWith(globalDotInfo)){
-			graphvizUIController.dotPath = 
+			graphvizUIController.dotPath =
 				"Your graphviz dot path is Global.\n"+
 				"Don't delete this file so you won't need to provide dot path ever again.\n"+
 				"GLOBAL PATH = " + result.substring(result.indexOf(globalDotInfo))

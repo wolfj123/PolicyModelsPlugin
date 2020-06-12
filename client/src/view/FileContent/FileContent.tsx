@@ -6,6 +6,13 @@ import Text from '../Text/Text';
 import Page from '../Page/Page';
 import { File } from '../Types/model';
 
+
+/**
+ * This component is container for all the editor panel components.
+ * @param   {File} fileData    file object data.
+ * @param   {onSaveCallback} onFileChange    onFileChange handler
+*/
+
 interface Props {
   fileData: File;
   onFileChange(path: string, content: string): void;

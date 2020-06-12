@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as mock from 'mock-fs';
-import LocalizationController from '../src/Localization/LocalizationController';
+import LocalizationDomain from '../src/Localization/LocalizationDomain';
 import { LanguageData } from '../src/view/Types/model';
 import PolicyModelLibApi from '../src/services/PolicyModelLibApi';
 import 'mocha';
@@ -9,11 +9,11 @@ const rootPath = '.';
 const localizationRootFolder = '/languages';
 const localizationPath = rootPath + localizationRootFolder;
 const fileContent = fileName => fileName + 'file content';
-let localizationController;
+let localizationDomain;
 
 before(() => {
   PolicyModelLibApi.buildInstance(rootPath, e => e);
-  localizationController = new LocalizationController({}, localizationPath, e => {
+  localizationDomain = new LocalizationDomain({}, localizationPath, e => {
     throw Error(e);
   });
 });
@@ -61,7 +61,7 @@ describe('Building files structure', () => {
       ],
       id: "./languages/language1"
     }];
-    const files = localizationController.getLanguagesFilesData();
+    const files = localizationDomain.getLanguagesFilesData();
     expect(expectedFiles).to.deep.equal(files);
   });
 
@@ -174,7 +174,7 @@ describe('Building files structure', () => {
       ],
       id: "./languages/language2"
     }];
-    const files = localizationController.getLanguagesFilesData();
+    const files = localizationDomain.getLanguagesFilesData();
     expect(files.length).to.equal(expectedFiles.length);
     for (var i = 0; i < files.length; i++) {
       expect(files[i].language).to.equal(expectedFiles[i].language);
@@ -218,7 +218,7 @@ describe('Building files structure', () => {
       id: './languages/language1'
     }
     ];
-    const files = localizationController.getLanguagesFilesData();
+    const files = localizationDomain.getLanguagesFilesData();
     expect(expectedFiles).to.deep.equal(files);
 
   });
@@ -266,7 +266,7 @@ describe('Editing localization files', () => {
       id: './languages/language1'
     }];
 
-    const newFiles = localizationController.onSaveFile('./languages/language1/space.md', newContent);
+    const newFiles = localizationDomain.onSaveFile('./languages/language1/space.md', newContent);
     expect(expectedFiles).to.deep.equal(newFiles);
   });
 
@@ -274,7 +274,7 @@ describe('Editing localization files', () => {
     const newContent = 'newContent';
     const unFamiliarPath = './someWrongPath';
     try {
-      const newFiles = localizationController.onSaveFile(unFamiliarPath, newContent);
+      const newFiles = localizationDomain.onSaveFile(unFamiliarPath, newContent);
       expect(false).true;
     } catch (e) {
       expect(true).true;

@@ -1,5 +1,14 @@
 var fs = require('fs');
 
+
+/**
+ * The {@link FileService} FileService class provides an API for
+ * interacting with the file system.
+ * For now, this class uses the 'fs' node libarary for all
+ * of its operations.
+ *
+*/
+
 export default class FileService {
   static getDirectoryContent(dirPath) {
     let direntFiles;
@@ -31,7 +40,7 @@ export default class FileService {
   static isFolderExist(path: string): boolean {
     return fs.existsSync(path);
   }
-  
+
   static isExist(path) {
     try {
       return fs.existsSync(path)
