@@ -129,16 +129,16 @@ Each has correpsonding button in the plugin:
 
 After pressing the button, provide the path to the graphviz application (dot file), Example paths:
 
-- **Windows** 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe' 
-- **macOS** '/usr/local/bin/dot' 
+- **Windows** `C:/Program Files (x86)/Graphviz2.38/bin/dot.exe` 
+- **macOS** `/usr/local/bin/dot` 
 
 ![graphviz path](./docs/images/dot_path_example.png)
 
-The provided path will be save in a file on the path ".../PolicyModelsPlugin/client/out/Graphviz/graphvizConfig.txt" and is necessary configuration for the feature to work.
+The provided path will be save in a file on the path `.../PolicyModelsPlugin/client/out/Graphviz/graphvizConfig.txt` and is necessary configuration for the feature to work.
 
-After that provide file name and format (check [here](https://graphviz.org/doc/info/output.htm) for all available Graphviz formats).
+After that, provide file name and format (check [here](https://graphviz.org/doc/info/output.html) for all available Graphviz formats).
 
-This will generate the file under a new "visualization/type" folder:
+This will generate the file under a new `visualization/type` folder:
 
 ![graphviz path](./docs/images/visualization_folder.png)
 
