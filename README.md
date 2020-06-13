@@ -117,7 +117,9 @@ To create new language localization press the + button
 
 
 ### Graphviz Visualization
-It is possible to create a graphical visualization of the model using Graphviz (must be pre-installed).
+It is possible to create a graphical visualization of the model using Graphviz ([must be pre-installed](https://datatagginglibrary.readthedocs.io/en/latest/tutorial/system-setup.html?highlight=graphviz#optional)).
+
+
 There are 2 kinds of visualizations:
 - Decision Graph visualization
 - Policy Space visualization
@@ -133,6 +135,9 @@ After pressing the button, provide the path to the graphviz application, name of
 This will generate the file under a new "visualization/type" folder:
 
 ![graphviz path](./docs/images/visualization_folder.png)
+
+Policy Space Graphviz graph output example:
+
 ![graphviz path](./docs/images/graph_visualization.png)
 
 
