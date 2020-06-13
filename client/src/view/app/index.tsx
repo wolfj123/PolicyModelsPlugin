@@ -3,6 +3,15 @@ import * as ReactDOM from 'react-dom';
 import { ICommand, CommandAction } from '../Types/model';
 import LocalizationContainer from '../LocalizationContainer/LocalizationContainer';
 
+ /**
+   * The App component is the enrty point for the react app.
+   * Its containe the vscode Api and creates custome events for the user
+   * localization app operations.
+   * Its manage the store (app state) of the react application.
+   *
+   * @param {LanguageData} initialLanguageFilesData - path of the file that need to be saved.
+   */
+
 
 declare global {
   interface Window {
@@ -25,6 +34,14 @@ const App: FunctionComponent<AppProps> = ({ initialLanguageFilesData }) => {
 
   const [store, setStore] = React.useState(initialState);
 
+  /**
+   * Callback for saving a file.
+   * @onSaveCallback onSaveCallback
+   * @param {string} path - path of the file that need to be saved.
+   * @param {string} content - new content for the provided path.
+   */
+
+
   const onSave = (path, content) => {
     const command: ICommand = {
       action: CommandAction.Save,
@@ -33,6 +50,11 @@ const App: FunctionComponent<AppProps> = ({ initialLanguageFilesData }) => {
     };
     vscode.postMessage(command);
   };
+
+  /**
+   * Callback for creating new language.
+   * @onCreateNewLanguageCallBack onCreateNewLanguageCallBack
+   */
 
   const onCreateNewLanguage = async () =>{
     const command: ICommand = {

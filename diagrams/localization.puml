@@ -38,7 +38,7 @@ class ViewLoader {
 }
 
 
-class LocalizationController {
+class LocalizationDomain {
     +_localizationPath: string
     +_extensionProps: any
     +_fileService: any
@@ -52,8 +52,8 @@ class LocalizationController {
     +getLanguagesFilesData(): LanguageData[]
 }
 
-LocalizationController *-- FileService
-LocalizationController --- ViewLoader
+LocalizationDomain *-- FileService
+LocalizationDomain --- ViewLoader
 
 
 
