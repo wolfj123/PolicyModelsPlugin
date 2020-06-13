@@ -119,7 +119,6 @@ To create new language localization press the + button
 ### Graphviz Visualization
 It is possible to create a graphical visualization of the model using Graphviz ([must be pre-installed](https://datatagginglibrary.readthedocs.io/en/latest/tutorial/system-setup.html?highlight=graphviz#optional)).
 
-
 There are 2 kinds of visualizations:
 - Decision Graph visualization
 - Policy Space visualization
@@ -128,9 +127,16 @@ Each has correpsonding button in the plugin:
 
 ![visualization buttons](./docs/images/visualization_buttons.png)
 
-After pressing the button, provide the path to the graphviz application, name of generated file and type (pdf, svg, ):
+After pressing the button, provide the path to the graphviz application (dot file), Example paths:
+
+- **Windows** 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe' 
+- **macOS** '/usr/local/bin/dot' 
 
 ![graphviz path](./docs/images/dot_path_example.png)
+
+The provided path will be save in a file on the path ".../PolicyModelsPlugin/client/out/Graphviz/graphvizConfig.txt" and is necessary configuration for the feature to work.
+
+After that provide file name and format (check [here](https://graphviz.org/doc/info/output.htm) for all available Graphviz formats).
 
 This will generate the file under a new "visualization/type" folder:
 
