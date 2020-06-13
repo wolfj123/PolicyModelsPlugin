@@ -17,6 +17,14 @@ interface Logger {
     +info(msg: string, moreData?: any): any
     +http(funcName: string, funcParmas?: any): any
 }
+
+class DummyLogger implements Logger {
+    +error(msg: string, moreData?: any): void
+    +warn(msg: string, moreData?: any): void
+    +info(msg: string, moreData?: any): void
+    +http(funcName: string, funcParmas?: any): void
+}
+
 class Logger1 implements Logger {
     -_log: Logger
     -_type: logSources
@@ -41,7 +49,10 @@ class LoggerGlobal{
 }
 
 Logger1 o-- "1...1" ext
+DummyLogger o-- "1...1" ext
 
 LoggerGlobal "0...*" o-- "5...5" Logger
+LoggerGlobal --> logSources : uses
+
 
 @enduml

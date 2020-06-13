@@ -1,32 +1,6 @@
 @startuml
 
-enum PolicyModelsLanguage {
-    PolicySpace
-    DecisionGraph
-    ValueInference
-}
-
 interface SolverInt {
-    +facadeIsReady(): boolean
-    +onCompletion(params: TextDocumentPositionParams): CompletionList
-    +onCompletionResolve(params: CompletionItem): CompletionItem
-    +onDefinition(params: DeclarationParams): LocationLink[]
-    +onPrepareRename(params: PrepareRenameParams): Range
-    +onRenameRequest(params: RenameParams): WorkspaceEdit
-    +onReferences(params: ReferenceParams): Location[]
-    +onFoldingRanges(params: FoldingRangeParams): FoldingRange[]
-    +onDidOpenTextDocument(opendDocParam: TextDocumentItem): any
-    +onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier): any
-    +onDidChangeTextDocument(params: DidChangeTextDocumentParams): any
-    +onDeleteFile(deletedFile: string): any
-    +onCreatedNewFile(newFileUri: string): any
-    +onOpenFolder(pathUri: string): any
-    +initParser(pluginDir: string): any
-}
-class PMSolver implements SolverInt {
-    -_documentManager: TextDocumentManagerInt
-    -_languageFacade: LanguageServicesFacade
-    +facadeIsReady(): boolean
     +onCompletion(params: TextDocumentPositionParams): CompletionList
     +onCompletionResolve(params: CompletionItem): CompletionItem
     +onDefinition(params: DeclarationParams): LocationLink[]
@@ -35,12 +9,44 @@ class PMSolver implements SolverInt {
     +onReferences(params: ReferenceParams): Location[]
     +onFoldingRanges(params: FoldingRangeParams): FoldingRange[]
     +onDidOpenTextDocument(opendDocParam: TextDocumentItem): Promise<void>
-    +onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier): Promise<void>
-    +onDidChangeTextDocument(params: DidChangeTextDocumentParams): Promise<void>
-    +onDeleteFile(deletedFile: string): Promise<void>
+    +onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier): any
+    +onDidChangeTextDocument(params: DidChangeTextDocumentParams): any
+    +onDeleteFile(deletedFile: string): any
+    +onCreatedNewFile(newFileUri: string): any
+    +onOpenFolder(pathUri: string): any
+}
+
+class PMSolver implements SolverInt {
+    -_documentManagerForFolder: TextDocumentManagerInt
+    -_documentManagerSingleFiles: TextDocumentManagerInt
+    -_pluginFSPath: string
+    -_workspaceFolderFSPath: string
+    -_facdeForFolder: LanguageServicesFacade
+    -_facdeForFilesFS: { [id: string]: LanguageServicesFacade; }
+    -_sovlerReady: boolean
+    {field}-_publishDiagnosticsCallback: (uri: string, diagnostics: Diagnostic[], docVersion?: number) => void    
+    -isFolderRelevant(fileUri: string): boolean
+    -clearDiagnostics(uri: string): void
+    -getFSFolderFromUri(uri: string): string
+    -getDocManager(uri: string): TextDocumentManagerInt
+    -initParser(fileUri: string): Promise<void>
+    -facdeCallWrapperForDocumentEvents(params: any, funcName: string, uri: string): Promise<void>
+    -facadeCallWrapperForUserEvents(params: any, uri: string, funcName: string): any
+    
+    +onCompletion(params: TextDocumentPositionParams): CompletionList
+    +onCompletionResolve(params: CompletionItem): CompletionItem
+    +onDefinition(params: DeclarationParams): LocationLink[]
+    +onPrepareRename(params: PrepareRenameParams): Range
+    +onRenameRequest(params: RenameParams): WorkspaceEdit
+    +onReferences(params: ReferenceParams): Location[]
+    +onFoldingRanges(params: FoldingRangeParams): FoldingRange[]
+    +onDidOpenTextDocument(opendDocParam: TextDocumentItem): Promise<void>
+    +onDidCloseTextDocument(closedDcoumentParams: TextDocumentIdentifier): any
+    +onDidChangeTextDocument(params: DidChangeTextDocumentParams): any
+    +onDeleteFile(deletedFileUri: string): Promise<void>
     +onCreatedNewFile(newFileUri: string): Promise<void>
     +onOpenFolder(pathUri: string): Promise<void>
-    +initParser(pluginDir: string): Promise<void>
+    +creatediagnosticsCallback(): (uri: string, errors: SyntaxError[]) => void
 }
 
 class Server {
@@ -51,6 +57,7 @@ class Server {
     + hasWorkspaceFolderCapability: boolean
     + runModel(string []): string
 }
+
 
 rectangle extConnection [
     <<External Library>>
