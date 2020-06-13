@@ -127,7 +127,8 @@
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"test-server": "cd ./server && npm test && cd ../",
 		"test-client": "cd ./client && npm test && cd ../",
-		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh"
+		"test": "npm run test-server && npm run test-client && sh ./scripts/e2e.sh",
+		"hardCleanAndInstall": "rm -rf node_modules && rm -rf package-lock.json && cd server && npm run hardClean && cd .. && cd client && npm run hardClean && cd .. && npm i "
 	},
 	"devDependencies": {
 		"@types/mocha": "^7.0.2",
