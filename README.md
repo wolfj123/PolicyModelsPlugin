@@ -130,7 +130,7 @@ After pressing the button, provide the path to the graphviz application, name of
 
 ![graphviz path](./docs/images/dot_path_example.png)
 
-This will generate the file under a new "visualization" folder:
+This will generate the file under a new "visualization/type" folder:
 
 ![graphviz path](./docs/images/visualization_folder.png)
 ![graphviz path](./docs/images/graph_visualization.png)
