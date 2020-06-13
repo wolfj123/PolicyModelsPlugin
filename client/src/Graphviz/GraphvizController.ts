@@ -1,9 +1,21 @@
-import * as vscode from 'vscode';
+// import * as vscode from 'vscode';
 import { GraphvizUIController, PSGraphvizUIController, DGGraphvizUIController } from './GraphvizUIController';
 import FileService from '../services/FileService';
 
-// export const GRAPHVIZ_CONF_PATH = (vscode.workspace.rootPath + "/graphvizConfig.txt").replace(/\\/g, '/'); // choose this to config locally in project folder
 
+/**
+ * GraphvizController is the Integration router interface.
+ * It route between the user visualization choise and the correct UI copmponent.
+ * 
+ * GRAPHVIZ_CONF_PATH is the path to the place where the path of graphviz dot is save.
+ * examples:
+ * GRAPHVIZ_CONF_PATH = 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe' (Windows)
+ * GRAPHVIZ_CONF_PATH = '/usr/local/bin/dot' (macOS)
+ * 
+ */
+
+
+// export const GRAPHVIZ_CONF_PATH = (vscode.workspace.rootPath + "/graphvizConfig.txt").replace(/\\/g, '/'); // choose this to config locally in project folder
 export const GRAPHVIZ_CONF_PATH = (_getConfigFolderPath() + "/graphvizConfig.txt").replace(/\\/g, '/'); // write config to project output directory
 
 export const POLICY_SPACE_TYPE = "ps";
@@ -35,10 +47,10 @@ export class GraphvizController{
 	}
 }
 
-
 function _getConfigFolderPath(){
+	// will return ".../clinet/Graphviz/out"
 	let dirPath = __dirname
 	console.log(dirPath);
-	return dirPath
+	return dirPath;
 	
 }
