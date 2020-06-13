@@ -14,7 +14,7 @@
 	"dependencies": {
 		"vscode-languageserver": "^6.1.1",
 		"vscode-languageserver-textdocument": "*",
-		"web-tree-sitter": "^0.16.2",
+		"web-tree-sitter": "0.16.2",
 		"vscode-uri": "^2.1.1"
 	},
 	"scripts": {
