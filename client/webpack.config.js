@@ -5,7 +5,7 @@ module.exports = {
     configViewer: "./src/view/app/index.tsx"
   },
   output: {
-    path: path.resolve(__dirname, "../configViewer"),
+    path: path.resolve(__dirname, "configViewer"),
     filename: "[name].js"
   },
   devtool: "eval-source-map",

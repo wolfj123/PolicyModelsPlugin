@@ -40,7 +40,7 @@ export default class LocalizationDomain {
   activateLocalization(updateResponse?: UpdateResponse) {
     this._updateResponse = updateResponse;
     const languagesFilesData = this.getLanguagesFilesData();
-    const ViewLoader = require('../view/ViewLoader').default; //lazy loading require for testing this component without 'vscode' dependency
+    const ViewLoader = require('./ViewLoader').default; //lazy loading require for testing this component without 'vscode' dependency
     const view = new ViewLoader(languagesFilesData, this._extensionProps, { onSaveFile: this.onSaveFile, createNewLanguage: this.createNewLanguage }, this._onError);
 
   }
