@@ -167,7 +167,7 @@ To enable add: "PolicyModelsServer.trace.server": "verbose"
 2. Logging - this is a logging domain used by our code and writes the information to files saved in the plugin location on the computer under Logs folder.
 To enable add: "PolicyModelsServer.Logging": true
 
-setting file example with all options enabled (can be seen [here](./client/testFixture/InferrerExample/.vscode)):
+setting file example with all options enabled (can be seen [here](./client/testFixture/InferrerExample/.vscode/setting.json)):
 
 ![supported settings](./docs/images/setting-json.png)
 
