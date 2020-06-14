@@ -153,6 +153,10 @@ in order to enable or disable any of the options below, you will need to have a 
 ### Code Diagnostics (syntax erros highliter)
 This ability is disabled by default. To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
 
+An example of error highlighting:
+
+![supported settings](./docs/images/diagnostics.png)
+
 ### Plugin Logging
 Logging of the LSP server has 2 domains:
 1. Server trace - all the messaged sent between the client and server. they can be seen in VS-Code consle. To enable add: "PolicyModelsServer.trace.server": "verbose"
@@ -160,7 +164,7 @@ Logging of the LSP server has 2 domains:
 
 setting file example with all options enabled:
 
-![setting json](./docs/images/setting-json.png)
+![supported settings](./docs/images/setting-json.png)
 
 ## Understanding Errors
 
