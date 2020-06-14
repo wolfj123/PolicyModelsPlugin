@@ -151,9 +151,10 @@ Policy Space Graphviz graph output example:
 in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one.
 
 ### Code Diagnostics (syntax erros highliter)
-This ability is disabled by default. [For information please refer to this guide](docs/ERRORS.md).
+This ability is disabled by default.
 To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
 
+[For more information please refer to this guide](docs/ERRORS.md).
 An example of error highlighting:
 
 ![supported settings](./docs/images/diagnostics.png)
