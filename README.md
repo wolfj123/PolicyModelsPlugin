@@ -148,7 +148,18 @@ Policy Space Graphviz graph output example:
 
 
 ## Supported Settings
-[TODO: add images]
+in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one.
+
+# Code Diagnostics (syntax erros highliter)
+This ability is disabled by default. To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
+
+# Plugin Logging
+Logging of the LSP server has 2 domains:
+1. Server trace - all the messaged sent between the client and server. they can be seen in VS-Code consle. To enable add: "PolicyModelsServer.trace.server": "verbose"
+2. Logging - this is a logging domain used by our code and writes the information to files saved in the plugin location on the computer under Logs folder. "PolicyModelsServer.Logging": true
+
+setting file example with all options enabled:
+![setting json](./docs/images/setting-json.png)
 
 ## Understanding Errors
 

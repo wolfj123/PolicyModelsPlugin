@@ -1,4 +1,5 @@
 {
-    "PolicyModelsServer.Diagnostics": false,
-    "PolicyModelsServer.Logging": false
+    "PolicyModelsServer.Diagnostics": true,
+    "PolicyModelsServer.Logging": true,
+    "PolicyModelsServer.trace.server": "verbose"
 }
