@@ -117,7 +117,8 @@ To create new language localization press the + button
 
 
 ### Graphviz Visualization
-It is possible to create a graphical visualization of the model using Graphviz (must be pre-installed).
+It is possible to create a graphical visualization of the model using Graphviz ([must be pre-installed](https://datatagginglibrary.readthedocs.io/en/latest/tutorial/system-setup.html?highlight=graphviz#optional)).
+
 There are 2 kinds of visualizations:
 - Decision Graph visualization
 - Policy Space visualization
@@ -126,18 +127,49 @@ Each has correpsonding button in the plugin:
 
 ![visualization buttons](./docs/images/visualization_buttons.png)
 
-After pressing the button, provide the path to the graphviz application, name of generated file and type (pdf, svg, ):
+After pressing the button, provide the path to the graphviz application (dot file), Example paths:
+
+- **Windows** `C:/Program Files (x86)/Graphviz2.38/bin/dot.exe` 
+- **macOS** `/usr/local/bin/dot` 
 
 ![graphviz path](./docs/images/dot_path_example.png)
 
-This will generate the file under a new "visualization" folder:
+The provided path will be save in a file on the path `.../PolicyModelsPlugin/client/out/Graphviz/graphvizConfig.txt` and is necessary configuration for the feature to work.
+
+After that, provide file name and format (check [here](https://graphviz.org/doc/info/output.html) for all available Graphviz formats).
+
+This will generate the file under a new `visualization/type` folder:
 
 ![graphviz path](./docs/images/visualization_folder.png)
+
+Policy Space Graphviz graph output example:
+
 ![graphviz path](./docs/images/graph_visualization.png)
 
 
 ## Supported Settings
-[TODO: add images]
+in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one.
+
+### Code Diagnostics (Syntax Errors Highlighter)
+This ability is disabled by default.
+To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
+
+[For more information please refer to this guide](docs/ERRORS.md).
+
+An example of error highlighting:
+
+![supported settings](./docs/images/diagnostics.png)
+
+### Plugin Logging
+Logging of the LSP server has 2 domains:
+1. Server trace - all the messaged sent between the client and server. they can be seen in VS-Code consle.
+To enable add: "PolicyModelsServer.trace.server": "verbose"
+2. Logging - this is a logging domain used by our code and writes the information to files saved in the plugin location on the computer under Logs folder.
+To enable add: "PolicyModelsServer.Logging": true
+
+setting file example with all options enabled (can be seen [here](./client/testFixture/InferrerExample/.vscode/settings.json)):
+
+![supported settings](./docs/images/setting-json.png)
 
 ## Understanding Errors
 
