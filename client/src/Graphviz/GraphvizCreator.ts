@@ -124,7 +124,7 @@ class GraphvizCreator{
 			graphvizUIController.dotPath =
 				"Your graphviz dot path is Global.\n"+
 				"Don't delete this file so you won't need to provide dot path ever again.\n"+
-				"GLOBAL PATH = " + result.substring(result.indexOf(globalDotInfo))
+				"GLOBAL PATH = " + result.substring(result.indexOf(globalDotInfo) + globalDotInfo.length)
 
 			this._resolveDot(outputGraphvizPath, graphvizUIController)
 
