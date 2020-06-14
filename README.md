@@ -155,6 +155,7 @@ This ability is disabled by default.
 To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
 
 [For more information please refer to this guide](docs/ERRORS.md).
+
 An example of error highlighting:
 
 ![supported settings](./docs/images/diagnostics.png)
