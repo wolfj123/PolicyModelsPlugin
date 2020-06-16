@@ -98,5 +98,6 @@ use the getLogger function from [Logger](./../server/src/Logger.ts) with the rel
 - server - For logging in [Solver](./../server/src/Solver.ts) and [server](./../server/src/server.ts)
 - documents - For loggin in [documents](./../server/src/Documents.ts) and [document manager](./../server/src/DocumentManager.ts)
 - parser - For logging relevant to [Language Services](#Language-Services)
+
 The globalLog.log file has the logging infromation from all domains together.<br>
 The Log also log all errors to a file named unhandeled_exceptions.log.
