@@ -28,7 +28,7 @@ Learn about [VSCode Language Extensions](https://code.visualstudio.com/api/langu
 ### Language Server Protocol  
 Learn about [LSP](https://microsoft.github.io/language-server-protocol/overviews/lsp/overview/).
 There is also a good [example-project](#https://github.com/Microsoft/vscode-extension-samples/tree/master/lsp-sample) that contains both a client and server.
-The server is using LSP 3.1.15 version.
+<br>The server is using LSP 3.1.15 protocol version.
 
 ### Tree-Sitter 
 Learn about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/) and our language [parsers](./../README.md#Decision-Graph-Parser).
@@ -47,8 +47,8 @@ Our coloring functions are located [here](./client/color/../../../client/src/col
 
 ### Language Capabilites
 
-The server currently supports the following capabililtes: [Auto-complete,Go to refernce, Go To Definition](./../README.md/#features) and [Error highlighting](./../README.md/#Syntax-Errors-Highlighter-(Code-Diagnostics))). If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
-To enable more capabilites you need to add the relevant settings in the server capabilites response to client in [code](./../server/src/server.ts).
+The server currently supports the following capabililtes: [Auto-complete,Go to refernce, Go To Definition](./../README.md/#features) and [Error highlighting](./../README.md/#Syntax-Errors-Highlighter-(Code-Diagnostics)). If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
+<br>To enable more capabilites you need to add the relevant settings in the server capabilites response to client in [code](./../server/src/server.ts).
 
 ### Language Services
 
@@ -74,11 +74,11 @@ The project uses java code and external Jars to enable the features: [Grpah visu
 To run the model we are using the CLI Jar located [here](./../cli/PolicyModels-1.9.9.uber.jar). this Jar is taken from [Policymodel CLI](https://github.com/IQSS/DataTaggingLibrary/releases). This Jar can be updated freely because it is only used for running the model, and has no code dependency.
 
 ### LibServiceAPP
-Creating Localization files, Graph Visualization and New model creation are using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
-<br>This jar is generated form the code located [here](./../LibServiceApp).
+Graph visualization, Creating localization files and New model creation features use the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
+<br>This jar is generated from the code located [here](./../LibServiceApp).
 <br>When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also used as dependencies to this jar.
 
-This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (has different path from Running Modle jar). The [LibServiceApp](./../LibServiceApp) code is tightly coupled to the [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), So be careful when updating the CLI Jar.
+The LibServiceApp code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (different path to jar from the Running Modle jar, thus updating one won't affect the other). The [LibServiceApp](./../LibServiceApp) code is tightly coupled to the [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), So be careful when updating the CLI Jar.
 
 ### New Model Creation
 Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), this is the input form it is generated form the code in [here](../../LibServiceApp/GuiApp). When generating this jar make sure to include all the jackson jars (3 jars) located in the [resources folder](./../LibServiceApp/resources).
@@ -86,8 +86,9 @@ Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), t
 
 ## Server Logging
 
-The logging in the server is based on [Winston logger](https://www.npmjs.com/package/winston). By deafault logging is disabled to activate look [here](./../README.md/#Plugin-Logging).
-When activating logging you can have only one istance of VScode open with logging activated.
+The logging in the server is based on [Winston logger](https://www.npmjs.com/package/winston).
+<br> By deafault logging is disabled to activate look [here](./../README.md/#Plugin-Logging).
+<br>When activating logging you can have only one istance of VScode open with logging activated.
 
 ### How to Use
 You can't use logging before the initLogger function is called. This function is called after the client finished initialization.
