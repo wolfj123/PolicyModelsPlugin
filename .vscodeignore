@@ -21,6 +21,8 @@ docs
 diagrams
 LibServiceApp
 
+!LibServiceApp/resources/GuiApp.jar
+
 client/testFixture
 client/examples
 client/tests
