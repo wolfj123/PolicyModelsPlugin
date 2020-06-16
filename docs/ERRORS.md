@@ -16,7 +16,7 @@ The logging in the server is based on [Winston logger](https://www.npmjs.com/pac
 When activating logging you can have only one istance of VScode open with logging activated.
 
 ## LibServiceApp Requests
-The features: [grpah visualization](./../README.md/#graphviz-visualization), [localization file creation](./../README.md/#localization) and [new model creation](./../README.md/#create-new-model) are all HTTP requests to a java server ([server code](./../LibServiceApp), [server Jar](./../cli/LibServiceApp.jar)).
+The features: [grpah visualization](./../README.md/#graphviz-visualization), [localization file creation](./../README.md/#localization) and [new model creation](./../README.md/#create-new-model) are all HTTP requests to a java server ([server code](./../LibServiceApp), [server Jar](./../cli/LibServiceApp.jar).
 
 Any errors regarding connection issues or HTTP requests failures are connected to this files and code. Most common cause to this kind of problems is bad Java JDK installation or Path settings, for installation instructions look [here](./../README.md/#installation).
 
