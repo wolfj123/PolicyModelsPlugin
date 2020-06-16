@@ -9,9 +9,13 @@
 - [Expanding the LSP Client](#expanding-the-lsp-client)
 	- [Syntax Coloring](#syntax-coloring)
 - [Expanding the LSP Server](#expanding-the-lsp-server)
+	- [Language Capabilites](#Language-Capabilites)
 	- [Language Services](#language-services)
 - [Expanding the Language Parsers](#expanding-the-language-parsers)
-
+- [Expanding Java Code and Updating Jars](#Expanding-Java-Code-and-Updating-Jars)
+	- [Run Model Jar](#Running-Model)
+	- [LibServiceAPP](#LibServiceAPP)
+	- [New Model Creation](#New-Model-Creation)
 
 ## Read This Before Contributing!
 This project is a VSCode language extension that uses the LSP architecture.
@@ -23,6 +27,7 @@ Learn about [VSCode Language Extensions](https://code.visualstudio.com/api/langu
 ### Language Server Protocol  
 Learn about [LSP](https://microsoft.github.io/language-server-protocol/overviews/lsp/overview/).
 There is also a good [example-project](#https://github.com/Microsoft/vscode-extension-samples/tree/master/lsp-sample) that contains both a client and server.
+The server is using LSP 3.1.15 version.
 
 ### Tree-Sitter 
 Learn about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/) and our language [parsers](./../README.md#Decision-Graph-Parser).
@@ -39,6 +44,11 @@ Our coloring functions are located [here](./client/color/../../../client/src/col
 
 ## Expanding the LSP Server
 
+### Language Capabilites
+
+The server now supports the following capabililtes: [Auto-complete,Go to refernce, Go To Definition](./../README.md/#features) and error highlighting. If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
+To enable more capabilites you need to add the relevant settings in the server capabilites response to client in [code](./../server/src/server.ts).
+
 ### Language Services
 
 To answer LSP requests we have implemented language features which can be found in the following files:
@@ -54,3 +64,39 @@ To answer LSP requests we have implemented language features which can be found 
 Our parsers are made using [Tree-sitter](#tree-sitter). You must first familirize yourself with creating such parsers.
 If you want to modify the language parsers, look at the  repositories of the [parsers](./../README.md#Decision-Graph-Parser).
 After changing the parser projects, the WebAssembly parsers in the _Parsers_ directory must be updated as well. There is a [script](./../scripts/gen-parsers.sh) for that, however it currently only works on **Linux**.
+
+## Expanding Java Code and Updating Jars
+
+The project uses java code and external Jars to enalbe all the features: Running model, Creating Localization files, Graph Visualization and New modle creation.
+
+### Running Model
+To run the model we are using the [JAR](./../cli/PolicyModels-1.9.9.uber.jar) this jar is taken from [Policymodel CLI](https://github.com/IQSS/DataTaggingLibrary/releases). This Jar can be updated freely because it is only used for running the model.
+
+### LibServiceAPP
+Creating Localization files, Graph Visualization and New modle creation are used using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
+This jar is generated form the code in [here].
+When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also inserted as dependencies to this jar.
+
+This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (this isn't the same path of [Running model Jar](#Running-Model)). When updating this Jar you need to make sure all capabilities enabled using the LibServiceAPP Jar are still working correctly.
+
+### New Model Creation
+Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), this is the input form it is generated form the code in [here](../../LibServiceApp/GuiApp). When generating this jar make sure to include all the jackson jars in the [resources folder](./../LibServiceApp/resources).
+
+
+## Server Logging
+
+### How to Use
+You cna't use logging before the initLogger function is called. This function is called after the client finished initialization.
+
+To Log:
+use the getLogger function from [Logger](./../server/src/Logger.ts) with the relevatnt loggind domain.
+
+The Log also log all error to a file name unhandeled_exceptions.log.
+
+
+#### Logging domains:
+- serverHttp - To log any requests recieved from client.
+- server - For logging in [Solver](./../server/src/Solver.ts) and [server](./../server/src/server.ts)
+- documents - For loggin in [documents](./../server/src/Documents.ts) and [document manager](./../server/src/DocumentManager.ts)
+- parser - For logging relevant to [Language Services](#Language-Services)
+The globalLog.log file has the logging infromation from all domains together.
