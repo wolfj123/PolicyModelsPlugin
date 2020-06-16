@@ -12,7 +12,7 @@ Due to limitations on error handling in Tree-Sitter, it is currently not possibl
 If you wish to enable them in your Model, please see instructions [here](../README.md#supported-settings).
 
 ## Logging
-The logging in the server is based on [Winston logger](#https://www.npmjs.com/package/winston). By deafault logging is disabled to activate look [here](./../README.md/#Plugin-Logging).
+The logging in the server is based on [Winston logger](https://www.npmjs.com/package/winston). By deafault logging is disabled to activate look [here](./../README.md/#Plugin-Logging).
 When activating loggins you can have only one istance of VScode open with the plugin activated.
 
 ## CLI Based Requests
