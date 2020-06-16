@@ -18,9 +18,9 @@ When activating logging you can have only one istance of VScode open with loggin
 ## CLI Based Requests
 The features: [grpah visualization](./../README.md/#graphviz-visualization), [localization file creation](./../README.md/#localization) and [new model creation](./../README.md/#create-new-model) are all HTTP requests to a java server ([server code](./../LibServiceApp), [server Jar](./../cli/LibServiceApp.jar)).
 
-Any errors regarding connection issues or HTTP requests failures are connected to this files and code. Most common cause to this kind of problems is bad Java JDK installation or Path settings [look here for instructions](./../README.md/#installation).
+Any errors regarding connection issues or HTTP requests failures are connected to this files and code. Most common cause to this kind of problems is bad Java JDK installation or Path settings, for installation instructions look [here](./../README.md/#installation).
 
-To check Java is set correctly run the Java server by yourself from command line by entering Java -jar LibServiceApp.jar command when in cli folder.
+To make sure Java is set correctly run the Java server by yourself from command line by entering Java -jar LibServiceApp.jar command when in cli folder. If the activation server worked you should see a print of ready with some port number.
 
 ## Generating New Model
 Generating new model is based on [Policymodel tools JAR](https://github.com/IQSS/DataTaggingLibrary) version 1.9.9.
