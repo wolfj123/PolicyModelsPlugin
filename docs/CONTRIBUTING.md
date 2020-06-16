@@ -44,6 +44,7 @@ Our coloring functions are located [here](./client/color/../../../client/src/col
 To answer LSP requests we have implemented language features which can be found in the following files:
 - [LanguageUtils](../server/src/LanguageUtils.ts)
 - [LanguageServices](../server/src/LanguageServices.ts)
+
 **LanguageUtils** holds a collection of static methods that store no information and cause no side-effects. They answer basic queries on a given syntax tree.
 **LanguageServices** composes the methods mentioned above to answer more complicated queries regarding several syntax trees.
  
