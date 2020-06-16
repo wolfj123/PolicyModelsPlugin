@@ -111,6 +111,7 @@ class GraphvizCreator{
 			this._graphvizMessageToUser(msg)
 			console.log(msg);
 			console.log("server response: " + result);
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
 			return;
 		}
 
