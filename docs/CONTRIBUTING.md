@@ -75,10 +75,10 @@ To run the model we are using the CLI Jar in [here](./../cli/PolicyModels-1.9.9.
 
 ### LibServiceAPP
 Creating Localization files, Graph Visualization and New modeL creation are using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
-<br>This jar is generated form the code in [here].
+<br>This jar is generated form the code in [here](./../LibServiceApp).
 <br>When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also inserted as dependencies to this jar.
 
-This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (this isn't the same path of [Running model Jar](#Running-Model)). When updating this Jar you need to make sure all capabilities enabled using the LibServiceAPP Jar are still working correctly.
+This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (this isn't the same path of [Running model Jar](#Running-Model)). The [LibServiceApp](./../LibServiceApp) code is tightly coupled to the [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), So be careful when updating the Jar.
 
 ### New Model Creation
 Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), this is the input form it is generated form the code in [here](../../LibServiceApp/GuiApp). When generating this jar make sure to include all the jackson jars in the [resources folder](./../LibServiceApp/resources).
@@ -87,16 +87,16 @@ Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), t
 ## Server Logging
 
 ### How to Use
-You cna't use logging before the initLogger function is called. This function is called after the client finished initialization.
+You can't use logging before the initLogger function is called. This function is called after the client finished initialization.
 
 To Log:
-use the getLogger function from [Logger](./../server/src/Logger.ts) with the relevatnt loggind domain.
+use the getLogger function from [Logger](./../server/src/Logger.ts) with the relevatnt logging domain.
 
-The Log also log all errors to a file named unhandeled_exceptions.log.
 
 #### Logging domains:
 - serverHttp - To log any requests recieved from client.
 - server - For logging in [Solver](./../server/src/Solver.ts) and [server](./../server/src/server.ts)
 - documents - For loggin in [documents](./../server/src/Documents.ts) and [document manager](./../server/src/DocumentManager.ts)
 - parser - For logging relevant to [Language Services](#Language-Services)
-The globalLog.log file has the logging infromation from all domains together.
+The globalLog.log file has the logging infromation from all domains together.<br>
+The Log also log all errors to a file named unhandeled_exceptions.log.
