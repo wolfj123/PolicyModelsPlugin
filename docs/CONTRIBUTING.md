@@ -16,6 +16,7 @@
 	- [Run Model Jar](#Running-Model)
 	- [LibServiceAPP](#LibServiceAPP)
 	- [New Model Creation](#New-Model-Creation)
+-[Server Logging](#Server-Logging)
 
 ## Read This Before Contributing!
 This project is a VSCode language extension that uses the LSP architecture.
