@@ -151,7 +151,7 @@ Policy Space Graphviz graph output example:
 
 
 ## Supported Settings
-in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one.
+in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one. After making changes to this file you need to reopen VScode.
 
 ### Code Diagnostics (Syntax Errors Highlighter)
 This ability is disabled by default.
