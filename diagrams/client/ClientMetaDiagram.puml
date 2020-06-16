@@ -1,0 +1,37 @@
+@startuml
+
+package Client #DDDDDD {
+
+    package vscode-languageclient  {
+        class LanguageClient
+    }
+
+    class DefaultSection
+    class ColoringSection
+
+    package coloring {
+        class tofill1
+    }
+
+    package Graphviz{
+        class tofill2
+    }
+
+    package Services{
+        class FileService
+        class PolicyModelLibApi
+    }
+
+    package Localization {
+        class tofill3
+    }
+
+    DefaultSection -up-|> LanguageClient
+    
+    DefaultSection -- PolicyModelLibApi : uses
+    DefaultSection -- ColoringSection : uses
+}
+
+
+
+@enduml
