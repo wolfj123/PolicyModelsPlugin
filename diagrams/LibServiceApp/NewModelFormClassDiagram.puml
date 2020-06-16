@@ -1,0 +1,125 @@
+@startuml
+card ext [
+    <<external libraries>>
+    jackson-annotations
+	jackson-core
+	jackson-databind
+]
+
+class Main {
+	- waitingForUser: boolean
+	- modelData: NewModelInputData
+
+	+ {static} main (String[])
+	- {static} startNewModelGui()
+	- {static} openInputWindow()
+}
+
+
+class MyAuthorData {
+	- person : boolean
+	- name : stStringring
+	- contact : String
+	- affiliation : String
+
+	+ isPerson(): boolean
+	+ getName(): String
+	+ getContact(): String
+	+ getAffiliation(): String
+}
+
+class NewModelInputData {
+	-  modelName: String
+    -  modelPath: String
+    -  dgFileName: String
+    -  psFileName: String
+    -  rootSlot: String
+    - authors: List<MyAuthorData>
+    - authorsIterator: Iterator<MyAuthorData>
+    - currentAuthor: MyAuthorData
+
+	-setAllData(modelName: String, modelPath: String, dgFileName: String,psFileName: String, rootSlot: String, authors: List<MyAuthorData>)
+	+getModelName(): String
+	+getModelPath(): String
+	+getDgFileName(): String
+	+getPsFileName(): String
+	+getRootSlot(): String
+	+getAuthors(): List<MyAuthorData>
+	+hasMoreAuthors(): boolean
+	+nextAuthor()
+	+isAuthorPerson(): boolean
+	+getAuthorName(): String
+	+getAuthorContact(): String
+	+getAuthorAffiliation(): String
+}
+
+class NewModelInputForm {
+	- modelNameTextField: JTextField
+    - modelPathTextField: JTextField
+    - dgFileNameTextField: JTextField
+    - psFileNameTextField: JTextField
+    - rootSlotTextField: JTextField
+    - createNewModelButton: JButton
+    - cancelButton: JButton
+    - mainPanel: JPanel
+    - buttonsPanel: JPanel
+    - scrollPane: JScrollPane 
+    - addAuthorButton: JButton
+    - removeAuthorButton: JButton
+    - authorAmountLabel: JLabel
+    - folderSelectorButton: JButton
+    - authorsContainerPanel: JPanel
+    - newAuthorInfoPanelList: List<NewAuthorInfoPanel> 
+    - containingFrame: JFrame
+    - homeFolder: String
+    - authorAmountFormat: String
+    - ans: NewModelInputData 
+	- {static} authorInfoPanelMaxHeight: int
+
+	- createUIComponents()
+	- addAuthor()
+	- removeAuthor()
+	- collectAllData()
+	+ getMainPanel(): JPanel
+	+ init()
+}
+
+class HintTextField extends JTextField implements FocusListener {
+	- hint: String
+	- showingHint: boolean
+
+	+ setText(String t)
+	+ focusGained(FocusEvent e)
+	+ focusLost(FocusEvent e)
+	+ getText(): String
+	+ getFinalValue(): String
+	+ setHint(String newHint)
+}
+
+class NewAuthorInfoPanel extends JPanel {
+	- personRB: JRadioButton
+	- groupRB: JRadioButton
+	- authorNameTextField: JTextField
+	- authorAffiliationTextField: JTextField 
+	- authorContactTextField: JTextField 
+
+	- createGroupOrPersonPanel(): JPanel
+	- createAuthorNamePanel(): JPanel 
+	- createContactPanel(): JPanel 
+	- createAuthorAffiliatinPanel(): JPanel
+	+ setMaxHeight(maxHeight: int)
+	+ isAuthorPerson(): boolean
+	+ getAuthorName(): String
+	+ getAuthorAffiliation(): String
+	+ getAuthorContact(): String
+}
+
+Main -- ext: uses
+NewModelInputData "0...*" *-- "1...1" MyAuthorData
+Main "1...1" *-- NewModelInputData
+
+NewModelInputForm *-- HintTextField
+NewModelInputForm *-- NewAuthorInfoPanel
+Main *---right- NewModelInputForm
+
+@enduml

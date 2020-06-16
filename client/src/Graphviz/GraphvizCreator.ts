@@ -14,10 +14,14 @@ const defaulFileFormat = '.svg'
 
 const badNameException = "bad name"
 const badDotException = "bad dot"
-const globalDotInfo = "global dot"
+const globalDotInfo = "global "
 
+/**
+ * GraphvizCreator handle the request to LibServiceApp server for graphviz creation.
+ * Before -> pass all necessary data in aggregated way to api.
+ * After -> handle all possible outcomes from the request result.
+ */
 
-// graphviz Dot windows example => 'C:/Program Files (x86)/Graphviz2.38/bin/dot.exe'
 
 class GraphvizCreator{
 	_outputFolderPath: string;
@@ -70,11 +74,28 @@ class GraphvizCreator{
 		this._graphvizMessageToUser("bad output file name: '" + graphvizUIController.fileName +"'")
 	}
 
+	_resolve_bad_format(outputGraphvizPath: string){
+		if(FileService.isExist(outputGraphvizPath)){
+			let content = FileService.readFromFile(outputGraphvizPath)
+			if(content === ""){
+				let suffix = outputGraphvizPath.split(".").pop();
+				FileService.deleteFileInPath(outputGraphvizPath);
+				this._graphvizMessageToUser("Something went wrong, '" + suffix + 
+					"' is probably bad format.\nMore about Graphviz allowed formats you can find here https://graphviz.org/doc/info/output.html");
+				return true;
+			}
+		}
+		return false;
+	}
+
 	_graphvizMessageToUser(message: string){
 		vscode.window.showInformationMessage("GRAPHVIZ integration: " + message);
 	}
 
 	_afterServerRequestHandler(result: any, graphvizUIController: GraphvizUIController, outputGraphvizPath:string){
+		if(this._resolve_bad_format(outputGraphvizPath))
+			return;
+
 		if(result == undefined){
 			this._graphvizMessageToUser("Something went worng, check for errors when loading model.")
 			return;
@@ -85,11 +106,12 @@ class GraphvizCreator{
 			return;
 		}
 
-		if(!(result instanceof String)){
+		if(!(typeof result === 'string')){
 			let msg = "Something went worng! unexpected server response, check logs for more information"
 			this._graphvizMessageToUser(msg)
 			console.log(msg);
 			console.log("server response: " + result);
+			this._resolveDot(outputGraphvizPath, graphvizUIController)
 			return;
 		}
 
@@ -102,8 +124,8 @@ class GraphvizCreator{
 		else if(result.startsWith(globalDotInfo)){
 			graphvizUIController.dotPath =
 				"Your graphviz dot path is Global.\n"+
-				"Don't delete this file so you won't need to provie dot path ever again.\n"+
-				"GLOBAL PATH = " + result.substring(result.indexOf("$"))
+				"Don't delete this file so you won't need to provide dot path ever again.\n"+
+				"GLOBAL PATH = " + result.substring(result.indexOf(globalDotInfo) + globalDotInfo.length)
 
 			this._resolveDot(outputGraphvizPath, graphvizUIController)
 

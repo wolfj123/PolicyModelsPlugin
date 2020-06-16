@@ -1,0 +1,29 @@
+@startuml
+
+package Client #DDDDDD {
+
+    class DefaultSection
+    class Client
+    class ColoringSection
+
+    package Graphviz{
+        class tofill2
+    }
+
+    package Services{
+        class FileService
+        class PolicyModelLibApi
+    }
+
+    package Localization {
+        class tofill3
+    }
+   
+    DefaultSection -- PolicyModelLibApi : uses
+    DefaultSection -- ColoringSection : uses
+    DefaultSection "1...1" *-- "1...1" Client
+}
+
+
+
+@enduml

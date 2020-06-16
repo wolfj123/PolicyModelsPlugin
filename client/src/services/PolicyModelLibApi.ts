@@ -212,10 +212,10 @@ export default class PolicyModelLibApi {
       return res.data;
     else if (res.data === "java.lang.NullPointerException")
       return badNameException;
-    else if (res.data === "bad dot")
-      return badDotException
-    else if (res.data.startsWith("global"))
-      return globalDotInfo + res.data;
+    else if(res.data === "bad dot")
+      return badDotException;
+    else if(res.data.startsWith(globalDotInfo))
+      return res.data;
     else
       return "unknown";
   }

@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NewModelHandler extends PolicyModelHttpHandler {
 
-    private boolean waitingForUser;
-    private NewModelInputData modelData;
-
     @Override
     public String handleGetRequest(Map<String, String> params) throws Exception {
         return null;

@@ -405,7 +405,8 @@ function range(x: colors.Range): vscode.Range {
 
 
 /**************************************/
-
+/******** GRAPHVIZ INTEGRATION ********/
+/**************************************/
 
 function addGraphvizCommand(context: vscode.ExtensionContext) {
   const {subscriptions} = context;

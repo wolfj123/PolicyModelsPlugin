@@ -1,6 +1,13 @@
 import * as vscode from 'vscode';
 import {PSGraphvizCreator, DGGraphvizCreator} from './GraphvizCreator';
 
+/**
+ * This Classes control the UI of the graphviz integration using vscode objects.
+ * Documantation https://code.visualstudio.com/api/references/vscode-api#window
+ * _stepPromot() method control what UI object will be next shown to the user.
+ * The choise of the next step is computed in reaction to the event the user did.
+ * The events: onDidAccept (ENTER), onDidTriggerButton(BACK), onDidHide(ESCAPE). 
+ */
 
 export class GraphvizUIController{
 	_isDotExist: boolean;
