@@ -47,7 +47,7 @@ Our coloring functions are located [here](./client/color/../../../client/src/col
 
 ### Language Capabilites
 
-The server now supports the following capabililtes: [Auto-complete,Go to refernce, Go To Definition](./../README.md/#features) and error highlighting. If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
+The server currently supports the following capabililtes: [Auto-complete,Go to refernce, Go To Definition](./../README.md/#features) and [Error highlighting](./../README.md/#Syntax-Errors-Highlighter-(Code-Diagnostics))). If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
 To enable more capabilites you need to add the relevant settings in the server capabilites response to client in [code](./../server/src/server.ts).
 
 ### Language Services
@@ -68,15 +68,15 @@ After changing the parser projects, the WebAssembly parsers in the _Parsers_ dir
 
 ## Expanding Java Code and Updating Jars
 
-The project uses java code and external Jars to enalbe all the features: Running model, Creating Localization files, Graph Visualization and New modle creation.
+The project uses java code and external Jars to enalbe the features: [Grpah visualization](./../README.md/#graphviz-visualization), [Localization file creation](./../README.md/#localization), [New model creation](./../README.md/#create-new-model) and [Running model](#./../README.md/running-model).
 
 ### Running Model
-To run the model we are using the [JAR](./../cli/PolicyModels-1.9.9.uber.jar) this jar is taken from [Policymodel CLI](https://github.com/IQSS/DataTaggingLibrary/releases). This Jar can be updated freely because it is only used for running the model.
+To run the model we are using the CLI Jar in [here](./../cli/PolicyModels-1.9.9.uber.jar). this Jar is taken from [Policymodel CLI](https://github.com/IQSS/DataTaggingLibrary/releases). This Jar can be updated freely because it is only used for running the model.
 
 ### LibServiceAPP
-Creating Localization files, Graph Visualization and New modle creation are used using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
-This jar is generated form the code in [here].
-When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also inserted as dependencies to this jar.
+Creating Localization files, Graph Visualization and New modeL creation are using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
+<br>This jar is generated form the code in [here].
+<br>When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also inserted as dependencies to this jar.
 
 This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (this isn't the same path of [Running model Jar](#Running-Model)). When updating this Jar you need to make sure all capabilities enabled using the LibServiceAPP Jar are still working correctly.
 

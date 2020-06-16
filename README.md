@@ -24,7 +24,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
-	- [Error Highlighting](#Code-Diagnostics-(Syntax-Errors-Highlighter))
+	- [Error Highlighting](#Syntax-Errors-Highlighter-(Code-Diagnostics))
 	- [Logging](#Plugin-Logging)
 - [Understanding Errors](#understanding-errors)
 - [Development & Contribution](#development--contribution)
@@ -153,7 +153,7 @@ Policy Space Graphviz graph output example:
 ## Supported Settings
 in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one. After making changes to this file you need to reopen VScode.
 
-### Code Diagnostics (Syntax Errors Highlighter)
+### Syntax Errors Highlighter (Code Diagnostics)
 This ability is disabled by default.
 To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
 
