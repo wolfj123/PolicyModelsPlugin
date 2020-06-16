@@ -1,0 +1,23 @@
+@startuml
+
+
+package HttpHandlers{
+	class "<<abstract>>\nPolicyModelHttpHandler" as PolicyModelHttpHandler{
+
+	}
+}
+
+class Server {
+	+{static} main(String[] args)
+	+{static} activeServer(): int
+}
+
+package Services {
+	class PolicyModelService {}
+}
+
+Server *-- PolicyModelHttpHandler
+HttpHandlers -- Services: uses
+
+
+@enduml

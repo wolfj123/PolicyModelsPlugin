@@ -24,6 +24,8 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
+	- [Error Highlighting](#Syntax-Errors-Highlighter-(Code-Diagnostics))
+	- [Logging](#Plugin-Logging)
 - [Understanding Errors](#understanding-errors)
 - [Development & Contribution](#development--contribution)
 - [Related](#related)
@@ -44,6 +46,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 ### Pre-requisites
 - **VSCode 1.41** : last compatible version verified.
 - **Java JDK 11.0.4** : required for creating [new models](#create-new-model), [running existing models](#running-model) and [localization files creation](#localization).
+- **Java JDK path** : After installing Java JDK you need to add the location of installed bin folder to Path variable,[Windows instructions](https://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#path), [Mac instructions](http://www.sajeconsultants.com/how-to-set-java_home-on-mac-os-x/?utm_source=rss&utm_medium=rss&utm_campaign=how-to-set-java_home-on-mac-os-x).
 - **Graphviz**: required for [visualization feature](#graphviz-visualization). Can be download [here](#http://www.graphviz.org/).
 
 
@@ -148,9 +151,9 @@ Policy Space Graphviz graph output example:
 
 
 ## Supported Settings
-in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one.
+in order to enable or disable any of the options below, you will need to have a folder named .vscode in the project folder. Inside this folder you will need a file named settings.json. If the file exists use the existing one. After making changes to this file you need to reopen VScode.
 
-### Code Diagnostics (Syntax Errors Highlighter)
+### Syntax Errors Highlighter (Code Diagnostics)
 This ability is disabled by default.
 To enable add to settings.json this: "PolicyModelsServer.Diagnostics": true
 
@@ -170,6 +173,8 @@ To enable add: "PolicyModelsServer.Logging": true
 setting file example with all options enabled (can be seen [here](./client/testFixture/InferrerExample/.vscode/settings.json)):
 
 ![supported settings](./docs/images/setting-json.png)
+
+For more information about logging look [here](./docs/CONTRIBUTING.md/#Server-Logging).
 
 ## Understanding Errors
 
