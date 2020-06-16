@@ -2,11 +2,8 @@
 
 package Client #DDDDDD {
 
-    package vscode-languageclient  {
-        class LanguageClient
-    }
-
     class DefaultSection
+    class Client
     class ColoringSection
 
     package coloring {
@@ -25,11 +22,10 @@ package Client #DDDDDD {
     package Localization {
         class tofill3
     }
-
-    DefaultSection -up-|> LanguageClient
-    
+   
     DefaultSection -- PolicyModelLibApi : uses
     DefaultSection -- ColoringSection : uses
+    DefaultSection "1...1" *-- "1...1" Client
 }
 
 

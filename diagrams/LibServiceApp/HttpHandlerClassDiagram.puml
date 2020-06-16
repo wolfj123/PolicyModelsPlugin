@@ -1,0 +1,64 @@
+@startuml
+card HttpHandler [
+    <<external library>>
+	\t<<Interface>>
+	\tHttpHandler
+]
+
+card ext [
+    <<external libraries>>
+    jackson-annotations
+	jackson-core
+	jackson-databind
+]
+
+
+class "<<abstract>> \n PolicyModelHttpHandler" as PolicyModelHttpHandler  implements HttpHandler {
+
+	- splitQuery(String query): Map<String, String> 
+	- getRequestBody(HttpExchange httpExchange):String
+	+ handle(HttpExchange httpExchange)
+	+ getRequestParams(HttpExchange httpExchange): Map<String, String>
+
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+}
+
+ class LoadModelHandler extends PolicyModelHttpHandler{
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+ }
+
+ class CreateNewLocalizationhandler extends PolicyModelHttpHandler {
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+ }
+
+ class UpdateLocalizationHandler extends PolicyModelHttpHandler{
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+ }
+
+ class VisualizePSHandler extends PolicyModelHttpHandler{
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+ }
+
+ class VisualizeDGHandler extends PolicyModelHttpHandler{
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+ }
+
+ class NewModelHandler extends PolicyModelHttpHandler{
+	+ handleGetRequest(Map<String, String> params): String
+	+ handlePostRequest(String body): Pair<Integer, String>
+ }
+
+ NewModelHandler -- ext : uses
+ LoadModelHandler -- PolicyModelService: uses
+ CreateNewLocalizationhandler -- PolicyModelService: uses
+ UpdateLocalizationHandler -- PolicyModelService: uses
+ VisualizePSHandler -- PolicyModelService: uses
+ VisualizeDGHandler -- PolicyModelService: uses
+ NewModelHandler -- PolicyModelService: uses
+@enduml

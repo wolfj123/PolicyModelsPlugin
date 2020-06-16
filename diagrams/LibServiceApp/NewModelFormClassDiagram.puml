@@ -1,0 +1,60 @@
+@startuml
+card ext [
+    <<external libraries>>
+    jackson-annotations
+	jackson-core
+	jackson-databind
+]
+
+class Main {
+	- waitingForUser: boolean
+	- modelData: NewModelInputData
+
+	+ {static} main (String[])
+	- {static} startNewModelGui()
+	- {static} openInputWindow()
+}
+
+
+class MyAuthorData {
+	- person : boolean
+	- name : stStringring
+	- contact : String
+	- affiliation : String
+
+	+ isPerson(): boolean
+	+ getName(): String
+	+ getContact(): String
+	+ getAffiliation(): String
+}
+
+class NewModelInputData {
+	-  modelName: String
+    -  modelPath: String
+    -  dgFileName: String
+    -  psFileName: String
+    -  rootSlot: String
+    - authors: List<MyAuthorData>
+    - authorsIterator: Iterator<MyAuthorData>
+    - currentAuthor: MyAuthorData
+
+	-setAllData(modelName: String, modelPath: String, dgFileName: String,psFileName: String, rootSlot: String, authors: List<MyAuthorData>)
+	+getModelName(): String
+	+getModelPath(): String
+	+getDgFileName(): String
+	+getPsFileName(): String
+	+getRootSlot(): String
+	+getAuthors(): List<MyAuthorData>
+	+hasMoreAuthors(): boolean
+	+nextAuthor()
+	+isAuthorPerson(): boolean
+	+getAuthorName(): String
+	+getAuthorContact(): String
+	+getAuthorAffiliation(): String
+}
+
+Main -- ext: uses
+NewModelInputData "0...*" *-- "1...1" MyAuthorData
+Main "1...1" *-- NewModelInputData
+
+@enduml

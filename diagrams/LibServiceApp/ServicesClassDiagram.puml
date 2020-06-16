@@ -1,0 +1,104 @@
+@startuml
+
+card CLI [
+    <<external library>>
+	PolicyModels
+]
+
+
+
+class PolicyModelService {
+	-{static} cli: CliRunner
+
+	+{static} loadPolicyModel(String path): String
+	+{static} createNewLocalization(String name): String
+	+{static} updateLocalization()
+	+{static} loadPolicyIntoNewCli(CliRunner overrideCli): Boolean
+	+{static} createNewModel (CliRunnerNewModelOverride newCli): Pair<Integer,String>
+	+{static} visualizePS(String outputPath, String dotPath)
+	+{static} visualizeDG(String outputPath, String dotPath)
+}
+
+
+class VisualizeDecisionGraphCommandCustomize extends CLI {
+	- {static} pathToDot: Path 
+    + dotIsNotResolved: boolean
+    + dotIsGlobal: boolean;
+    + publicPathToDot: Path;
+
+	- findDot(): Optional<Path>
+	- getOuputFilePath(CliRunner rnr, List<String> args, Path basePath, String extension): Path
+	+ execute(CliRunner rnr, List<String> args)
+	
+}
+
+class  VisualizePolicySpaceCommandCustomize extends CLI {
+	- {static} pathToDot: Path 
+    + dotIsNotResolved: boolean
+    + dotIsGlobal: boolean;
+    + publicPathToDot: Path;
+
+	- parseDotPath(String dotStr): Optional<Path>
+	- findDot(): Optional<Path>
+	- getOuputFilePath(CliRunner rnr, List<String> args, Path basePath, String extension): Path
+	+ execute(CliRunner rnr, List<String> args)
+}
+
+
+
+
+class CliRunnerNewModelOverride extends CLI {
+	- modelNamePrefix: String
+    - modelPathPrefix: String
+    - dgFileNamePrefix: String
+    - psFileNamePrefix: String
+    - rootSlotNamePrefix: String
+    - addAuthorPrefix: String
+    - personOrGroupPrefix: String
+    - authorNamePrefix: String
+    - authorContactPrefix: String
+    - authorAffiliationPrefix: String
+    - lastMessage: String
+    - NewModelInputData modelData: NewModelInputData
+    - modelPath: String
+
+	- handlePrint (String msg, Object... args)
+	+ readLineWithDefault(String command, String defaultValue, Object... args): String
+	+ readLine(String format, Object... args): String
+	+ print(String format)
+	+ println(String format, Object... args)
+	+ println(String format)
+	+ printMsg(String format, Object... args)
+	+ printWarning(String format, Object... args)
+	+  printWarning(String format)
+	+ getModelPath(): String
+	+  getLastMessage(): String
+}
+
+
+
+class CliRunnerUpdateLocalizationOverride extends CLI {
+	- modelPath: String
+    - nextMessageNeedToBeSave: boolean
+    + answersToRemove: String
+
+	- convert(String answers): String
+	- handlePrint (String msg, Object... args)
+	+ println(String format)
+	+ printMsg(String format, Object... args)
+	+ printWarning(String format, Object... args)
+	+ printWarning(String format)
+
+}
+
+PolicyModelService o--- CliRunnerNewModelOverride
+PolicyModelService o--- CliRunnerUpdateLocalizationOverride
+PolicyModelService o--- VisualizePolicySpaceCommandCustomize
+PolicyModelService o--- VisualizeDecisionGraphCommandCustomize
+PolicyModelService *---down- CLI
+
+CliRunnerNewModelOverride -right[hidden]--- CliRunnerUpdateLocalizationOverride
+CliRunnerNewModelOverride o-- MyAuthorData  
+CliRunnerNewModelOverride o-- NewModelInputData  
+
+@enduml
