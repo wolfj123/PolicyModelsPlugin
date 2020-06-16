@@ -6,10 +6,6 @@ package Client #DDDDDD {
     class Client
     class ColoringSection
 
-    package coloring {
-        class tofill1
-    }
-
     package Graphviz{
         class tofill2
     }

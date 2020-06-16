@@ -6,11 +6,11 @@ left to right direction
 allowmixing
 
 package LanguageUtils #DDDDDD {
-    enum PolicyModelsLanguage {
-        PolicySpace
-        DecisionGraph
-        ValueInference
-    }
+    ' enum PolicyModelsLanguage {
+    '     PolicySpace
+    '     DecisionGraph
+    '     ValueInference
+    ' }
     enum PolicyModelEntityType {
         DGNode
         Slot
@@ -86,5 +86,11 @@ DecisionGraphParser --> Tree : "creates"
 PolicySpaceParser --> Tree : "creates"
 ValueInferenceParser --> Tree : "creates"
 
+DecisionGraphServices --> PolicyModelEntity : "uses"
+PolicySpaceServices --> PolicyModelEntity : "uses"
+ValueInferenceServices --> PolicyModelEntity : "uses"
+
+PolicyModelEntity --> PolicyModelEntityType : "uses"
+PolicyModelEntity --> PolicyModelEntityCategory : "uses"
 
 @enduml

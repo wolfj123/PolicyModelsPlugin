@@ -1,5 +1,6 @@
 @startuml
 
+
 class DefaultSection {
     - client: LanguageClient
 
@@ -37,7 +38,44 @@ class ColoringSection {
     +{static} activateSyntaxColoring(context: vscode.ExtensionContext):void 
 }
 
+
+
+
 DefaultSection "1...1" *-- "1...1" Client
 DefaultSection -- ColoringSection : uses
+
+
+
+' Color description
+allowmixing
+
+package Parsers {
+    component DecisionGraphParser
+    component PolicySpaceParser
+    component ValueInferenceParser
+    class Tree
+
+	DecisionGraphParser --> Tree : "creates"
+	PolicySpaceParser --> Tree : "creates"
+	ValueInferenceParser --> Tree : "creates"
+}
+
+class ColorFunction << (F,#FF7700) Function>>{
+	color(Parser.Tree, {number, number}[], boolean) : Map<string, {{number, number}, {number, number}}[]>
+}
+
+
+class colorDecisionGraph extends ColorFunction {	
+}
+
+class colorPolicySpace extends ColorFunction {	
+}
+
+class colorValueInference extends ColorFunction {	
+}
+
+ColorFunction --> Tree : recieves as paramater
+ColoringSection --> ColorFunction : uses
+
 
 @enduml
