@@ -86,6 +86,9 @@ Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), t
 
 ## Server Logging
 
+The logging in the server is based on [Winston logger](https://www.npmjs.com/package/winston). By deafault logging is disabled to activate look [here](./../README.md/#Plugin-Logging).
+When activating logging you can have only one istance of VScode open with logging activated.
+
 ### How to Use
 You can't use logging before the initLogger function is called. This function is called after the client finished initialization.
 
