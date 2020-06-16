@@ -92,8 +92,7 @@ You cna't use logging before the initLogger function is called. This function is
 To Log:
 use the getLogger function from [Logger](./../server/src/Logger.ts) with the relevatnt loggind domain.
 
-The Log also log all error to a file name unhandeled_exceptions.log.
-
+The Log also log all errors to a file named unhandeled_exceptions.log.
 
 #### Logging domains:
 - serverHttp - To log any requests recieved from client.
