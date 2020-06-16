@@ -24,6 +24,8 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
+	- [Error Highlighting](#Code-Diagnostics-(Syntax-Errors-Highlighter))
+	- [Logging](#Plugin-Logging)
 - [Understanding Errors](#understanding-errors)
 - [Development & Contribution](#development--contribution)
 - [Related](#related)
@@ -44,6 +46,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 ### Pre-requisites
 - **VSCode 1.41** : last compatible version verified.
 - **Java JDK 11.0.4** : required for creating [new models](#create-new-model), [running existing models](#running-model) and [localization files creation](#localization).
+- **Java JDK path** : After installing Java JDK you need to add the location of installed bin folder in computer path,[Windows instructions](#https://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#path), [Mac instructions](#http://www.sajeconsultants.com/how-to-set-java_home-on-mac-os-x/?utm_source=rss&utm_medium=rss&utm_campaign=how-to-set-java_home-on-mac-os-x).
 - **Graphviz**: required for [visualization feature](#graphviz-visualization). Can be download [here](#http://www.graphviz.org/).
 
 
