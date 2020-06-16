@@ -17,10 +17,12 @@ package Server #DDDDDD {
 }
 
 
-note "External Library" as n_ext
+note "These are external libraries" as n_ext
 n_ext .. Connection
 n_ext .. LanguageClient
-n_ext .. Parsers
+
+note "These are external projects that we made for the plugin" as n_ext2
+n_ext2 .. Parsers
 
 package Client #DDDDDD {
     class Client {
@@ -38,6 +40,8 @@ LanguageClient <-left-> Connection : communicates
 Client -up-|> LanguageClient : extends
 Server -up-|> Connection : extends
 
+Client -down-> Parsers : uses
+Server -down-> Parsers : uses
 
 
 @enduml
