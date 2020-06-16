@@ -16,13 +16,15 @@ The logging in the server is based on [Winston logger](#https://www.npmjs.com/pa
 When activating loggins you can have only one istance of VScode open with the plugin activated.
 
 ## CLI Based Requests
-The features: [grpah visualization](./../README.md/#graphviz-visualization), [localization file creation](./../README.md/#localization) and [new model creation](./../README.md/#create-new-model) are all HTTP requests to a java server ([code](./../LibServiceApp), [jar](./../cli/LibServiceApp.jar)).
-Any errors regarding connection issues or HTTP requests failures are probalby connected to this files and code. Most common cause to this problems is problems with Java JDK installation and enviormnet variables [look here for instructions](./../README.md/#installation).
+The features: [grpah visualization](./../README.md/#graphviz-visualization), [localization file creation](./../README.md/#localization) and [new model creation](./../README.md/#create-new-model) are all HTTP requests to a java server ([server code](./../LibServiceApp), [server Jar](./../cli/LibServiceApp.jar)).
+
+Any errors regarding connection issues or HTTP requests failures are connected to this files and code. Most common cause to this kind of problems is bad Java JDK installation or Path settings [look here for instructions](./../README.md/#installation).
+
 To check Java is set correctly run the Java server by yourself from command line by entering Java -jar LibServiceApp.jar command when in cli folder.
 
 ## Generating New Model
 Generating new model is based on [Policymodel tools JAR](#https://github.com/IQSS/DataTaggingLibrary) version 1.9.9.
-If you get any unknown error when trying to create a new model is suggested trying to create the model by hand using [PolicyModels-1.9.9.uber.jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), this will allow getting more extensive error messages.
+If you get any unknown error when trying to create a new model is suggested trying to create a new model manually by using [PolicyModels-1.9.9.uber.jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), this will allow getting more extensive error messages.
 
 Known Issuses:
 - Using non existing path
