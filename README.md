@@ -174,6 +174,8 @@ setting file example with all options enabled (can be seen [here](./client/testF
 
 ![supported settings](./docs/images/setting-json.png)
 
+For more information about logging look [here](./docs/CONTRIBUTING.md/#Server-Logging).
+
 ## Understanding Errors
 
 [For information regarding possible errors encountered in this plugin, please refer to this guide](docs/ERRORS.md).

@@ -81,7 +81,7 @@ Creating Localization files, Graph Visualization and New model creation are usin
 This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (has different path from Running Modle jar). The [LibServiceApp](./../LibServiceApp) code is tightly coupled to the [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), So be careful when updating the CLI Jar.
 
 ### New Model Creation
-Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), this is the input form it is generated form the code in [here](../../LibServiceApp/GuiApp). When generating this jar make sure to include all the jackson jars in the [resources folder](./../LibServiceApp/resources).
+Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), this is the input form it is generated form the code in [here](../../LibServiceApp/GuiApp). When generating this jar make sure to include all the jackson jars (3 jars) located in the [resources folder](./../LibServiceApp/resources).
 
 
 ## Server Logging
@@ -89,9 +89,10 @@ Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), t
 ### How to Use
 You can't use logging before the initLogger function is called. This function is called after the client finished initialization.
 
-To Log:
+How to log:
 use the getLogger function from [Logger](./../server/src/Logger.ts) with the relevatnt logging domain.
 
+Logger files are created in the plugin location dir (VScode installation dir) under Logs folder.
 
 #### Logging domains:
 - serverHttp - To log any requests recieved from client.
