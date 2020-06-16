@@ -32,7 +32,7 @@ class VisualizeDecisionGraphCommandCustomize extends CLI {
 	
 }
 
-class  VisualizePolicySpaceCommandCustomize extends CLI {
+class  VisualizePolicySpaceCommandCustomize  {
 	- {static} pathToDot: Path 
     + dotIsNotResolved: boolean
     + dotIsGlobal: boolean;
@@ -100,5 +100,8 @@ PolicyModelService *---down- CLI
 CliRunnerNewModelOverride -right[hidden]--- CliRunnerUpdateLocalizationOverride
 CliRunnerNewModelOverride o-- MyAuthorData  
 CliRunnerNewModelOverride o-- NewModelInputData  
+VisualizePolicySpaceCommandCustomize --|> CLI
+VisualizePolicySpaceCommandCustomize -left[hidden]- VisualizeDecisionGraphCommandCustomize
+
 
 @enduml
