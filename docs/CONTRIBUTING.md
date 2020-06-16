@@ -68,17 +68,17 @@ After changing the parser projects, the WebAssembly parsers in the _Parsers_ dir
 
 ## Expanding Java Code and Updating Jars
 
-The project uses java code and external Jars to enalbe the features: [Grpah visualization](./../README.md/#graphviz-visualization), [Localization file creation](./../README.md/#localization), [New model creation](./../README.md/#create-new-model) and [Running model](#./../README.md/running-model).
+The project uses java code and external Jars to enable the features: [Grpah visualization](./../README.md/#graphviz-visualization), [Localization file creation](./../README.md/#localization), [New model creation](./../README.md/#create-new-model) and [Running model](#./../README.md/running-model).
 
 ### Running Model
-To run the model we are using the CLI Jar in [here](./../cli/PolicyModels-1.9.9.uber.jar). this Jar is taken from [Policymodel CLI](https://github.com/IQSS/DataTaggingLibrary/releases). This Jar can be updated freely because it is only used for running the model.
+To run the model we are using the CLI Jar located [here](./../cli/PolicyModels-1.9.9.uber.jar). this Jar is taken from [Policymodel CLI](https://github.com/IQSS/DataTaggingLibrary/releases). This Jar can be updated freely because it is only used for running the model, and has no code dependency.
 
 ### LibServiceAPP
-Creating Localization files, Graph Visualization and New modeL creation are using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
-<br>This jar is generated form the code in [here](./../LibServiceApp).
-<br>When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also inserted as dependencies to this jar.
+Creating Localization files, Graph Visualization and New model creation are using the [LibServiceApp Jar](./../cli/LibServiceApp.jar).
+<br>This jar is generated form the code located [here](./../LibServiceApp).
+<br>When generating this jar you need to make sure that all Jar files in the [resources folder](./../LibServiceApp/resources) are also used as dependencies to this jar.
 
-This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (this isn't the same path of [Running model Jar](#Running-Model)). The [LibServiceApp](./../LibServiceApp) code is tightly coupled to the [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), So be careful when updating the Jar.
+This Code is also using [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar) (has different path from Running Modle jar). The [LibServiceApp](./../LibServiceApp) code is tightly coupled to the [CLI Jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), So be careful when updating the CLI Jar.
 
 ### New Model Creation
 Creating new model has another [JAR](./../LibServiceApp/resources/GuiApp.jar), this is the input form it is generated form the code in [here](../../LibServiceApp/GuiApp). When generating this jar make sure to include all the jackson jars in the [resources folder](./../LibServiceApp/resources).
