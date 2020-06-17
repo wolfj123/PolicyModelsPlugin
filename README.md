@@ -28,7 +28,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Syntax Errors Highlighter (Code Diagnostics)](#syntax-errors-highlighter-code-diagnostics)
 	- [Plugin Logging](#plugin-logging)
 - [Understanding Errors](#understanding-errors)
-- [Development & Contribution](#development--contribution)
+- [Development and Contribution](#development-and-contribution)
 - [Related](#related)
 	- [Policy Models](#policy-models)
 	- [DataTaggingLibrary Project](#datatagginglibrary-project)
@@ -193,7 +193,7 @@ For more information about logging look [here](./docs/CONTRIBUTING.md/#Server-Lo
 
 [For information regarding possible errors encountered in this plugin, please refer to this guide](docs/ERRORS.md).
 
-## Development & Contribution
+## Development and Contribution
 
 [For contributing to this project, please refer to this guide](docs/CONTRIBUTING.md).
 

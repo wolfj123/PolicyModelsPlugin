@@ -12,7 +12,7 @@
 	- [Language Capabilites](#language-capabilites)
 	- [Language Services](#language-services)
 - [Expanding the Language Parsers](#expanding-the-language-parsers)
-- [Expanding Java Code and Updating Jars](#expanding-java-code-and-updating-jars)
+- [Expanding Java Code and Updating JARs](#expanding-java-code-and-updating-jars)
 	- [Running Model](#running-model)
 	- [LibServiceAPP](#libserviceapp)
 	- [New Model Creation](#new-model-creation)
@@ -40,14 +40,14 @@ In this project we use the **web-tree-sitter** project (can be found at https://
 ### Syntax Coloring
 Syntax coloring in VSCode uses Text-Mate grammers (as described at https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide). **However**, for easier maintainability we wanted to use our Tree-Sitter parsers for the syntax coloring, instead of having to maintain 2 different grammers.
 Our syntax coloring is heavily inspired by the works in this [project](https://github.com/georgewfraser/vscode-tree-sitter).
-Our coloring functions are located [here](./client/color/../../../client/src/color/colors.ts). There is a coloring function for each language which maps different syntax nodes to different color themes.
+Our coloring functions are located [here](./client/color/../../../client/src/color/colors.ts). There is a coloring function for each language which maps different syntax nodes to different color themes. To change the coloring, simply edit the way the function maps the themes.
 
 
 ## Expanding the LSP Server
 
 ### Language Capabilites
 
-The server currently supports the following capabililtes: [Auto-complete,Go to refernce, Go To Definition](./../README.md/#features) and [Error highlighting](./../README.md/#Syntax-Errors-Highlighter-(Code-Diagnostics)). If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
+The server currently supports the following capabililtes: [Auto-complete, Go To references, Go To Definition](./../README.md/#features) and [Error highlighting](./../README.md/#Syntax-Errors-Highlighter-(Code-Diagnostics)). If you wish to add new capabilites to the server you first need to familiarize yourself with the [LSP protocol](#language-server-protocol).
 <br>To enable more capabilites you need to add the relevant settings in the server capabilites response to client in [code](./../server/src/server.ts).
 
 ### Language Services
@@ -58,7 +58,16 @@ To answer LSP requests we have implemented language features which can be found 
 
 **LanguageUtils** holds a collection of static methods that store no information and cause no side-effects. They answer basic queries on a given syntax tree.
 **LanguageServices** composes the methods mentioned above to answer more complicated queries regarding several syntax trees.
- 
+
+The general structure is as shown in this _minimal_ class diagram:
+![language services diagram](./docs/images/../../images/LanguageServicesSummary.png)
+- **LanguageFacade** exposes an LSP-like interface for the other components in the Server. It acts as an adapter between the rest of the Server classes and **LanguageServices** class.
+- **LanguagServices** answers language queries regarding a workspace of a Policy Model. This class holds several **FileManager** instances, each representing a file in said workspace.
+- **FileManagerFactory** is pretty self-explanatory: creates **FileManager** instances.
+- **FileManager** represents a Policy Model file. Answers language queries regarding a single file.
+
+To add more functionalities will require changing the **LanguageFacade** class and, if need be, the rest of the classes to support the new queries.
+To change / optimize the algorithms that answer the queries, please make new classes that inherit from **FileManager** )note that this is an _abstract_ class) and change the **FileManagerFactory** to create instances of these new classes.
 
 ## Expanding the Language Parsers
 
@@ -66,7 +75,7 @@ Our parsers are made using [Tree-sitter](#tree-sitter). You must first familiriz
 If you want to modify the language parsers, look at the  repositories of the [parsers](./../README.md#Decision-Graph-Parser).
 After changing the parser projects, the WebAssembly parsers in the _Parsers_ directory must be updated as well. There is a [script](./../scripts/gen-parsers.sh) for that, however it currently only works on **Linux**.
 
-## Expanding Java Code and Updating Jars
+## Expanding Java Code and Updating JARs
 
 The project uses java code and external Jars to enable the features: [Grpah visualization](./../README.md/#graphviz-visualization), [Localization file creation](./../README.md/#localization), [New model creation](./../README.md/#create-new-model) and [Running model](#./../README.md/running-model).
 

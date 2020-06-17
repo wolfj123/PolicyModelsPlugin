@@ -1,0 +1,37 @@
+@startuml
+
+'skinparam style strictuml
+'top to bottom direction
+'left to right direction
+
+allowmixing
+
+package LanguageServices #DDDDDD {
+
+    class LanguageServicesFacade {
+
+    }
+    class LanguageServices {
+
+    }
+    abstract class FileManager {
+ 
+    }
+    class FileManagerFactory {
+        
+    }
+    
+
+}
+
+' package LanguageUtils #DDDDDD {
+'     class DecisionGraphServices 
+'     class PolicySpaceServices
+'     class ValueInferenceServices
+' }
+    LanguageServicesFacade *-- LanguageServices
+    FileManagerFactory --> FileManager : "creates"
+    LanguageServices -->  FileManagerFactory : "uses"
+    LanguageServices --> "*" FileManager
+
+@enduml
