@@ -22,10 +22,10 @@ package Client #DDDDDD {
  
 }
 
-package LibServiceApi #DDDDDD{
+package LibServiceApp #DDDDDD{
 }
 
-Services -- LibServiceApi 
+Services -- LibServiceApp 
 
 
 @enduml
