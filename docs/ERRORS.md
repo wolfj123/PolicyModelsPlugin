@@ -5,6 +5,7 @@
 - [Logging](#Logging)
 - [LibServiceApp Request](#LibServiceApp-Requests)
 - [Generating New Model](#Generating-New-Model)
+- [TS Files](#TS-Files)
 
 ## Syntax Errors
 Due to limitations on error handling in Tree-Sitter, it is currently not possible to provide meaningful error descriptions when the Model has syntax errors. For that reason we do not enable by default our [LSP diagnostics](#https://microsoft.github.io/language-server-protocol/specification#diagnostic), as it is rather bare-bones right now.
@@ -31,3 +32,20 @@ If you get any unknown error when trying to create a new model is suggested tryi
 Known Problems When Generating New Model:
 - Using non existing path
 - Using spaces or numbers in root slot name
+
+
+## TS Files
+Policymodel language supports also files with .ts extension as policy space files. Because .ts extension can be interpeted as TypeScript files as well this causes some unexpected behavior in VScode, sometimes they will be read as policy space files and sometimes as TypeScript files.
+
+In order to avoid any unexpected problems it suggested that you do the follwing:
+1. Open VScode with a ts file (TypeScript or Policy space)
+2. Click on the languge identifier (bottom right of the screen)<br>
+![languge-identifier-image](./images/language_identifier.png)
+3. Select Configure File Association for '.ts'
+4. Select PolicySpace or TypeScript
+5. close and reopen VScode
+
+Note 1: this change affects all VScode future instances and all files with .ts extension<br>
+Note 2: this change can be done only for current file but correct behaviour ins't promised in this case
+
+Note 3: all files within project folder with .ts extension will be consider as policy space files when parsing folder

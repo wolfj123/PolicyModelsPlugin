@@ -15,6 +15,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Pre-requisites](#pre-requisites)
 	- [Instructions](#instructions)
 - [Features](#features)
+	- [Supported File Types](#Supported-File-Types)
 	- [Syntax Highlighting](#syntax-highlighting)
 	- [Go To References](#go-to-references)
 	- [Go To Definition](#go-to-definition)
@@ -53,6 +54,14 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 ### Instructions
 
 ## Features
+
+### Supported File Types
+The plugin supports:
+- Decision graph files with .dg extension
+- Value inferrence files with .VI extension
+- Policy space files with .ps or .pspace .ts extension
+<br> Files with .ts extensions can cause some unexpected behaviour. look [here](./docs/ERRORS.md/#TS-Files) for instructions using them correctly.
+
 ### Syntax Highlighting
 ![syntax highlighting](./docs/images/syntax_highlighting.png)
 
