@@ -1,7 +1,8 @@
 @startuml
 
 
-class DefaultSection {
+
+class Extension {
     - client: LanguageClient
 
     - {static} buildLibServiceAppApiInstance():void
