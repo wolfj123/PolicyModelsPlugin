@@ -60,6 +60,7 @@ To answer LSP requests we have implemented language features which can be found 
 **LanguageServices** composes the methods mentioned above to answer more complicated queries regarding several syntax trees.
 
 The general structure is as shown in this _minimal_ class diagram:
+<br>
 ![language services diagram](./docs/images/../../images/LanguageServicesSummary.png)
 - **LanguageFacade** exposes an LSP-like interface for the other components in the Server. It acts as an adapter between the rest of the Server classes and **LanguageServices** class.
 - **LanguagServices** answers language queries regarding a workspace of a Policy Model. This class holds several **FileManager** instances, each representing a file in said workspace.
