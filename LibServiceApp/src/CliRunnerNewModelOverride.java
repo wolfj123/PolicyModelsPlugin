@@ -3,6 +3,16 @@ import edu.harvard.iq.policymodels.cli.CliRunner;
 
 import java.io.IOException;
 
+
+
+
+/**
+ * The CliRunnerNewModelOverride class is extends the CliRunner class for
+ * specific LibServiceApp uses.
+ *
+ */
+
+
 public class CliRunnerNewModelOverride extends CliRunner {
 
     private String modelNamePrefix = "Model title:";
