@@ -54,12 +54,11 @@ export default class LocalizationDomain {
   createNewLanguage = async (name) => {
     const api: PolicyModelLibApi = PolicyModelLibApi.getInstance();
     const created = await api.createNewLocalization(name);
-    if (created) {
-      const newLanguagesFilesData = this.getLanguagesFilesData();
-      return newLanguagesFilesData;
-    } else {
+    if (!created) {
       this._onError("Cannot add languages")
     }
+    const newLanguagesFilesData = this.getLanguagesFilesData();
+    return newLanguagesFilesData;
   }
 
   filterSystemFiles(direntFiles) {
