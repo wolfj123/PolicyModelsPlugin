@@ -9,14 +9,14 @@
 - [Expanding the LSP Client](#expanding-the-lsp-client)
 	- [Syntax Coloring](#syntax-coloring)
 - [Expanding the LSP Server](#expanding-the-lsp-server)
-	- [Language Capabilites](#Language-Capabilites)
+	- [Language Capabilites](#language-capabilites)
 	- [Language Services](#language-services)
 - [Expanding the Language Parsers](#expanding-the-language-parsers)
-- [Expanding Java Code and Updating Jars](#Expanding-Java-Code-and-Updating-Jars)
-	- [Run Model Jar](#Running-Model)
-	- [LibServiceAPP](#LibServiceAPP)
-	- [New Model Creation](#New-Model-Creation)
--[Server Logging](#Server-Logging)
+- [Expanding Java Code and Updating Jars](#expanding-java-code-and-updating-jars)
+	- [Running Model](#running-model)
+	- [LibServiceAPP](#libserviceapp)
+	- [New Model Creation](#new-model-creation)
+- [Server Logging](#server-logging)
 
 ## Read This Before Contributing!
 This project is a VSCode language extension that uses the LSP architecture.
@@ -90,7 +90,7 @@ The logging in the server is based on [Winston logger](https://www.npmjs.com/pac
 <br> By deafault logging is disabled to activate look [here](./../README.md/#Plugin-Logging).
 <br>When activating logging you can have only one istance of VScode open with logging activated.
 
-### How to Use
+### How to Use <!-- omit in toc -->
 You can't use logging before the initLogger function is called. This function is called after the client finished initialization.
 
 How to log:
@@ -98,7 +98,7 @@ use the getLogger function from [Logger](./../server/src/Logger.ts) with the rel
 
 Logger files are created in the plugin location dir (VScode installation dir) under Logs folder.
 
-#### Logging domains:
+#### Logging domains: <!-- omit in toc -->
 - serverHttp - To log any requests recieved from client.
 - server - For logging in [Solver](./../server/src/Solver.ts) and [server](./../server/src/server.ts)
 - documents - For loggin in [documents](./../server/src/Documents.ts) and [document manager](./../server/src/DocumentManager.ts)

@@ -2,10 +2,10 @@
 
 #### Table of contents  <!-- omit in toc -->
 - [Syntax Errors](#syntax-errors)
-- [Logging](#Logging)
-- [LibServiceApp Request](#LibServiceApp-Requests)
-- [Generating New Model](#Generating-New-Model)
-- [TS Files](#TS-Files)
+- [Logging](#logging)
+- [LibServiceApp Requests](#libserviceapp-requests)
+- [Generating New Model](#generating-new-model)
+- [TS Files](#ts-files)
 
 ## Syntax Errors
 Due to limitations on error handling in Tree-Sitter, it is currently not possible to provide meaningful error descriptions when the Model has syntax errors. For that reason we do not enable by default our [LSP diagnostics](#https://microsoft.github.io/language-server-protocol/specification#diagnostic), as it is rather bare-bones right now.
@@ -13,7 +13,7 @@ Due to limitations on error handling in Tree-Sitter, it is currently not possibl
 If you wish to enable them in your Model, please see instructions [here](../README.md#supported-settings).
 
 ## Logging
-Look [here](./CONTRIBUTING.md/#Server-Logging)
+See [here](./CONTRIBUTING.md/#server-logging).
 
 ## LibServiceApp Requests
 The features: [grpah visualization](./../README.md/#graphviz-visualization), [localization file creation](./../README.md/#localization) and [new model creation](./../README.md/#create-new-model) are all HTTP requests to a java server ([server code](./../LibServiceApp), [server Jar](./../cli/LibServiceApp.jar)).
@@ -29,7 +29,7 @@ Common Issuses:
 Generating new model is based on [Policymodel tools JAR](https://github.com/IQSS/DataTaggingLibrary) version 1.9.9.
 If you get any unknown error when trying to create a new model is suggested trying to create a new model manually by using [PolicyModels-1.9.9.uber.jar](./../LibServiceApp/resources/PolicyModels-1.9.9.uber.jar), this will allow getting more extensive error messages.
 
-Known Problems When Generating New Model:
+Known problems when generating new Model:
 - Using non existing path
 - Using spaces or numbers in root slot name
 

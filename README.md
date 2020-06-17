@@ -15,7 +15,7 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Pre-requisites](#pre-requisites)
 	- [Instructions](#instructions)
 - [Features](#features)
-	- [Supported File Types](#Supported-File-Types)
+	- [Supported File Types](#supported-file-types)
 	- [Syntax Highlighting](#syntax-highlighting)
 	- [Go To References](#go-to-references)
 	- [Go To Definition](#go-to-definition)
@@ -25,8 +25,8 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 	- [Localization](#localization)
 	- [Graphviz Visualization](#graphviz-visualization)
 - [Supported Settings](#supported-settings)
-	- [Error Highlighting](#Syntax-Errors-Highlighter-(Code-Diagnostics))
-	- [Logging](#Plugin-Logging)
+	- [Syntax Errors Highlighter (Code Diagnostics)](#syntax-errors-highlighter-code-diagnostics)
+	- [Plugin Logging](#plugin-logging)
 - [Understanding Errors](#understanding-errors)
 - [Development & Contribution](#development--contribution)
 - [Related](#related)
@@ -42,25 +42,29 @@ Both the Client and Server use **Tree-Sitter** Parsers to parse the languages (t
 
 
 ## Installation
-[TODO: wait for packaging and release]
 
 ### Pre-requisites
 - **VSCode 1.41** : last compatible version verified.
 - **Java JDK 11.0.4** : required for creating [new models](#create-new-model), [running existing models](#running-model) and [localization files creation](#localization).
 - **Java JDK path** : After installing Java JDK you need to add the location of installed bin folder to Path variable,[Windows instructions](https://docs.oracle.com/javase/7/docs/webnotes/install/windows/jdk-installation-windows.html#path), [Mac instructions](http://www.sajeconsultants.com/how-to-set-java_home-on-mac-os-x/?utm_source=rss&utm_medium=rss&utm_campaign=how-to-set-java_home-on-mac-os-x).
-- **Graphviz**: required for [visualization feature](#graphviz-visualization). Can be download [here](#http://www.graphviz.org/).
+- **Graphviz**: required for [visualization feature](#graphviz-visualization). Can be downloaded [here](#http://www.graphviz.org/).
 
 
 ### Instructions
+
+- Download the **.vsix** file from our releases.
+- Installing **.vsix** files can be done with the following command:
+  `code --install-extension [NAME-OF-INSTALLATION-FILE].vsix`
+- Requires a reload of VSCode if it is running during the installation.
 
 ## Features
 
 ### Supported File Types
 The plugin supports:
-- Decision graph files with .dg extension
-- Value inferrence files with .VI extension
-- Policy space files with .ps or .pspace .ts extension
-<br> Files with .ts extensions can cause some unexpected behaviour. look [here](./docs/ERRORS.md/#TS-Files) for instructions using them correctly.
+- Decision graph files with **.dg** extension
+- Value inferrence files with **.vi** extension
+- Policy space files with **.ps** or **.pspace** **.ts** extension
+<br> Files with **.ts** extensions can cause some unexpected behaviour. Look [here](./docs/ERRORS.md/#ts-files) for instructions using them correctly.
 
 ### Syntax Highlighting
 ![syntax highlighting](./docs/images/syntax_highlighting.png)
