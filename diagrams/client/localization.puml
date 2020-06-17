@@ -1,5 +1,8 @@
 @startuml
 
+package Services {
+}
+
 package Localization #DDDDDD{
 
 interface AdditionalInfo {
@@ -66,16 +69,8 @@ class LocalizationDomain {
     +getLanguagesFilesData(): LanguageData[]
 }
 createLocalizationApp *--- LocalizationDomain
-LocalizationDomain *-- FileService
 LocalizationDomain --- ViewLoader
 
-
-
-class FileService {
-    +getDirectoryContent(dirPath: any): any
-    +writeToFile(path: any, newData: any): void
-    +readFromFile(path: any): any
-}
 
 
 package "WebView React" #999999 {
@@ -97,6 +92,9 @@ package "WebView React" #999999 {
 }
 
 }
+
+LocalizationDomain --- Services :uses
+
 
 @enduml
 
