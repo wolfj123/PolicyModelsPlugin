@@ -2,26 +2,24 @@
 
 package Client #DDDDDD {
 
-    class DefaultSection
-    class Client
-    class ColoringSection
+    class Extension
 
-    package Graphviz{
-        class tofill2
-    }
+    package Graphviz{}
 
-    package Services{
-        class FileService
-        class PolicyModelLibApi
-    }
+    package Services{}
 
     package Localization {
-        class tofill3
+    }
+    package Coloring {
     }
    
-    DefaultSection -- PolicyModelLibApi : uses
-    DefaultSection -- ColoringSection : uses
-    DefaultSection "1...1" *-- "1...1" Client
+    Extension -- Graphviz 
+    Extension -- Services 
+    Extension -- Localization 
+    Extension -- Coloring
+    Localization -- Services: uses
+    Graphviz -- Services :uses
+ 
 }
 
 
