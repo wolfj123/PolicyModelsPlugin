@@ -17,20 +17,21 @@
 	- [LibServiceAPP](#libserviceapp)
 	- [New Model Creation](#new-model-creation)
 - [Server Logging](#server-logging)
+- [Localization](#expanding-the-localization)
 
 ## Read This Before Contributing!
 This project is a VSCode language extension that uses the LSP architecture.
-Therefore before any contributions can be made, it is important to first familiarize yourself with the following information: 
+Therefore before any contributions can be made, it is important to first familiarize yourself with the following information:
 
-### VSCode Language Extensions  
+### VSCode Language Extensions
 Learn about [VSCode Language Extensions](https://code.visualstudio.com/api/language-extensions/overview).
 
-### Language Server Protocol  
+### Language Server Protocol
 Learn about [LSP](https://microsoft.github.io/language-server-protocol/overviews/lsp/overview/).
 There is also a good [example-project](#https://github.com/Microsoft/vscode-extension-samples/tree/master/lsp-sample) that contains both a client and server.
 <br>The server is using LSP 3.1.15 protocol version.
 
-### Tree-Sitter 
+### Tree-Sitter
 Learn about [Tree-Sitter](http://tree-sitter.github.io/tree-sitter/) and our language [parsers](./../README.md#Decision-Graph-Parser).
 
 In this project we use the **web-tree-sitter** project (can be found at https://www.npmjs.com/package/web-tree-sitter) to generate the parsers in _.wasm_ format. The parsers are located in the _Parsers_ directory under root. Both the client and server use this directory. Therefore if anyone wishes to use only one of them, it is necessary to also include the parsers in the new project.
@@ -116,3 +117,24 @@ Logger files are created in the plugin location dir (VScode installation dir) un
 
 The globalLog.log file has the logging infromation from all domains together.<br>
 The Log also log all errors to a file named unhandeled_exceptions.log.
+
+
+## Expanding the Localization
+The localization interface is a web client app, presented by the vscode using the [Webview API](https://code.visualstudio.com/api/extension-guides/webview).<br>
+The `LocalizationContainer.ts` is the main component that responsible to render all the view.<br>
+The localization interface can be used as an independently app that  `LocalizationContainer.ts` is its entry point.
+
+### Webview API <!-- omit in toc -->
+The webview API provides a platform to present web view content inside the visual code.<br>
+The `ViewLoader.ts` is creating the webview and send it the proper html content.<br>
+For more Information click [here](https://code.visualstudio.com/api/extension-guides/webview)
+
+### React <!-- omit in toc -->
+Our Web client use react javaScript library for building the user interface.<br>
+We are using version 16.<br>
+For more Information click [here](https://reactjs.org/)
+
+### Webpack <!-- omit in toc -->
+We use webpack to bundle the react files.<br>
+The app bundle file `configViewer.js`  located at `client/configViewer/`<br>
+For more Information click [here](https://www.typescriptlang.org/docs/handbook/react-&-webpack.html)
