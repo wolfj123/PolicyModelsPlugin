@@ -1,7 +1,7 @@
 @startuml
 
 
-class DefaultSection {
+class Extension {
     - client: LanguageClient
 
     - {static} buildLibServiceAppApiInstance():void
@@ -41,10 +41,21 @@ class ColoringSection {
 
 
 
-DefaultSection "1...1" *-- "1...1" Client
-DefaultSection -- ColoringSection : uses
+Extension "1...1" *-- "1...1" Client
+Extension -- ColoringSection : uses
+Extension *-- Graphviz
+Extension *-- Localization
+Extension *-- PolicyModelLibApi 
 
 
+package Graphviz {
+}
+
+package Localization {
+}
+
+class PolicyModelLibApi {
+}
 
 ' Color description
 allowmixing
