@@ -36,20 +36,6 @@ public class NewModelInputForm {
 
     private NewModelInputData ans;
 
-
-//    public NewModelInputForm(JFrame frame) {
-//        this.frame = frame;
-//    }
-
-    /**
-     * TODO:
-     * collect data to object and return
-     * exit behavior button + close
-     * ok button behavior
-     */
-
-
-
     private void createUIComponents() {
         String modelNameHint = "Policy Model";
         homeFolder= System.getProperty("user.home");
@@ -60,7 +46,7 @@ public class NewModelInputForm {
         rootSlotTextField = new HintTextField("DataTags");
         authorAmountLabel = new JLabel(String.format(authorAmountFormat,1));
 
-        authorsContainerPanel = new JPanel();
+        authorsContainerPanel = new JPanel(); //Panel for all authors input
         authorsContainerPanel.setLayout(new BoxLayout(authorsContainerPanel,BoxLayout.Y_AXIS));
         authorsContainerPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -83,15 +69,18 @@ public class NewModelInputForm {
         ans = null;
         this.containingFrame = (JFrame) getMainPanel().getRootPane().getParent();
 
+        //sets the Author panel maximal height according to size after packing - this should set the maximal height according to frame size on each screen
         newAuthorInfoPanelList.get(0).setMaxHeight(newAuthorInfoPanelList.get(0).getHeight());
         addAuthorButton.addActionListener(e -> addAuthor());
         removeAuthorButton.addActionListener(e -> removeAuthor());
-        cancelButton.addActionListener(e -> this.containingFrame.dispatchEvent(new WindowEvent(this.containingFrame, WindowEvent.WINDOW_CLOSING)) );
+        cancelButton.addActionListener(e ->
+                this.containingFrame.dispatchEvent(new WindowEvent(this.containingFrame, WindowEvent.WINDOW_CLOSING)) );
         createNewModelButton.addActionListener(e -> {
             collectAllData();
             this.containingFrame.dispatchEvent(new WindowEvent(this.containingFrame, WindowEvent.WINDOW_CLOSING));
         });
 
+        // This updates the path text field according to the new model name if the path wasn't set by user
         modelNameTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -131,6 +120,7 @@ public class NewModelInputForm {
             }
         });
 
+        // We need this sleep in order to set the default focus to the correct button otherwise the frame focus will be set on some random textfield
         try {
             Thread.sleep(250);
         } catch (InterruptedException e) {
@@ -141,6 +131,9 @@ public class NewModelInputForm {
 
     }
 
+    /**
+     * Adds all relevant textfields in order to add another author
+     */
     private void addAuthor(){
         NewAuthorInfoPanel authorPanel = new NewAuthorInfoPanel();
         this.newAuthorInfoPanelList.add(authorPanel);
@@ -149,6 +142,9 @@ public class NewModelInputForm {
         this.authorsContainerPanel.repaint();
     }
 
+    /**
+     * Removes textfields of the last author
+     */
     private void removeAuthor(){
         if (this.newAuthorInfoPanelList.size() != 0){
             NewAuthorInfoPanel toRemove = this.newAuthorInfoPanelList.remove(newAuthorInfoPanelList.size() -1 );
@@ -234,6 +230,9 @@ public class NewModelInputForm {
             return showingHint ? "" : super.getText();
         }
 
+        /**
+         * @return text in textField hint or user text whatever is currently set
+         */
         public String getFinalValue(){
             return super.getText();
         }
@@ -254,6 +253,9 @@ public class NewModelInputForm {
     private static int authorInfoPanelMaxHeight = -1;
 
 
+    /**
+     * This class represents all the needed elements to create one author
+     */
     public class NewAuthorInfoPanel extends JPanel {
         private JRadioButton personRB;
         private JRadioButton groupRB;

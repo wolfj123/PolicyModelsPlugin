@@ -16,7 +16,7 @@ public class CliRunnerNewModelOverride extends CliRunner {
     private String authorContactPrefix = "Contact:";
     private String authorAffiliationPrefix = "Affiliation:";
 
-    private String lastMessage;
+    private String lastMessage; //latest message printed to user
     private NewModelInputData modelData;
     private String modelPath;
 
@@ -96,6 +96,11 @@ public class CliRunnerNewModelOverride extends CliRunner {
         handlePrint(format);
     }
 
+    /**
+     * This function is used to save any relevant data that is supposed to be presented to the user
+     * @param msg
+     * @param args
+     */
     private void handlePrint (String msg, Object... args){
         String modelCreationPrefix = "Creating model at ";
         if (msg.startsWith(modelCreationPrefix)){
