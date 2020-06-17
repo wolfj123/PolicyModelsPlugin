@@ -3,8 +3,7 @@
 package Services {
 }
 
-package Localization #DDDDDD{
-
+package Model {
 interface AdditionalInfo {
     +path: string
 }
@@ -33,6 +32,11 @@ interface ItemMenuData {
     +onClick(): void
     +text: string
 }
+}
+
+
+package Localization #DDDDDD{
+
 
 class ViewLoader {
     -_panel: WebviewPanel
@@ -94,6 +98,8 @@ package "WebView React" #999999 {
 }
 
 LocalizationDomain --- Services :uses
+Localization --- Model :uses
+
 
 
 @enduml
