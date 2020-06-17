@@ -9,6 +9,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+
+/**
+ * The PolicyModelService class responsible for handling all the client rqeusts.
+ * Its communicate with the PolicyModels.jar libarary and calls its relevant Cli commands methods.
+ *
+ * This class holds a static cli instance that uses most of the handlers. This way we can
+ * load the model to the cli instance and calls other cli command, both in a different requests.
+ *
+ */
+
+
+
 public  class PolicyModelService {
     static CliRunner cli = new CliRunner();;
 
