@@ -46,6 +46,8 @@ Extension -- ColoringSection : uses
 Extension *-- Graphviz
 Extension *-- Localization
 Extension *-- PolicyModelLibApi 
+Graphviz *-- Services
+Localization *-- Services
 
 
 package Graphviz {
@@ -56,6 +58,10 @@ package Localization {
 
 class PolicyModelLibApi {
 }
+
+package Services {
+}
+
 
 ' Color description
 allowmixing
