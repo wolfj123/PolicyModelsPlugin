@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { ICommand, CommandAction } from './Types/model';
+import { ICommand, CommandAction } from '../view/Types/model';
 
 
 /**
@@ -24,7 +24,7 @@ export default class ViewLoader {
     this._extensionPath = extensionPath;
     this._panel = vscode.window.createWebviewPanel('Localization', 'Localization', vscode.ViewColumn.One, {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'configViewer'))],
+      localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'client/configViewer'))],
       retainContextWhenHidden: true,
     });
 
@@ -75,7 +75,7 @@ export default class ViewLoader {
 
   private getWebviewContent(languageFilesData): string {
     // Local path to main script run in the webview
-    const reactAppPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'configViewer', 'configViewer.js'));
+    const reactAppPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'client/configViewer', 'configViewer.js'));
     const reactAppUri = reactAppPathOnDisk.with({ scheme: 'vscode-resource' });
 
     const languageFilesDataJson = JSON.stringify(languageFilesData);

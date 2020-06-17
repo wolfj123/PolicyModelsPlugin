@@ -31,7 +31,7 @@ function activeLocalization() {
 		const localization = new LocalizationDomain({ extensionPath: _extensionPath }, _localizationPath, _onError);
 		try {
 			PolicyModelLibApi.getInstance().updateLocalization().then(answersToRemove => {
-				const updateResponse = { answersToRemove };
+				const updateResponse = { answersToRemove: answersToRemove||[] };
 				localization.activateLocalization(updateResponse);
 			});
 
