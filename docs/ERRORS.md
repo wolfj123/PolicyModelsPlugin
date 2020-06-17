@@ -39,7 +39,7 @@ Policymodel language supports also files with .ts extension as policy space file
 
 In order to avoid any unexpected problems it suggested that you do the follwing:
 1. Open VScode with a ts file (TypeScript or Policy space)
-2. Click on the languge identifier (bottom right of the screen)
+2. Click on the languge identifier (bottom right of the screen)<br>
 ![languge-identifier-image](./images/language_identifier.png)
 3. Select Configure File Association for '.ts'
 4. Select PolicySpace or TypeScript
