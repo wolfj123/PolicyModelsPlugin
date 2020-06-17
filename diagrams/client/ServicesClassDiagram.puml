@@ -1,41 +1,61 @@
 @startuml
-class FileService {
-    +{static} getDirectoryContent(dirPath: any): any
-    +{static} writeToFile(path: any, newData: any): void
-    +{static} readFromFile(path: any): any
-    +{static} isFolderExist(path: string): boolean
-    +{static} isExist(path: any): any
-    +{static} createDirectory(path: any): void
-    +{static} deleteFileInPath(path: any): void
-    +{static} deleteFolderInPath(path: any): void
+package Services  #DDDDDD {
+
+    class FileService {
+        +{static} getDirectoryContent(dirPath: any): any
+        +{static} writeToFile(path: any, newData: any): void
+        +{static} readFromFile(path: any): any
+        +{static} isFolderExist(path: string): boolean
+        +{static} isExist(path: any): any
+        +{static} createDirectory(path: any): void
+        +{static} deleteFileInPath(path: any): void
+        +{static} deleteFolderInPath(path: any): void
+    }
+
+    class PolicyModelLibApi {
+        + {static} axiosInstance: AxiosInstance
+
+        + createAxiosInstance(url: string): Promise<any>
+        + {static} buildInstance(rootPath?: string, printToScreenCallback?: any): void
+        +  getInstance(): PolicyModelLibApi
+        +  _buildEnvironment(loadModel: boolean = true): void
+        + _startServer(): Promise<boolean> 
+        +  serverIsReady(): Promise<boolean>
+        + _loadModel(): void
+        + _printToScreen(message: string[]): void
+        +  _handleConnectionRejection = (err: any): void 
+        +  _terminateProcess(): Promise<void>
+        +  _createNewLocalization(name: string): Promise<boolean>
+        +  _updateLocalization(): Promise<string[]>
+        +  _requestsWrapper(loadModel: boolean, requestCallback): Promise<any>
+        +  clearBuffer(): void
+        + _visualizePolicySpace(outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
+        + _visualizeDecisionGraph(outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
+        + _visualizeThenHandler(res: any, badNameException: string, badDotException: string, globalDotInfo: string)
+        + setPrintToScreenCallback(callback): void
+        + createNewLocalization(name: string): Promise<boolean>
+        + createNewModel(): Promise<string>
+        + _createNewModel(par): Promise<string>
+        + visualizePolicySpace( outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
+        + visualizeDecisionGraph(outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
+        + updateLocalization(): Promise<string[]>
+    }
 }
 
-class PolicyModelLibApi {
-    + {static} axiosInstance: AxiosInstance
 
-    + createAxiosInstance(url: string): Promise<any>
-    + {static} buildInstance(rootPath?: string, printToScreenCallback?: any): void
-    +  getInstance(): PolicyModelLibApi
-    +  _buildEnvironment(loadModel: boolean = true): void
-    + _startServer(): Promise<boolean> 
-    +  serverIsReady(): Promise<boolean>
-    + _loadModel(): void
-    + _printToScreen(message: string[]): void
-    +  _handleConnectionRejection = (err: any): void 
-    +  _terminateProcess(): Promise<void>
-    +  _createNewLocalization(name: string): Promise<boolean>
-    +  _updateLocalization(): Promise<string[]>
-    +  _requestsWrapper(loadModel: boolean, requestCallback): Promise<any>
-    +  clearBuffer(): void
-    + _visualizePolicySpace(outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
-    + _visualizeDecisionGraph(outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
-    + _visualizeThenHandler(res: any, badNameException: string, badDotException: string, globalDotInfo: string)
-    + setPrintToScreenCallback(callback): void
-    + createNewLocalization(name: string): Promise<boolean>
-    + createNewModel(): Promise<string>
-    + _createNewModel(par): Promise<string>
-    + visualizePolicySpace( outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
-    + visualizeDecisionGraph(outputPath: string, graphvizDot: string, badNameException: string, badDotException: string, globalDotInfo: string): Promise<string>
-    + updateLocalization(): Promise<string[]>
-}
+class GraphvizController{}
+class GraphvizCreator{}
+class LocalizationDomain{}
+class extension {}
+class CreateLocalizationApp {}
+
+GraphvizController --> FileService: uses
+CreateLocalizationApp --> FileService: uses
+GraphvizCreator --> FileService : uses
+LocalizationDomain --> FileService : uses
+LocalizationDomain --> PolicyModelLibApi: uses
+extension --> PolicyModelLibApi: uses
+CreateLocalizationApp --> PolicyModelLibApi: uses
+GraphvizCreator --> PolicyModelLibApi: uses
+
 @enduml
