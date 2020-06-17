@@ -44,7 +44,8 @@ In order to avoid any unexpected problems it suggested that you do the follwing:
 3. Select Configure File Association for '.ts'
 4. Select PolicySpace or TypeScript
 5. close and reopen VScode
-Note: this change affects all VScode future instances and all files with .ts extension
-Note: this change can be done only for current file but correct behaviour ins't promised in this case
 
-Note: all files within project folder with .ts extension will be consider as policy space files when parsing folder
+Note 1: this change affects all VScode future instances and all files with .ts extension<br>
+Note 2: this change can be done only for current file but correct behaviour ins't promised in this case
+
+Note 3: all files within project folder with .ts extension will be consider as policy space files when parsing folder
