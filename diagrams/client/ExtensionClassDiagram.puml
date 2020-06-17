@@ -27,15 +27,6 @@ class Client extends extConnection{
 
 
 class ColoringSection {
-    - languages: {[id: string]: {module: string, color: colors.ColorFunction, parser?: Parser}}
-    {field}- decorationCache: new Map<string, vscode.TextEditorDecorationType>()
-
-    -{static} decoration(scope: string): vscode.TextEditorDecorationType | undefined {
-    -{static} function createDecorationFromTextmate(themeStyle: scopes.TextMateRuleSettings): vscode.TextEditorDecorationType
-    -{static} loadStyles(): void
-    -{static} visibleLines(editor: vscode.TextEditor): void
-    -{static}  range(x: colors.Range): vscode.Range: void
-    +{static} activateSyntaxColoring(context: vscode.ExtensionContext):void 
 }
 
 
@@ -43,39 +34,6 @@ class ColoringSection {
 
 DefaultSection "1...1" *-- "1...1" Client
 DefaultSection -- ColoringSection : uses
-
-
-
-' Color description
-allowmixing
-
-package Parsers {
-    component DecisionGraphParser
-    component PolicySpaceParser
-    component ValueInferenceParser
-    class Tree
-
-	DecisionGraphParser --> Tree : "creates"
-	PolicySpaceParser --> Tree : "creates"
-	ValueInferenceParser --> Tree : "creates"
-}
-
-class ColorFunction << (F,#FF7700) Function>>{
-	color(Parser.Tree, {number, number}[], boolean) : Map<string, {{number, number}, {number, number}}[]>
-}
-
-
-class colorDecisionGraph extends ColorFunction {	
-}
-
-class colorPolicySpace extends ColorFunction {	
-}
-
-class colorValueInference extends ColorFunction {	
-}
-
-ColorFunction --> Tree : recieves as paramater
-ColoringSection --> ColorFunction : uses
 
 
 @enduml
