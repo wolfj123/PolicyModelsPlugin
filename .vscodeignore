@@ -14,7 +14,6 @@ contributing.md
 
 node_modules/**/test/**
 **/.travis.yml
-**/README.md
 **/travis_build.sh
 **/LICENSE.md
 docs
