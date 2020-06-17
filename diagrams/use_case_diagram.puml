@@ -10,17 +10,25 @@ rectangle System {
 
 	usecase uc1 as "Create a new policy model"
 	usecase uc2 as "Load a project into the IDE"
+	
+	usecase uc5 as "Code is auto-completed"
+	usecase uc8 as "Jump to definition"
+	usecase uc9 as "Smart code Renaming"
+	usecase uc10 as "Request folding of scope in code"
+	usecase uc6 as "Running the model locally"
+
+
 	usecase writecode as "write Policy Models code"
 	usecase uc3_1 as "Graph code colorizing by syntax"
 	usecase uc3_2 as "Space code colorizing by syntax"
 	usecase uc3_3 as "Value Inference code colorizing by syntax"
 	usecase uc3_4 as "Syntax error highlighting"
-	usecase uc5 as "Code is auto-completed"
-	usecase uc6 as "Running the model locally"
+	
 	usecase uc7 as "Localization"
-	usecase uc8 as "Jump to definition"
-	usecase uc9 as "Smart code Renaming"
-	usecase uc10 as "Request folding of scope in code"
+	usecase uc7_1 as "Create localization files"
+	usecase uc7_2 as "Update localization files"
+	usecase uc7_3 as "Edit localization files"
+
 	usecase uc11 as "Graphviz visualization"
 	usecase uc11_1 as "Decision graph visualization"
 	usecase uc11_2 as "Policyspace visualization"
@@ -50,14 +58,22 @@ rectangle System {
 	user--> uc10
 	uc10 --> IDE
 	uc2--> IDE
-	uc7 --> IDE
 	user --> uc11
 	uc11 ..> uc11_1: <<extneds>>
 	uc11 ..> uc11_2: <<extneds>>
 
 	uc11_1 --> IDE
 	uc11_2 --> IDE
+
+	uc7_1 --> IDE
+	uc7_2 --> IDE
+	uc7_3 --> IDE
+
+	uc7 ..> uc7_1 :<<extneds>>
+	uc7 ..> uc7_2 :<<extneds>>
+	uc7 ..> uc7_3 :<<extneds>>
 }
 
 @enduml
+
 

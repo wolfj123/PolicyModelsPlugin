@@ -1,23 +1,52 @@
 @startuml
 
+package LibServiceApi{
 
-package HttpHandlers{
-	class "<<abstract>>\nPolicyModelHttpHandler" as PolicyModelHttpHandler{
+	package HttpHandlers{
+		class LoadModelHandler  {
+ 		}
 
+		class CreateNewLocalizationhandler   {
+		}
+
+		class UpdateLocalizationHandler  {
+		}
+
+		class VisualizePSHandler  {
+		}
+
+		class VisualizeDGHandler  {
+		}
+
+		class NewModelHandler  {
+		}
 	}
+
+	class Server {
+		+{static} main(String[] args)
+		+{static} activeServer(): int
+	}
+
+	package Services {
+		class PolicyModelService {}
+	}
+
 }
 
-class Server {
-	+{static} main(String[] args)
-	+{static} activeServer(): int
-}
+Server *-- LoadModelHandler
+Server *-- UpdateLocalizationHandler
+Server *-- CreateNewLocalizationhandler
+Server *-- VisualizePSHandler
+Server *-- NewModelHandler
+Server *-- VisualizeDGHandler
 
-package Services {
-	class PolicyModelService {}
-}
+CreateNewLocalizationhandler --> PolicyModelService: uses
+UpdateLocalizationHandler --> PolicyModelService: uses
+VisualizePSHandler --> PolicyModelService: uses
+LoadModelHandler --> PolicyModelService: uses
+NewModelHandler --> PolicyModelService: uses
+VisualizeDGHandler --> PolicyModelService: uses
 
-Server *-- PolicyModelHttpHandler
-HttpHandlers -- Services: uses
 
 
 @enduml
