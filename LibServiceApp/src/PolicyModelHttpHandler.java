@@ -9,11 +9,43 @@ import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+
+/**
+ * The PolicyModelHttpHandler abstract class is defined the request handlers.
+ * Its responsible for processing the requests, send it to the relevant method,
+ * and returns the results the the client.
+ *
+ */
+
 abstract public class PolicyModelHttpHandler implements HttpHandler {
+
+    /**
+     * Handle Get requests.
+     *
+     * @param  params   mapping query values to their key name.
+     * @return  handler result
+     */
 
     public abstract String handleGetRequest(Map<String, String> params) throws Exception;
 
+
+    /**
+     * Handle Post requests.
+     *
+     * @param  body     A Json based string that represent the body of the request.
+     * @return  handler result
+     */
+
     public abstract Pair<Integer, String> handlePostRequest(String body);
+
+
+    /**
+     *The main handle method. First it process the request and send to the rigth handler afterwards.
+     * In addition, its manage exceptions for the handlers and responsible to write the
+     * result to the output stream buffer.
+     *
+     * @param  httpExchange     A HttpExchange instance that rerpresent the client request.
+     */
 
 
     @Override
