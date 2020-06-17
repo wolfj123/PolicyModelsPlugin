@@ -14,12 +14,17 @@ rectangle System {
 	usecase uc3_1 as "Graph code colorizing by syntax"
 	usecase uc3_2 as "Space code colorizing by syntax"
 	usecase uc3_3 as "Value Inference code colorizing by syntax"
+	usecase uc3_4 as "Syntax error highlighting"
 	usecase uc5 as "Code is auto-completed"
 	usecase uc6 as "Running the model locally"
-	usecase uc7 as "Create localization files"
-	usecase uc8 as "Request jump to definition of tag"
-	usecase uc9 as "Request renaming of nodes"
+	usecase uc7 as "Localization"
+	usecase uc8 as "Jump to definition"
+	usecase uc9 as "Smart code Renaming"
 	usecase uc10 as "Request folding of scope in code"
+	usecase uc11 as "Graphviz visualization"
+	usecase uc11_1 as "Decision graph visualization"
+	usecase uc11_2 as "Policyspace visualization"
+
 
 	user--> uc1	
 	user--> uc2
@@ -27,10 +32,14 @@ rectangle System {
 	uc3_1 --> IDE
 	uc3_2 --> IDE
 	uc3_3 --> IDE
+	uc3_4 --> IDE
+	
+	writecode .down.> uc3_4 : <<extends>>
 	writecode .down.> uc3_1 : <<extends>>
 	writecode .down.>  uc3_2 : <<extends>>
 	writecode .down.>  uc3_3 : <<extends>>
 	writecode .right.> uc5 : <<extends>>
+	
 	uc5 --> IDE
 	user--> uc6
 	user--> uc7
@@ -41,6 +50,13 @@ rectangle System {
 	user--> uc10
 	uc10 --> IDE
 	uc2--> IDE
+	uc7 --> IDE
+	user --> uc11
+	uc11 ..> uc11_1: <<extneds>>
+	uc11 ..> uc11_2: <<extneds>>
+
+	uc11_1 --> IDE
+	uc11_2 --> IDE
 }
 
 @enduml
