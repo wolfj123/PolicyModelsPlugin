@@ -5,7 +5,7 @@ client/server
 !cli/*
 !LibServiceApp/resources
 .idea
-configViewer/configViewer.js
+*/configViewer/configViewer.js
 
 
 
