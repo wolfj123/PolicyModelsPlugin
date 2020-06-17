@@ -1,5 +1,10 @@
 @startuml
 
+package Services {
+}
+
+package Localization #DDDDDD{
+
 interface AdditionalInfo {
     +path: string
 }
@@ -37,6 +42,18 @@ class ViewLoader {
     -getWebviewContent(languageFilesData: any): string
 }
 
+class createLocalizationApp {
+    +_extensionPath: string
+    +_localizationPath: string
+    +_onError: any
+
+    +createLocalizationApp(extensionPath: string): void
+    +activeLocalization(): void
+    +handleNewLocalization(): Promise<void>
+    +tryCreateLocalizationFiles(): void
+
+}
+
 
 class LocalizationDomain {
     +_localizationPath: string
@@ -51,20 +68,12 @@ class LocalizationDomain {
     +onSaveFile: (path: any, newData: any) => LanguageData[]
     +getLanguagesFilesData(): LanguageData[]
 }
-
-LocalizationDomain *-- FileService
+createLocalizationApp *--- LocalizationDomain
 LocalizationDomain --- ViewLoader
 
 
 
-class FileService {
-    +getDirectoryContent(dirPath: any): any
-    +writeToFile(path: any, newData: any): void
-    +readFromFile(path: any): any
-}
-
-
-package "WebView React" #DDDDDD {
+package "WebView React" #999999 {
  ViewLoader <|--Index
   class Index {}
   class LocalizationContainer{}
@@ -81,6 +90,12 @@ package "WebView React" #DDDDDD {
   LocalizationContainer --- Text
   LocalizationContainer --- FileContent
 }
+
+}
+
+LocalizationDomain --- Services :uses
+
+
 @enduml
 
 

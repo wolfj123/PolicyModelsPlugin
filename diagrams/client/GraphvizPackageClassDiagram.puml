@@ -1,0 +1,77 @@
+@startuml
+
+package Graphviz #DDDDDD{
+	class GraphvizController
+	class GraphvizCreator
+	class PSGraphvizCreator
+	class DGGraphvizCreator
+	class GraphvizUIController
+    class PSGraphvizUIController
+    class DGGraphvizUIController
+}
+
+class GraphvizController {
+    +_ui: GraphvizUIController
+    +activate(): void
+    +_chooseGraphvizUIController(type: string, dot: string): void
+}
+class GraphvizCreator {
+    +_outputFolderPath: string
+    +_policyModelLibApi: PolicyModelLibApi
+    +visualize(graphvizUIController: GraphvizUIController): Promise<void>
+    +_createOutputFolder(outputFolderPath: string, innerOutputFolder: string): void
+    +_concatFilePath(graphvizUIController: GraphvizUIController): string
+    +_resolveDot(outputGraphvizPath: string, graphvizUIController: GraphvizUIController): void
+    +_resolveDotBadDot(): void
+    +_resolveDotBadName(graphvizUIController: GraphvizUIController): void
+    +_resolve_bad_format(outputGraphvizPath: string): boolean
+    +_graphvizMessageToUser(message: string): void
+    +_afterServerRequestHandler(result: any, graphvizUIController: GraphvizUIController, outputGraphvizPath: string): void
+}
+class PSGraphvizCreator extends GraphvizCreator {
+    +visualize(graphvizUIController: GraphvizUIController): Promise<void>
+}
+class DGGraphvizCreator extends GraphvizCreator {
+    +visualize(graphvizUIController: any): Promise<void>
+}
+class GraphvizUIController {
+    +_isDotExist: boolean
+    +_totalSteps: number
+    +_step: number
+    +dotPath: string
+    +fileName: string
+    +fileFormat: string
+    +activate(): void
+    +_stepPromot(): void
+    +_dotPathStep(): void
+    +_fileNameStep(): void
+    +_fileFormatStep(): void
+    +_fileFormatFreestyleStep(): void
+    +_createFile(): void
+    +_configItem(item: InputBox | QuickPick<QuickPickItem>): void
+    +_defineDefaultHandlers(item: InputBox | QuickPick<QuickPickItem>): void
+    +_onFinish(item: InputBox | QuickPick<QuickPickItem>): void
+}
+class PSGraphvizUIController extends GraphvizUIController {
+    +_createFile(): void
+}
+class DGGraphvizUIController extends GraphvizUIController {
+    +_createFile(): void
+}
+
+GraphvizController *-- GraphvizUIController
+PSGraphvizUIController *-- PSGraphvizCreator
+DGGraphvizUIController *-- DGGraphvizCreator
+
+
+Services -- GraphvizCreator
+
+
+package Services #DDDDDD{
+
+}
+
+
+
+
+@enduml

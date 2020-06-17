@@ -10,11 +10,10 @@ public class Main {
         startNewModelGui();
     }
 
-
-
     private static boolean waitingForUser;
     private static NewModelInputData modelData;
 
+    // because this jar is called form VScode the response of the user input will be printed to stdout for VScode to read
     private static void startNewModelGui(){
         waitingForUser = true;
         modelData = null;

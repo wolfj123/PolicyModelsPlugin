@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   entry: {
-    configViewer: "./client/src/view/app/index.tsx"
+    configViewer: "./src/view/app/index.tsx"
   },
   output: {
     path: path.resolve(__dirname, "configViewer"),
