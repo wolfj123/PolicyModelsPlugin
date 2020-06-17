@@ -1,6 +1,21 @@
 @startuml
 
-left to right direction
+
+class ColoringSection {
+    - languages: {[id: string]: {module: string, color: colors.ColorFunction, parser?: Parser}}
+    {field}- decorationCache: new Map<string, vscode.TextEditorDecorationType>()
+
+    -{static} decoration(scope: string): vscode.TextEditorDecorationType | undefined {
+    -{static} function createDecorationFromTextmate(themeStyle: scopes.TextMateRuleSettings): vscode.TextEditorDecorationType
+    -{static} loadStyles(): void
+    -{static} visibleLines(editor: vscode.TextEditor): void
+    -{static}  range(x: colors.Range): vscode.Range: void
+    +{static} activateSyntaxColoring(context: vscode.ExtensionContext):void 
+}
+
+
+
+' Color description
 allowmixing
 
 package Parsers {
@@ -29,5 +44,7 @@ class colorValueInference extends ColorFunction {
 }
 
 ColorFunction --> Tree : recieves as paramater
+ColoringSection --> ColorFunction : uses
+
 
 @enduml
