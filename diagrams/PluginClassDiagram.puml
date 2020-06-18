@@ -1,5 +1,8 @@
 @startuml
 
+
+
+
 package vscode-languageclient  {
 	class LanguageClient
 }
@@ -27,6 +30,9 @@ n_ext2 .. Parsers
 package Client #DDDDDD {
     class Client {
     }
+
+	class PolicyModelLibApi { }
+	
 }
 
 package Parsers {
@@ -36,12 +42,31 @@ package Parsers {
 }
 
 
+package LibServiceApp #DDDDDD{
+	class "Server" as LibServiceAppServer {}
+
+	package Services #DDDDDD {
+	}
+}
+
+card CLI [
+    <<external library>>
+	 PolicyModels
+]
+
+Services --|> CLI
+
+
+
 LanguageClient <-left-> Connection : communicates
 Client -up-|> LanguageClient : extends
 Server -up-|> Connection : extends
 
 Client -down-> Parsers : uses
 Server -down-> Parsers : uses
+PolicyModelLibApi <--> LibServiceAppServer: communicates
+Client -->  PolicyModelLibApi: uses
+
 
 
 @enduml

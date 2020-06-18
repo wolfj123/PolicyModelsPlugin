@@ -1,6 +1,11 @@
 @startuml
 
-package LibServiceApi{
+card CLI [
+    <<external library>>
+	 PolicyModels
+]
+
+package LibServiceApp #DDDDDD{
 
 	package HttpHandlers{
 		class LoadModelHandler  {
@@ -29,9 +34,14 @@ package LibServiceApi{
 
 	package Services {
 		class PolicyModelService {}
+
 	}
 
 }
+
+
+ Services -- CLI
+
 
 Server *-- LoadModelHandler
 Server *-- UpdateLocalizationHandler

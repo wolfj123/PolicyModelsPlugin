@@ -4,28 +4,43 @@ package Client #DDDDDD {
 
     class Extension
 
-    package Graphviz{}
+    package Graphviz{
+        class GraphvizController{}
+        class GraphvizCreator{}
+    }
 
-    package Services{}
+    package Services{
+        class PolicyModelLibApi{}
+        class FileService {}
+    }
 
     package Localization {
+        class LocalizationDomain{}
+        class CreateLocalizationApp {}
     }
     package Coloring {
+        class ColoringSection{}
     }
-   
-    Extension -- Graphviz 
-    Extension -- Services 
-    Extension -- Localization 
-    Extension -- Coloring
-    Localization -- Services: uses
-    Graphviz -- Services :uses
+
  
 }
 
-package LibServiceApp #DDDDDD{
+package  "LibServiceApp Server" as LibServiceApp #DDDDDD{
+
 }
 
-Services -- LibServiceApp 
+GraphvizController --> FileService: uses
+CreateLocalizationApp --> FileService: uses
+GraphvizCreator --> FileService : uses
+LocalizationDomain --> FileService : uses
+LocalizationDomain --> PolicyModelLibApi: uses
+Extension --> PolicyModelLibApi: uses
+CreateLocalizationApp --> PolicyModelLibApi: uses
+GraphvizCreator --> PolicyModelLibApi: uses
+Extension --> PolicyModelLibApi: uses
+Extension --> ColoringSection: uses
+
+PolicyModelLibApi -- LibServiceApp
 
 
 @enduml
