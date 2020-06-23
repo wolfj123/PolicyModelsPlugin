@@ -1,28 +1,29 @@
 @startuml
 
-package Vscode {
+package PolicyModelExtension {
 class LocalizationDomain {
-    void handlerA()
-    void handlerB()
+    void eventHandlerA()
+    void eventHandlerB()
 }
 }
 
-package LocalizationWebInterface{
+package LocalizationGUI{
 
 class ReactComponents {}
 }
 
+LocalizationGUI ==|> PolicyModelExtension : user events
+
 package WebConsumer {
-class HandlerDomain {
-  void handlerA()
-    void handlerB()
+class LogicDomain {
+  void eventHandlerA()
+    void eventHandlerB()
 }
 }
 
-Vscode ==> LocalizationWebInterface: render
+PolicyModelExtension ==|> LocalizationGUI: render
 
 
 
 
 @enduml
-
