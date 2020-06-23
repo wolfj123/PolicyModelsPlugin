@@ -1,0 +1,28 @@
+@startuml
+
+package Vscode {
+class LocalizationDomain {
+    void handlerA()
+    void handlerB()
+}
+}
+
+package LocalizationWebInterface{
+
+class ReactComponents {}
+}
+
+package WebConsumer {
+class HandlerDomain {
+  void handlerA()
+    void handlerB()
+}
+}
+
+Vscode ==> LocalizationWebInterface: render
+
+
+
+
+@enduml
+
