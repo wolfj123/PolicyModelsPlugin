@@ -149,7 +149,7 @@
 	"dependencies": {
 		"deep-equal-in-any-order": "^1.0.27",
 		"tree-sitter": "^0.16.1",
-		"underscore": "^1.10.2",
+		"underscore": "^1.12.1",
 		"web-tree-sitter": "0.16.2",
 		"winston": "^3.2.1"
 	}
